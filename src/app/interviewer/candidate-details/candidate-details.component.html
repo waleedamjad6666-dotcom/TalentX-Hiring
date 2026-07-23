@@ -1,0 +1,108 @@
+@if (interview()) {
+  <div class="max-w-4xl mx-auto pb-10">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row gap-6 sm:items-center mb-8 border-b border-[#262626] pb-8">
+      <div class="w-20 h-20 rounded-2xl bg-[#FBBF24]/10 text-[#FBBF24] border border-[#FBBF24]/20 flex items-center justify-center font-extrabold text-3xl shadow-inner flex-shrink-0">
+         {{ getInitials(candidate()?.name) }}
+      </div>
+      <div class="flex-1">
+        <div class="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-2 flex items-center gap-2">
+          <span class="hover:text-white cursor-pointer transition-colors" (click)="router.navigate(['/interviewer/dashboard'])">Interviews</span> 
+          <span class="material-icons text-[14px]">chevron_right</span> Candidate Details
+        </div>
+        <h1 class="text-4xl font-extrabold text-white mb-2 tracking-tight">{{ candidate()?.name }}</h1>
+        <p class="text-neutral-400 font-medium text-lg">
+          <span class="text-[#FBBF24]">{{ candidate()?.role }}</span> <span class="mx-2 opacity-30">|</span> Technical Interview
+        </p>
+      </div>
+      <div class="flex flex-col gap-2 items-start sm:items-end">
+         <span class="bg-[#111111] border border-[#333] text-neutral-400 px-4 py-1.5 rounded-full text-xs font-bold tracking-wide">ID: {{ interview()?.id }}</span>
+         <span class="bg-[#FBBF24] text-black px-4 py-1.5 rounded-full text-xs font-extrabold tracking-widest shadow-[0_0_10px_rgba(251,191,36,0.3)]">SCHEDULED</span>
+      </div>
+    </div>
+
+    <!-- Candidate Details Content -->
+    <div class="space-y-8">
+      <!-- Top Row -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+         <!-- Candidate Info Card -->
+         <div class="bg-[#161616] border border-[#262626] rounded-3xl p-8 shadow-xl">
+            <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-5">Candidate Information</h3>
+            <div class="space-y-4">
+              <div>
+                <p class="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-1">Company</p>
+                <p class="text-white font-medium">{{ candidate()?.company }}</p>
+              </div>
+              <div>
+                <p class="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-1">Department</p>
+                <p class="text-white font-medium">{{ candidate()?.department }}</p>
+              </div>
+              <div>
+                <p class="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-1">Experience</p>
+                <p class="text-white font-medium">{{ candidate()?.experience }}</p>
+              </div>
+              <div>
+                <p class="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-1">Applied Date</p>
+                <p class="text-white font-medium">{{ candidate()?.appliedDate }}</p>
+              </div>
+              <div>
+                <p class="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-1">Status</p>
+                <p class="text-white font-medium">{{ candidate()?.status }}</p>
+              </div>
+            </div>
+         </div>
+
+         <!-- Interview Schedule -->
+         <div class="bg-[#161616] border border-[#262626] rounded-3xl p-8 shadow-xl">
+            <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-5">Interview Schedule</h3>
+            <div class="space-y-4">
+              <div>
+                <p class="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-1">Date</p>
+                <p class="text-white font-medium">{{ interview()?.date }}</p>
+              </div>
+              <div>
+                <p class="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-1">Time</p>
+                <p class="text-white font-medium">{{ interview()?.time }}</p>
+              </div>
+              <div>
+                <p class="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-1">Interview Type</p>
+                <p class="text-white font-medium">Technical Interview</p>
+              </div>
+            </div>
+         </div>
+      </div>
+
+      <!-- Skills & Qualifications -->
+      <div class="bg-[#161616] border border-[#262626] rounded-3xl p-8 shadow-xl">
+        <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-5">Skills & Qualifications</h3>
+        <div class="flex flex-wrap gap-2">
+          <span class="px-4 py-2 rounded-full border border-[#333] text-sm font-medium text-neutral-300">JavaScript</span>
+          <span class="px-4 py-2 rounded-full border border-[#333] text-sm font-medium text-neutral-300">TypeScript</span>
+          <span class="px-4 py-2 rounded-full border border-[#333] text-sm font-medium text-neutral-300">React</span>
+          <span class="px-4 py-2 rounded-full border border-[#333] text-sm font-medium text-neutral-300">Angular</span>
+          <span class="px-4 py-2 rounded-full border border-[#333] text-sm font-medium text-neutral-300">Node.js</span>
+          <span class="px-4 py-2 rounded-full border border-[#333] text-sm font-medium text-neutral-300">CSS/Tailwind</span>
+        </div>
+      </div>
+
+      <!-- Additional Notes -->
+      <div class="bg-[#161616] p-6 rounded-3xl border border-[#262626]">
+        <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-4 ml-2">Notes for Interviewer</h3>
+        <div class="w-full bg-[#111111] border border-[#333] rounded-2xl p-5 text-neutral-400">
+          <p>Candidate has strong background in frontend development with experience in large-scale applications. Focus on assessing architecture skills and problem-solving abilities during the interview.</p>
+        </div>
+      </div>
+
+      <!-- Footer Actions -->
+      <div class="flex flex-col sm:flex-row items-center justify-between pt-8 border-t border-[#262626] gap-6">
+         <div class="flex items-center gap-2 text-neutral-500 font-medium text-sm">
+           <span class="material-icons text-[18px]">info</span> Review candidate details before the interview
+         </div>
+         <div class="flex gap-4 w-full sm:w-auto">
+           <button type="button" class="flex-1 sm:flex-none px-8 py-4 rounded-xl border border-[#333] text-white font-bold hover:bg-[#1a1a1a] transition-colors" (click)="router.navigate(['/interviewer/dashboard'])">Back to Dashboard</button>
+           <button type="button" class="flex-1 sm:flex-none px-10 py-4 rounded-xl bg-[#FBBF24] hover:bg-[#FACC15] text-black font-extrabold transition-all shadow-[0_0_15px_rgba(251,191,36,0.15)] hover:shadow-[0_0_20px_rgba(251,191,36,0.3)]" (click)="router.navigate(['/interviewer/feedback', interviewId])">Start Interview</button>
+         </div>
+      </div>
+    </div>
+  </div>
+}
