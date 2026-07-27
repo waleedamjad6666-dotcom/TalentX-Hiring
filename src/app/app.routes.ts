@@ -18,8 +18,9 @@ export const routes: Routes = [
     loadComponent: () => import('./layout/layout.component').then(m => m.LayoutComponent),
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-      { path: 'dashboard', loadComponent: () => import('./interviewer/interviewer-dashboard.component').then(m => m.InterviewerDashboardComponent) },
-      { path: 'feedback/:id', loadComponent: () => import('./interviewer/interviewer-feedback.component').then(m => m.InterviewerFeedbackComponent) }
+      { path: 'dashboard', loadComponent: () => import('./interviewer/interviewer-dashboard/interviewer-dashboard.component').then(m => m.InterviewerDashboardComponent) },
+      { path: 'feedback/:id', loadComponent: () => import('./interviewer/interviewer-feedback/interviewer-feedback.component').then(m => m.InterviewerFeedbackComponent) },
+      { path: 'candidate-details/:id', loadComponent: () => import('./interviewer/candidate-details/candidate-details.component').then(m => m.CandidateDetailsComponent) }
     ]
   },
   { path: '**', redirectTo: 'login' }
