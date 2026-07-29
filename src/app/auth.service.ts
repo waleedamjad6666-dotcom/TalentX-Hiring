@@ -1,16 +1,50 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { tap } from 'rxjs/operators';
 
-export type Role = 'Admin' | 'Interviewer' | null;
+export interface CurrentUser {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+}
+
+export interface LoginResponse {
+  token: string;
+  user: CurrentUser;
+}
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  currentUser = signal<{ name: string; role: Role } | null>(null);
+  private http = inject(HttpClient);
 
-  login(role: Role, name: string) {
-    this.currentUser.set({ name, role });
+  currentUser = signal<CurrentUser | null>(null);
+  token = signal<string | null>(null);
+
+  constructor() {
+    const savedToken = localStorage.getItem('token');
+    const savedUser = localStorage.getItem('user');
+    if (savedToken && savedUser) {
+      this.token.set(savedToken);
+      this.currentUser.set(JSON.parse(savedUser));
+    }
+  }
+
+  login(credentials: { email: string; password: string }) {
+    return this.http.post<LoginResponse>('/api/auth/login', credentials).pipe(
+      tap(res => {
+        this.token.set(res.token);
+        this.currentUser.set(res.user);
+        localStorage.setItem('token', res.token);
+        localStorage.setItem('user', JSON.stringify(res.user));
+      })
+    );
   }
 
   logout() {
     this.currentUser.set(null);
+    this.token.set(null);
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
   }
 }

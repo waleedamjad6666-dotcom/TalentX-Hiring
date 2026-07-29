@@ -2,7 +2,6 @@ import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../auth.service';
 import { ReactiveFormsModule, FormGroup, FormControl } from '@angular/forms';
-import { usersData } from '../data';
 
 @Component({
   selector: 'app-login',
@@ -23,8 +22,8 @@ import { usersData } from '../data';
 
         <form [formGroup]="loginForm" (ngSubmit)="login()" class="space-y-6">
           <div>
-            <label class="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-2 ml-1">Username</label>
-            <input type="text" formControlName="username" class="w-full bg-[#161616] border border-[#262626] rounded-xl py-3.5 px-5 text-white outline-none focus:border-[#FBBF24] transition-colors" placeholder="e.g. admin">
+            <label class="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-2 ml-1">Email</label>
+            <input type="email" formControlName="email" class="w-full bg-[#161616] border border-[#262626] rounded-xl py-3.5 px-5 text-white outline-none focus:border-[#FBBF24] transition-colors" placeholder="e.g. admin@talentx.com">
           </div>
           <div>
             <label class="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-2 ml-1">Password</label>
@@ -34,10 +33,6 @@ import { usersData } from '../data';
             Sign In
           </button>
         </form>
-
-        <div class="mt-8 text-center text-xs text-neutral-600">
-           Try "admin/admin123" or "sarah/sarah123"
-        </div>
       </div>
     </div>
   `
@@ -47,27 +42,30 @@ export class LoginComponent {
   router = inject(Router);
 
   loginForm = new FormGroup({
-    username: new FormControl('', {nonNullable: true}),
-    password: new FormControl('', {nonNullable: true})
+    email: new FormControl('', { nonNullable: true }),
+    password: new FormControl('', { nonNullable: true })
   });
 
   errorMsg = '';
 
   login() {
     if (this.loginForm.valid) {
-      const v = this.loginForm.value;
-      const user = usersData.find(u => u.username === v.username && u.password === v.password);
-      if (user) {
-        this.errorMsg = '';
-        this.auth.login(user.role as any, user.name);
-        if (user.role === 'Admin') {
-          this.router.navigate(['/admin/dashboard']);
-        } else {
-          this.router.navigate(['/interviewer/dashboard']);
+      const credentials = this.loginForm.getRawValue();
+
+      this.auth.login(credentials).subscribe({
+        next: () => {
+          this.errorMsg = '';
+          const role = this.auth.currentUser()?.role?.toLowerCase();
+          if (role === 'admin') {
+            this.router.navigate(['/admin/dashboard']);
+          } else {
+            this.router.navigate(['/interviewer/dashboard']);
+          }
+        },
+        error: (err) => {
+          this.errorMsg = err.error?.message || 'Invalid email or password.';
         }
-      } else {
-        this.errorMsg = 'Invalid username or password.';
-      }
+      });
     }
   }
 }

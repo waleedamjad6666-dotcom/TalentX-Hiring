@@ -73,8 +73,8 @@ export class LayoutComponent {
   mobileMenuOpen = false;
 
   navLinks = computed(() => {
-    const role = this.auth.currentUser()?.role;
-    if (role === 'Admin') {
+    const role = this.auth.currentUser()?.role?.toLowerCase();
+    if (role === 'admin') {
       return [
         { path: '/admin/dashboard', label: 'Dashboard', icon: 'space_dashboard' },
         { path: '/admin/candidates', label: 'Candidates', icon: 'group' }
@@ -88,7 +88,7 @@ export class LayoutComponent {
 
   initials = computed(() => {
     const name = this.auth.currentUser()?.name || '';
-    return name.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
+return name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase();
   });
 
   logout() {
