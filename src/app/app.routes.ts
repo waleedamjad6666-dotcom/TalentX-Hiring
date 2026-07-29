@@ -1,4 +1,6 @@
-import {Routes} from '@angular/router';
+import { Routes } from '@angular/router';
+import { authGuard } from './guards/auth-guard';
+import { roleGuard } from './guards/role-guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -6,6 +8,7 @@ export const routes: Routes = [
   {
     path: 'admin',
     loadComponent: () => import('./layout/layout.component').then(m => m.LayoutComponent),
+    canActivate: [authGuard, roleGuard('Admin')],
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', loadComponent: () => import('./admin/admin-dashboard.component').then(m => m.AdminDashboardComponent) },
@@ -16,6 +19,7 @@ export const routes: Routes = [
   {
     path: 'interviewer',
     loadComponent: () => import('./layout/layout.component').then(m => m.LayoutComponent),
+    canActivate: [authGuard, roleGuard('Interviewer')],
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', loadComponent: () => import('./interviewer/interviewer-dashboard/interviewer-dashboard.component').then(m => m.InterviewerDashboardComponent) },
