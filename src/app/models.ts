@@ -96,3 +96,34 @@ export interface ApiCandidateResponse {
     notes: string;
   };
 }
+
+export interface SubmitFeedbackRequest {
+  interviewId: string;
+  rating: number;
+  recommendation: 'Yes' | 'No' | 'Hold';
+  positiveComments: string;
+  negativeComments: string;
+  additionalComments: string;
+}
+
+export interface FeedbackResponse {
+  id: string;
+  interviewId: string;
+  candidateId: string;
+  interviewerId: string;
+  interviewer?: ApiUser;
+  rating: number;
+  recommendation: string;
+  positiveComments: string;
+  negativeComments: string;
+  additionalComments: string;
+  submittedAt: string;
+}
+
+export interface SubmitFeedbackResponse {
+  feedback: FeedbackResponse;
+}
+
+export interface GetFeedbackResponse {
+  feedback: FeedbackResponse | null;
+}

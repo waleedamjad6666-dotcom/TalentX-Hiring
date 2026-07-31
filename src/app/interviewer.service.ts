@@ -1,6 +1,14 @@
 import { Injectable, signal, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { ApiInterview, ApiInterviewsResponse, ApiCandidateResponse } from './models';
+import { Observable, tap } from 'rxjs';
+import {
+  ApiInterview,
+  ApiInterviewsResponse,
+  ApiCandidateResponse,
+  SubmitFeedbackRequest,
+  SubmitFeedbackResponse,
+  GetFeedbackResponse
+} from './models';
 @Injectable({ providedIn: 'root' })
 export class InterviewerService {
   private http = inject(HttpClient);
@@ -49,5 +57,15 @@ export class InterviewerService {
     this.candidate.set(null);
     this.candidateLoading.set(false);
     this.candidateError.set(null);
+  }
+
+  submitFeedback(data: SubmitFeedbackRequest): Observable<SubmitFeedbackResponse> {
+    return this.http.post<SubmitFeedbackResponse>('/api/interviewer/feedback', data).pipe(
+      tap(() => this.fetchInterviews())
+    );
+  }
+
+  getFeedback(interviewId: string): Observable<GetFeedbackResponse> {
+    return this.http.get<GetFeedbackResponse>(`/api/interviewer/feedback/${interviewId}`);
   }
 }
