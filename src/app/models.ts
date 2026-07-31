@@ -25,3 +25,58 @@ export interface Interview {
   };
   hiringUpdate?: string;
 }
+
+export interface ApiCandidate {
+  id: string;
+  candidateCode: string;
+  firstname: string;
+  lastname: string;
+  email: string;
+  phone: string;
+  experience: string | null;
+  currentCompany: string | null;
+  currentPosition: string | null;
+  skills: string[];
+}
+
+export interface ApiPosition {
+  id: string;
+  title: string;
+  requiredSkills: string[];
+  minimumExperience: number;
+  maximumExperience: number | null;
+  description: string;
+  status: string;
+}
+
+export interface ApiUser {
+  id: string;
+  firstname: string;
+  lastname: string;
+  email: string;
+}
+
+export interface ApiInterview {
+  id: string;
+  round: number;
+  type: string | null;
+  date: string;
+  startTime: string;
+  endTime: string;
+  status: string;
+  candidateId: string;
+  candidate: ApiCandidate;
+  positionId: string;
+  position: ApiPosition;
+  createdBy: string;
+  creator: ApiUser;
+  interviewerIds: string[];
+  interviewers: ApiUser[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ApiInterviewsResponse {
+  interviews: ApiInterview[];
+  count: number;
+}
