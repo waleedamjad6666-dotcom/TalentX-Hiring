@@ -80,3 +80,19 @@ export interface ApiInterviewsResponse {
   interviews: ApiInterview[];
   count: number;
 }
+
+export interface ApiCandidateResponse {
+  candidate: {
+    id: string;
+    candidateCode: string;
+    firstname: string;
+    lastname: string;
+    email: string;
+    phone: string;
+    experience: string;
+    currentCompany: string;
+    currentPosition: string;
+    skills: string[];
+    notes: string;
+  };
+}

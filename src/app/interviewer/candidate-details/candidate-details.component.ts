@@ -1,26 +1,38 @@
-import { Component, inject, computed } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { DataService } from '../../data.service';
+import { Subscription } from 'rxjs';
+import { InterviewerService } from '../../interviewer.service';
 
 @Component({
   selector: 'app-candidate-details',
   templateUrl: './candidate-details.component.html'
 })
-export class CandidateDetailsComponent {
+export class CandidateDetailsComponent implements OnInit, OnDestroy {
   route = inject(ActivatedRoute);
   router = inject(Router);
-  dataService = inject(DataService);
+  interviewerService = inject(InterviewerService);
 
-  interviewId = this.route.snapshot.paramMap.get('id');
-  
-  interview = computed(() => this.dataService.interviews().find(i => i.id === this.interviewId));
-  candidate = computed(() => {
-    const inv = this.interview();
-    return inv ? this.dataService.candidates().find(c => c.id === inv.candidateId) : null;
-  });
+  candidateId: string | null = null;
+  private paramSub!: Subscription;
 
-  getInitials(name: string | undefined) {
-    if (!name) return '';
-    return name.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
+  ngOnInit() {
+    this.paramSub = this.route.paramMap.subscribe(params => {
+      this.candidateId = params.get('id');
+      if (this.candidateId) {
+        this.interviewerService.fetchCandidate(this.candidateId);
+      }
+    });
+  }
+
+  ngOnDestroy() {
+    this.paramSub?.unsubscribe();
+    this.interviewerService.clearCandidate();
+  }
+
+  getInitials(firstname: string | undefined, lastname: string | undefined) {
+    if (!firstname && !lastname) return '';
+    const first = firstname?.[0] || '';
+    const last = lastname?.[0] || '';
+    return (first + last).toUpperCase();
   }
 }
