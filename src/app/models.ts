@@ -80,3 +80,50 @@ export interface ApiInterviewsResponse {
   interviews: ApiInterview[];
   count: number;
 }
+
+export interface ApiCandidateResponse {
+  candidate: {
+    id: string;
+    candidateCode: string;
+    firstname: string;
+    lastname: string;
+    email: string;
+    phone: string;
+    experience: string;
+    currentCompany: string;
+    currentPosition: string;
+    skills: string[];
+    notes: string;
+  };
+}
+
+export interface SubmitFeedbackRequest {
+  interviewId: string;
+  rating: number;
+  recommendation: 'Yes' | 'No' | 'Hold';
+  positiveComments: string;
+  negativeComments: string;
+  additionalComments: string;
+}
+
+export interface FeedbackResponse {
+  id: string;
+  interviewId: string;
+  candidateId: string;
+  interviewerId: string;
+  interviewer?: ApiUser;
+  rating: number;
+  recommendation: string;
+  positiveComments: string;
+  negativeComments: string;
+  additionalComments: string;
+  submittedAt: string;
+}
+
+export interface SubmitFeedbackResponse {
+  feedback: FeedbackResponse;
+}
+
+export interface GetFeedbackResponse {
+  feedback: FeedbackResponse | null;
+}
