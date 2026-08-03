@@ -81,7 +81,9 @@ export class LayoutComponent {
       ];
     } else {
       return [
-        { path: '/interviewer/dashboard', label: 'Dashboard', icon: 'space_dashboard' }
+        { path: '/interviewer/dashboard', label: 'Dashboard', icon: 'space_dashboard' },
+        { path: '/interviewer/interviews', label: 'Interviews', icon: 'event' },
+        { path: '/interviewer/history', label: 'History', icon: 'history' }
       ];
     }
   });
