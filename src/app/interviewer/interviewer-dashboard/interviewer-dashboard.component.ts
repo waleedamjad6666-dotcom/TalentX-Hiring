@@ -24,11 +24,15 @@ export class InterviewerDashboardComponent implements OnInit {
       .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
   );
 
+  dashboardUpcomingInterviews = computed(() => this.upcomingInterviews().slice(0, 2));
+
   pastInterviews = computed(() =>
     this.interviewerService.interviews()
       .filter(i => i.status === 'completed')
       .sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime())
   );
+
+  dashboardPastInterviews = computed(() => this.pastInterviews().slice(0, 3));
 
   hiredCount = computed(() => this.pastInterviews().length);
   rejectedCount = computed(() => 0);

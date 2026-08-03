@@ -23,6 +23,8 @@ export const routes: Routes = [
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', loadComponent: () => import('./interviewer/interviewer-dashboard/interviewer-dashboard.component').then(m => m.InterviewerDashboardComponent) },
+      { path: 'interviews', loadComponent: () => import('./interviewer/interviewer-interviews/interviewer-interviews.component').then(m => m.InterviewerInterviewsComponent) },
+      { path: 'history', loadComponent: () => import('./interviewer/interviewer-history/interviewer-history.component').then(m => m.InterviewerHistoryComponent) },
       { path: 'feedback/:id', loadComponent: () => import('./interviewer/interviewer-feedback/interviewer-feedback.component').then(m => m.InterviewerFeedbackComponent) },
       { path: 'candidate-details/:id', loadComponent: () => import('./interviewer/candidate-details/candidate-details.component').then(m => m.CandidateDetailsComponent) }
     ]

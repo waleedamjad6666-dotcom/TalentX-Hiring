@@ -132,7 +132,6 @@
          }
          <div class="flex gap-4 w-full sm:w-auto">
            @if (!alreadySubmitted()) {
-             <button type="button" class="flex-1 sm:flex-none px-8 py-4 rounded-xl border border-[#333] text-white font-bold hover:bg-[#1a1a1a] transition-colors">Save Draft</button>
              <button type="button" (click)="submit()" [disabled]="!rating() || !form.value.recommended || submitting()" class="flex-1 sm:flex-none px-10 py-4 rounded-xl bg-[#FBBF24] hover:bg-[#FACC15] text-black font-extrabold disabled:opacity-50 transition-all shadow-[0_0_15px_rgba(251,191,36,0.15)] hover:shadow-[0_0_20px_rgba(251,191,36,0.3)] disabled:shadow-none">
                @if (submitting()) {
                  <span class="material-icons animate-spin text-sm">progress_activity</span> Submitting...

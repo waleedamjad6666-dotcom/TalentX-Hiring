@@ -34,6 +34,9 @@
        <div class="flex items-center gap-3 mb-5">
          <h2 class="text-xl font-bold text-white">Upcoming Schedule</h2>
          <span class="bg-[#FBBF24]/20 text-[#FBBF24] text-xs font-bold px-2 py-0.5 rounded-full">{{ upcomingInterviews().length }}</span>
+         @if (upcomingInterviews().length > 2) {
+           <a routerLink="/interviewer/interviews" class="text-xs font-bold text-[#FBBF24] hover:text-[#FACC15] transition-colors ml-auto">View All →</a>
+         }
        </div>
 
        @if (upcomingInterviews().length === 0) {
@@ -43,7 +46,7 @@
          </div>
        }
        <div class="grid gap-4 md:grid-cols-2">
-         @for (inv of upcomingInterviews(); track inv.id) {
+         @for (inv of dashboardUpcomingInterviews(); track inv.id) {
            <div class="bg-[#161616] border border-[#262626] rounded-2xl p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-6 hover:border-[#333] transition-colors shadow-lg">
              <div>
                <h3 class="font-bold text-xl text-white mb-1">{{ inv.candidate.firstname }} {{ inv.candidate.lastname }}</h3>
@@ -53,12 +56,12 @@
                </div>
              </div>
              <div class="flex flex-col gap-3">
+              <a [routerLink]="['/interviewer/candidate-details', inv.candidateId]" class="bg-[#FBBF24] hover:bg-[#FACC15] text-black font-bold px-6 py-3 rounded-xl transition-all shadow-[0_0_10px_rgba(251,191,36,0.15)] whitespace-nowrap text-center">
+                  Candidate Details
+                </a>
                <a [routerLink]="['/interviewer/feedback', inv.id]" class="bg-[#FBBF24] hover:bg-[#FACC15] text-black font-bold px-6 py-3 rounded-xl transition-all shadow-[0_0_10px_rgba(251,191,36,0.15)] whitespace-nowrap text-center">
                  Evaluate Candidate
                </a>
-               <a [routerLink]="['/interviewer/candidate-details', inv.candidateId]" class="bg-[#FBBF24] hover:bg-[#FACC15] text-black font-bold px-6 py-3 rounded-xl transition-all shadow-[0_0_10px_rgba(251,191,36,0.15)] whitespace-nowrap text-center">
-                  View Details
-                </a>
              </div>
            </div>
          }
@@ -66,7 +69,12 @@
     </div>
 
     <div>
-       <h2 class="text-xl font-bold text-white mb-5">Past Evaluations & Results</h2>
+       <div class="flex items-center gap-3 mb-5">
+         <h2 class="text-xl font-bold text-white">Past Evaluations & Results</h2>
+         @if (pastInterviews().length > 3) {
+           <a routerLink="/interviewer/history" class="text-xs font-bold text-[#FBBF24] hover:text-[#FACC15] transition-colors ml-auto">View All →</a>
+         }
+       </div>
        <div class="bg-[#161616] border border-[#262626] rounded-2xl overflow-hidden shadow-xl">
          <div class="overflow-x-auto">
            <table class="w-full text-left text-sm whitespace-nowrap">
@@ -81,7 +89,7 @@
                </tr>
              </thead>
              <tbody class="divide-y divide-[#262626]">
-               @for (inv of pastInterviews(); track inv.id) {
+               @for (inv of dashboardPastInterviews(); track inv.id) {
                  <tr class="hover:bg-[#1a1a1a] transition-colors">
                    <td class="p-5">
                      <div class="font-bold text-white text-base">{{ inv.candidate.firstname }} {{ inv.candidate.lastname }}</div>
@@ -102,7 +110,7 @@
                    </td>
                  </tr>
                }
-               @if (pastInterviews().length === 0) {
+               @if (dashboardPastInterviews().length === 0) {
                  <tr>
                    <td colspan="6" class="p-8 text-center text-neutral-500 font-medium">No past evaluations found.</td>
                  </tr>

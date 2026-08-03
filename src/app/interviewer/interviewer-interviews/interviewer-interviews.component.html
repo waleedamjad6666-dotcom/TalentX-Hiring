@@ -1,0 +1,85 @@
+<div class="max-w-6xl mx-auto pb-10">
+  <div class="mb-8 border-b border-[#262626] pb-6">
+    <h1 class="text-3xl font-bold text-white mb-2">Scheduled Interviews</h1>
+    <p class="text-neutral-400 font-medium">All upcoming interviews assigned to you.</p>
+  </div>
+
+  @if (interviewerService.loading()) {
+    <div class="flex items-center justify-center py-20">
+      <span class="material-icons text-4xl text-[#FBBF24] animate-spin">progress_activity</span>
+      <span class="ml-3 text-neutral-400 font-medium">Loading interviews...</span>
+    </div>
+  } @else if (interviewerService.error()) {
+    <div class="bg-red-500/10 border border-red-500/30 rounded-2xl p-6 text-center">
+      <span class="material-icons text-4xl text-red-400 mb-2">error</span>
+      <p class="text-red-400 font-medium">{{ interviewerService.error() }}</p>
+    </div>
+  } @else {
+    <!-- Search & Date Range -->
+    <div class="flex flex-col md:flex-row gap-4 mb-8">
+      <div class="flex-1 relative group">
+        <span class="material-icons absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500 group-focus-within:text-[#FBBF24] transition-colors">search</span>
+        <input type="text" [value]="search()" (input)="updateSearch($event)"
+          placeholder="Search"
+          class="w-full bg-[#161616] border border-[#262626] rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-[#FBBF24] transition-colors shadow-inner">
+      </div>
+      <div class="flex gap-3 items-center">
+        <input type="date" [value]="dateFrom()" (change)="updateDateFrom($event)"
+          class="bg-[#161616] border border-[#262626] rounded-xl py-3 px-4 text-white text-sm focus:outline-none focus:border-[#FBBF24] transition-colors shadow-inner [color-scheme:dark]">
+        <span class="text-neutral-500 text-sm font-medium">to</span>
+        <input type="date" [value]="dateTo()" (change)="updateDateTo($event)"
+          class="bg-[#161616] border border-[#262626] rounded-xl py-3 px-4 text-white text-sm focus:outline-none focus:border-[#FBBF24] transition-colors shadow-inner [color-scheme:dark]">
+        @if (dateFrom() || dateTo()) {
+          <button (click)="clearDates()" class="text-neutral-500 hover:text-[#FBBF24] transition-colors" title="Clear dates">
+            <span class="material-icons text-xl">close</span>
+          </button>
+        }
+      </div>
+    </div>
+
+    @if (scheduledInterviews().length === 0) {
+      <div class="bg-[#161616] border border-[#262626] border-dashed rounded-2xl p-10 text-center text-neutral-500 flex flex-col items-center">
+        <span class="material-icons text-4xl mb-3 opacity-50">event_available</span>
+        <p class="font-medium">No scheduled interviews.</p>
+      </div>
+    }
+    <div class="grid gap-4 md:grid-cols-2">
+      @for (inv of filteredInterviews(); track inv.id) {
+        <div class="bg-[#161616] border border-[#262626] rounded-2xl p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-6 hover:border-[#333] transition-colors shadow-lg">
+          <div>
+            <h3 class="font-bold text-xl text-white mb-1">{{ inv.candidate.firstname }} {{ inv.candidate.lastname }}</h3>
+            <p class="text-sm font-medium text-neutral-400 mb-4">{{ inv.position.title }}</p>
+            <div class="text-xs font-bold text-[#FBBF24] bg-[#FBBF24]/10 w-max px-3 py-1.5 rounded-lg border border-[#FBBF24]/20 mb-3">
+              <span class="material-icons text-[16px] align-middle">event</span> {{ inv.date }} at {{ inv.startTime | date:'shortTime' }}
+            </div>
+            <div class="flex items-center gap-3 text-xs font-bold">
+              <span class="text-neutral-400 bg-neutral-400/10 px-3 py-1.5 rounded-lg border border-neutral-400/20">
+                Round {{ inv.round }}
+              </span>
+              @if (inv.type) {
+                <span class="text-neutral-400 bg-neutral-400/10 px-3 py-1.5 rounded-lg border border-neutral-400/20">
+                  {{ inv.type }}
+                </span>
+              }
+            </div>
+          </div>
+          <div class="flex flex-col gap-3">
+            <a [routerLink]="['/interviewer/candidate-details', inv.candidateId]" class="bg-[#FBBF24] hover:bg-[#FACC15] text-black font-bold px-6 py-3 rounded-xl transition-all shadow-[0_0_10px_rgba(251,191,36,0.15)] whitespace-nowrap text-center">
+              Candidate Details
+            </a>
+            <a [routerLink]="['/interviewer/feedback', inv.id]" class="bg-[#FBBF24] hover:bg-[#FACC15] text-black font-bold px-6 py-3 rounded-xl transition-all shadow-[0_0_10px_rgba(251,191,36,0.15)] whitespace-nowrap text-center">
+              Evaluate Candidate
+            </a>
+          </div>
+        </div>
+      }
+    </div>
+    @if (scheduledInterviews().length > 0 && filteredInterviews().length === 0) {
+      <div class="py-16 text-center border border-[#262626] border-dashed rounded-2xl bg-[#111111] mt-4">
+        <span class="material-icons text-4xl text-neutral-600 mb-2">search_off</span>
+        <h3 class="text-lg font-bold text-white">No matches found</h3>
+        <p class="text-neutral-500 mt-1">Try adjusting your search query.</p>
+      </div>
+    }
+  }
+</div>

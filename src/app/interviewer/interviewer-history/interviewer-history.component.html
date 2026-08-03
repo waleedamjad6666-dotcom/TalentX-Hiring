@@ -1,0 +1,96 @@
+<div class="max-w-6xl mx-auto pb-10">
+  <div class="mb-8 border-b border-[#262626] pb-6">
+    <h1 class="text-3xl font-bold text-white mb-2">Interview History</h1>
+    <p class="text-neutral-400 font-medium">All completed interviews and evaluations.</p>
+  </div>
+
+  @if (interviewerService.loading()) {
+    <div class="flex items-center justify-center py-20">
+      <span class="material-icons text-4xl text-[#FBBF24] animate-spin">progress_activity</span>
+      <span class="ml-3 text-neutral-400 font-medium">Loading history...</span>
+    </div>
+  } @else if (interviewerService.error()) {
+    <div class="bg-red-500/10 border border-red-500/30 rounded-2xl p-6 text-center">
+      <span class="material-icons text-4xl text-red-400 mb-2">error</span>
+      <p class="text-red-400 font-medium">{{ interviewerService.error() }}</p>
+    </div>
+  } @else {
+    <!-- Search & Date Range -->
+    <div class="flex flex-col md:flex-row gap-4 mb-8">
+      <div class="flex-1 relative group">
+        <span class="material-icons absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500 group-focus-within:text-[#FBBF24] transition-colors">search</span>
+        <input type="text" [value]="search()" (input)="updateSearch($event)"
+          placeholder="Search"
+          class="w-full bg-[#161616] border border-[#262626] rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-[#FBBF24] transition-colors shadow-inner">
+      </div>
+      <div class="flex gap-3 items-center">
+        <input type="date" [value]="dateFrom()" (change)="updateDateFrom($event)"
+          class="bg-[#161616] border border-[#262626] rounded-xl py-3 px-4 text-white text-sm focus:outline-none focus:border-[#FBBF24] transition-colors shadow-inner [color-scheme:dark]">
+        <span class="text-neutral-500 text-sm font-medium">to</span>
+        <input type="date" [value]="dateTo()" (change)="updateDateTo($event)"
+          class="bg-[#161616] border border-[#262626] rounded-xl py-3 px-4 text-white text-sm focus:outline-none focus:border-[#FBBF24] transition-colors shadow-inner [color-scheme:dark]">
+        @if (dateFrom() || dateTo()) {
+          <button (click)="clearDates()" class="text-neutral-500 hover:text-[#FBBF24] transition-colors" title="Clear dates">
+            <span class="material-icons text-xl">close</span>
+          </button>
+        }
+      </div>
+    </div>
+
+    @if (completedInterviews().length === 0) {
+      <div class="bg-[#161616] border border-[#262626] border-dashed rounded-2xl p-10 text-center text-neutral-500 flex flex-col items-center">
+        <span class="material-icons text-4xl mb-3 opacity-50">history</span>
+        <p class="font-medium">No completed interviews yet.</p>
+      </div>
+    } @else {
+      <div class="bg-[#161616] border border-[#262626] rounded-2xl overflow-hidden shadow-xl">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm whitespace-nowrap">
+            <thead class="bg-[#111111] border-b border-[#262626] text-neutral-400 text-xs uppercase tracking-widest font-bold">
+              <tr>
+                <th class="p-5">Candidate</th>
+                <th class="p-5">Position</th>
+                <th class="p-5">Date</th>
+                <th class="p-5">Round</th>
+                <th class="p-5">Type</th>
+                <th class="p-5">Status</th>
+                <th class="p-5">Action</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-[#262626]">
+              @for (inv of filteredInterviews(); track inv.id) {
+                <tr class="hover:bg-[#1a1a1a] transition-colors">
+                  <td class="p-5">
+                    <div class="font-bold text-white text-base">{{ inv.candidate.firstname }} {{ inv.candidate.lastname }}</div>
+                  </td>
+                  <td class="p-5 text-neutral-300 font-medium">{{ inv.position.title }}</td>
+                  <td class="p-5 text-neutral-300 font-medium">{{ inv.date }}</td>
+                  <td class="p-5 text-neutral-300 font-medium">Round {{ inv.round }}</td>
+                  <td class="p-5 text-neutral-300 font-medium">{{ inv.type || 'N/A' }}</td>
+                  <td class="p-5">
+                    <span class="px-3 py-1 rounded-full text-[11px] font-bold tracking-wide uppercase bg-green-500/20 text-green-400">
+                      {{ inv.status }}
+                    </span>
+                  </td>
+                  <td class="p-5">
+                    <button (click)="viewFeedback(inv.id)" class="px-4 py-2 rounded-lg bg-[#FBBF24]/10 text-[#FBBF24] text-xs font-bold tracking-wide hover:bg-[#FBBF24]/20 transition-colors border border-[#FBBF24]/20">
+                      View Feedback
+                    </button>
+                  </td>
+                </tr>
+              }
+              @if (completedInterviews().length > 0 && filteredInterviews().length === 0) {
+                <tr>
+                  <td colspan="7" class="p-8 text-center text-neutral-500 font-medium">
+                    <span class="material-icons text-3xl text-neutral-600 mb-2 block">search_off</span>
+                    No matches found. Try adjusting your search query.
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+  }
+</div>
