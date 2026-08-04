@@ -1,14 +1,14 @@
 import { Candidate, Interview } from './models';
 
-// export const usersData = [
-//   { id: 1, name: 'Admin System', username: 'admin', password: 'admin123', role: 'Admin' },
-//   { id: 2, name: 'Sarah Malik', username: 'sarah', password: 'sarah123', role: 'Interviewer' },
-//   { id: 3, name: 'Daniel Shah', username: 'daniel', password: 'daniel123', role: 'Interviewer' },
-//   { id: 4, name: 'Ali Hassan', username: 'ali', password: 'ali123', role: 'Interviewer' },
-//   { id: 5, name: 'Ahmed Khan', username: 'ahmed', password: 'ahmed123', role: 'Interviewer' },
-//   { id: 6, name: 'Aisha Noor', username: 'aisha', password: 'aisha123', role: 'Interviewer' },
-//   { id: 7, name: 'Michael Reed', username: 'michael', password: 'michael123', role: 'Interviewer' }
-// ];
+export const usersData = [
+  { id: 1, name: 'Admin System', username: 'admin', password: 'admin123', role: 'Admin' },
+  { id: 2, name: 'Sarah Malik', username: 'sarah', password: 'sarah123', role: 'Interviewer' },
+  { id: 3, name: 'Daniel Shah', username: 'daniel', password: 'daniel123', role: 'Interviewer' },
+  { id: 4, name: 'Ali Hassan', username: 'ali', password: 'ali123', role: 'Interviewer' },
+  { id: 5, name: 'Ahmed Khan', username: 'ahmed', password: 'ahmed123', role: 'Interviewer' },
+  { id: 6, name: 'Aisha Noor', username: 'aisha', password: 'aisha123', role: 'Interviewer' },
+  { id: 7, name: 'Michael Reed', username: 'michael', password: 'michael123', role: 'Interviewer' }
+];
 
 export const candidatesData: Candidate[] = [
   { id: 1, name: 'Leo Brooks', role: 'AI/ML Engineer', company: 'VertexSoft', department: 'Engineering', experience: '4 Years', appliedDate: '2025-01-15', status: 'Interviewing' },

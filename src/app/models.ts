@@ -127,3 +127,70 @@ export interface SubmitFeedbackResponse {
 export interface GetFeedbackResponse {
   feedback: FeedbackResponse | null;
 }
+
+export interface ApiInterviewer {
+  id: string;
+  employeeId: string;
+  firstname: string;
+  lastname: string;
+  email: string;
+  designation: string | null;
+}
+
+export interface ApiDepartment {
+  id: string;
+  name: string;
+}
+
+export interface ApiPositionWithDepartment extends ApiPosition {
+  department?: ApiDepartment;
+}
+
+export interface ApiCandidatesResponse {
+  candidates: ApiCandidate[];
+  count: number;
+}
+
+export interface ApiInterviewersResponse {
+  interviewers: ApiInterviewer[];
+}
+
+export interface ApiPositionsResponse {
+  positions: ApiPositionWithDepartment[];
+}
+
+export interface ApiInterviewsListResponse {
+  interviews: ApiInterview[];
+  count: number;
+}
+
+export interface ApiCreateCandidateRequest {
+  firstname: string;
+  lastname: string;
+  email: string;
+  phone: string;
+  experience?: string;
+  currentCompany?: string;
+  currentPosition?: string;
+  skills?: string[];
+  notes?: string;
+}
+
+export interface ApiCreateCandidateResponse {
+  candidate: ApiCandidate;
+}
+
+export interface ApiCreateInterviewRequest {
+  candidateId: string;
+  positionId: string;
+  interviewerIds: string[];
+  date: string;
+  startTime: string;
+  endTime: string;
+  round?: number;
+  type?: string;
+}
+
+export interface ApiCreateInterviewResponse {
+  interview: ApiInterview;
+}
