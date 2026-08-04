@@ -20,7 +20,7 @@ import {
   ApiCreateUserResponse,
   ApiCreatePositionRequest,
   ApiCreatePositionResponse
-} from './models';
+} from '../models';
 
 @Injectable({ providedIn: 'root' })
 export class AdminService {
@@ -75,6 +75,21 @@ export class AdminService {
     });
   }
 
+  fetchCandidates() {
+    this.loading.set(true);
+    this.error.set(null);
+    this.http.get<ApiCandidatesResponse>('/api/admin/candidates').subscribe({
+      next: (res) => {
+        this.candidates.set(res.candidates);
+        this.loading.set(false);
+      },
+      error: (err) => {
+        this.error.set(err.error?.message || 'Failed to load candidates');
+        this.loading.set(false);
+      }
+    });
+  }
+
   fetchInterviews() {
     this.http.get<ApiInterviewsListResponse>('/api/admin/interviews').subscribe({
       next: (res) => this.interviews.set(res.interviews),
@@ -82,8 +97,10 @@ export class AdminService {
     });
   }
 
-  createCandidate(data: ApiCreateCandidateRequest): Observable<ApiCreateCandidateResponse> {
-    return this.http.post<ApiCreateCandidateResponse>('/api/admin/candidates', data);
+  createCandidate(data: ApiCreateCandidateRequest): Observable<ApiCreateCandidateResponse>;
+  createCandidate(formData: FormData): Observable<any>;
+  createCandidate(data: ApiCreateCandidateRequest | FormData): Observable<ApiCreateCandidateResponse | any> {
+    return this.http.post('/api/admin/candidates', data);
   }
 
   createInterview(data: ApiCreateInterviewRequest): Observable<ApiCreateInterviewResponse> {
