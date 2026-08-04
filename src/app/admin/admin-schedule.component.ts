@@ -1,11 +1,12 @@
-import { Component, inject, signal } from '@angular/core';
-import { DataService } from '../data.service';
+import { Component, inject, signal, OnInit } from '@angular/core';
+import { AdminService } from '../admin.service';
 import { ReactiveFormsModule, FormGroup, FormControl } from '@angular/forms';
+import { DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-admin-schedule',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, DatePipe],
   template: `
     <div class="max-w-6xl mx-auto pb-10">
       <div class="flex justify-between items-center mb-8 border-b border-[#262626] pb-4">
@@ -15,7 +16,18 @@ import { Router } from '@angular/router';
            <span class="text-xs font-bold text-white tracking-wide uppercase">Admin</span>
          </div>
       </div>
-      
+
+      @if (errorMsg) {
+        <div class="bg-red-500/10 border border-red-500/30 text-red-400 p-4 rounded-xl mb-6 text-sm">
+          {{ errorMsg }}
+        </div>
+      }
+      @if (successMsg) {
+        <div class="bg-green-500/10 border border-green-500/30 text-green-400 p-4 rounded-xl mb-6 text-sm">
+          {{ successMsg }}
+        </div>
+      }
+
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div class="lg:col-span-2">
           <div class="bg-[#161616] border border-[#262626] rounded-2xl p-6 md:p-8 shadow-xl">
@@ -31,30 +43,23 @@ import { Router } from '@angular/router';
                     Add New Candidate
                   </label>
                 </div>
-                
+
                 @if (!isNewCandidate()) {
-                  <div class="relative group">
-                    <span class="material-icons absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500 group-focus-within:text-[#FBBF24] transition-colors">search</span>
-                    <select formControlName="candidateId" class="w-full bg-[#111111] border border-[#333] rounded-xl py-3.5 pl-12 pr-4 text-white outline-none focus:border-[#FBBF24] appearance-none transition-colors">
-                      <option value="">Search by name or email...</option>
-                      @for (c of dataService.candidates(); track c.id) {
-                        <option [value]="c.id">{{ c.name }} ({{ c.role }})</option>
-                      }
-                    </select>
-                  </div>
+                  <select formControlName="candidateId" class="w-full bg-[#111111] border border-[#333] rounded-xl py-3.5 px-4 text-white outline-none focus:border-[#FBBF24] appearance-none transition-colors">
+                    <option value="">Select candidate...</option>
+                    @for (c of adminService.candidates(); track c.id) {
+                      <option [value]="c.id">{{ c.firstname }} {{ c.lastname }} ({{ c.currentPosition || c.email }})</option>
+                    }
+                  </select>
+                  @if (adminService.loading() && adminService.candidates().length === 0) {
+                    <p class="text-neutral-500 text-xs mt-2">Loading candidates...</p>
+                  }
                 } @else {
                   <div [formGroup]="newCandidateForm" class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-[#111111] border border-[#333] p-4 rounded-xl shadow-inner">
                     <input type="text" formControlName="name" placeholder="Full Name" class="bg-[#161616] border border-[#262626] rounded-lg px-4 py-2 text-white outline-none focus:border-[#FBBF24]">
-                    <input type="text" formControlName="role" placeholder="Role (e.g. Frontend Developer)" class="bg-[#161616] border border-[#262626] rounded-lg px-4 py-2 text-white outline-none focus:border-[#FBBF24]">
-                    <select formControlName="department" class="bg-[#161616] border border-[#262626] rounded-lg px-4 py-2 text-white outline-none focus:border-[#FBBF24] appearance-none">
-                      <option value="Engineering">Engineering</option>
-                      <option value="Design">Design</option>
-                      <option value="Data">Data</option>
-                      <option value="Product">Product</option>
-                      <option value="HR">HR</option>
-                      <option value="Marketing">Marketing</option>
-                      <option value="Sales">Sales</option>
-                    </select>
+                    <input type="text" formControlName="currentPosition" placeholder="Role (e.g. Frontend Developer)" class="bg-[#161616] border border-[#262626] rounded-lg px-4 py-2 text-white outline-none focus:border-[#FBBF24]">
+                    <input type="email" formControlName="email" placeholder="Email" class="bg-[#161616] border border-[#262626] rounded-lg px-4 py-2 text-white outline-none focus:border-[#FBBF24]">
+                    <input type="text" formControlName="phone" placeholder="Phone" class="bg-[#161616] border border-[#262626] rounded-lg px-4 py-2 text-white outline-none focus:border-[#FBBF24]">
                     <select formControlName="experience" class="bg-[#161616] border border-[#262626] rounded-lg px-4 py-2 text-white outline-none focus:border-[#FBBF24] appearance-none">
                       <option value="1 Year">1 Year</option>
                       <option value="2 Years">2 Years</option>
@@ -67,32 +72,33 @@ import { Router } from '@angular/router';
               </div>
 
               <div>
-                <label class="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-2 ml-1">Interviewer</label>
-                <div class="relative">
-                  <select formControlName="interviewer" class="w-full bg-[#111111] border border-[#333] rounded-xl py-3.5 px-4 text-white outline-none focus:border-[#FBBF24] appearance-none transition-colors">
-                     <option value="">Select Interviewer</option>
-                     <option value="Sarah Malik">Sarah Malik</option>
-                     <option value="Daniel Shah">Daniel Shah</option>
-                     <option value="Ali Hassan">Ali Hassan</option>
-                     <option value="Ahmed Khan">Ahmed Khan</option>
-                     <option value="Aisha Noor">Aisha Noor</option>
-                     <option value="Michael Reed">Michael Reed</option>
-                  </select>
-                </div>
+                <label class="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-2 ml-1">Job Position</label>
+                <select formControlName="positionId" class="w-full bg-[#111111] border border-[#333] rounded-xl py-3.5 px-4 text-white outline-none focus:border-[#FBBF24] appearance-none transition-colors">
+                  <option value="">Select position...</option>
+                  @for (p of adminService.positions(); track p.id) {
+                    <option [value]="p.id">{{ p.title }}{{ p.department ? ' (' + p.department.name + ')' : '' }}</option>
+                  }
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-2 ml-1">Interviewer(s)</label>
+                <select formControlName="interviewerIds" multiple size="5" class="w-full bg-[#111111] border border-[#333] rounded-xl py-3 px-4 text-white outline-none focus:border-[#FBBF24] transition-colors">
+                  @for (i of adminService.interviewers(); track i.id) {
+                    <option [value]="i.id">{{ i.firstname }} {{ i.lastname }}</option>
+                  }
+                </select>
+                <p class="text-neutral-500 text-xs mt-1">Hold Ctrl/Cmd to select multiple interviewers.</p>
               </div>
 
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
                   <label class="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-2 ml-1">Date</label>
-                  <div class="relative">
-                    <input type="date" formControlName="date" class="w-full bg-[#111111] border border-[#333] rounded-xl py-3 px-4 text-white outline-none focus:border-[#FBBF24] transition-colors [color-scheme:dark]">
-                  </div>
+                  <input type="date" formControlName="date" class="w-full bg-[#111111] border border-[#333] rounded-xl py-3 px-4 text-white outline-none focus:border-[#FBBF24] transition-colors [color-scheme:dark]">
                 </div>
                 <div>
                   <label class="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-2 ml-1">Time (Local)</label>
-                  <div class="relative">
-                    <input type="time" formControlName="time" class="w-full bg-[#111111] border border-[#333] rounded-xl py-3 px-4 text-white outline-none focus:border-[#FBBF24] transition-colors [color-scheme:dark]">
-                  </div>
+                  <input type="time" formControlName="time" class="w-full bg-[#111111] border border-[#333] rounded-xl py-3 px-4 text-white outline-none focus:border-[#FBBF24] transition-colors [color-scheme:dark]">
                 </div>
               </div>
 
@@ -100,24 +106,25 @@ import { Router } from '@angular/router';
                 <div>
                   <label class="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-2 ml-1">Duration</label>
                   <select formControlName="duration" class="w-full bg-[#111111] border border-[#333] rounded-xl py-3.5 px-4 text-white outline-none focus:border-[#FBBF24] appearance-none transition-colors">
-                    <option>30 Minutes</option>
-                    <option>45 Minutes</option>
-                    <option>60 Minutes</option>
+                    <option value="30">30 Minutes</option>
+                    <option value="45">45 Minutes</option>
+                    <option value="60">60 Minutes</option>
                   </select>
                 </div>
                 <div>
                   <label class="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-2 ml-1">Interview Round</label>
-                  <select formControlName="round" class="w-full bg-[#111111] border border-[#333] rounded-xl py-3.5 px-4 text-white outline-none focus:border-[#FBBF24] appearance-none transition-colors">
+                  <select formControlName="type" class="w-full bg-[#111111] border border-[#333] rounded-xl py-3.5 px-4 text-white outline-none focus:border-[#FBBF24] appearance-none transition-colors">
                     <option>Technical Assessment</option>
                     <option>Culture Fit</option>
                     <option>System Design</option>
+                    <option>Behavioral</option>
                   </select>
                 </div>
               </div>
 
               <div class="flex gap-4 pt-6 mt-4 border-t border-[#262626]">
-                <button type="button" (click)="schedule()" [disabled]="!isFormValid()" class="flex-1 bg-[#FBBF24] hover:bg-[#FACC15] text-black font-bold py-3.5 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2 shadow-[0_0_15px_rgba(251,191,36,0.15)] hover:shadow-[0_0_20px_rgba(251,191,36,0.3)]">
-                  <span class="material-icons text-[20px]">calendar_month</span> Schedule Interview
+                <button type="button" (click)="schedule()" [disabled]="!isFormValid() || submitting()" class="flex-1 bg-[#FBBF24] hover:bg-[#FACC15] text-black font-bold py-3.5 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2 shadow-[0_0_15px_rgba(251,191,36,0.15)] hover:shadow-[0_0_20px_rgba(251,191,36,0.3)]">
+                  <span class="material-icons text-[20px]">calendar_month</span> {{ submitting() ? 'Scheduling...' : 'Schedule Interview' }}
                 </button>
                 <button type="button" routerLink="/admin/dashboard" class="px-8 bg-[#111111] border border-[#333] hover:bg-[#1a1a1a] text-white font-bold rounded-xl transition-colors">
                   Cancel
@@ -127,64 +134,36 @@ import { Router } from '@angular/router';
           </div>
         </div>
 
-        <!-- Right Column Calendar -->
+        <!-- Right Column Preview -->
         <div class="space-y-6">
           <div class="bg-[#161616] border border-[#262626] rounded-2xl p-6 shadow-xl">
-            <div class="flex justify-between items-center mb-6">
-              <h3 class="font-bold text-white">Availability Map</h3>
-              <div class="flex gap-2 text-neutral-400">
-                <button class="w-8 h-8 rounded-lg bg-[#111111] border border-[#333] hover:text-white hover:bg-[#1a1a1a] flex items-center justify-center transition-colors"><span class="material-icons text-sm">chevron_left</span></button>
-                <button class="w-8 h-8 rounded-lg bg-[#111111] border border-[#333] hover:text-white hover:bg-[#1a1a1a] flex items-center justify-center transition-colors"><span class="material-icons text-sm">chevron_right</span></button>
-              </div>
-            </div>
-            <div class="grid grid-cols-7 gap-2 text-center mb-3">
-              <div class="text-[10px] font-bold text-neutral-500 uppercase">Mon</div>
-              <div class="text-[10px] font-bold text-neutral-500 uppercase">Tue</div>
-              <div class="text-[10px] font-bold text-neutral-500 uppercase">Wed</div>
-              <div class="text-[10px] font-bold text-neutral-500 uppercase">Thu</div>
-              <div class="text-[10px] font-bold text-[#FBBF24] uppercase">Fri</div>
-              <div class="text-[10px] font-bold text-neutral-500 uppercase">Sat</div>
-              <div class="text-[10px] font-bold text-neutral-500 uppercase">Sun</div>
-            </div>
-            <div class="grid grid-cols-7 gap-2 text-center">
-              <div class="py-2.5 text-sm font-medium text-neutral-600 rounded-lg border border-transparent">20</div>
-              <div class="py-2.5 text-sm font-medium text-neutral-600 rounded-lg border border-transparent">21</div>
-              <div class="py-2.5 text-sm font-medium text-neutral-600 rounded-lg border border-transparent">22</div>
-              <div class="py-2.5 text-sm font-medium text-neutral-300 rounded-lg border border-transparent">23</div>
-              <div class="py-2.5 text-sm font-bold text-black bg-[#FBBF24] rounded-lg shadow-[0_0_10px_rgba(251,191,36,0.3)]">24</div>
-              <div class="py-2.5 text-sm font-medium text-neutral-300 rounded-lg border border-[#333] bg-[#111111]">25</div>
-              <div class="py-2.5 text-sm font-medium text-neutral-300 rounded-lg border border-[#333] bg-[#111111]">26</div>
-            </div>
-          </div>
-
-          <div class="bg-[#161616] border border-[#262626] rounded-2xl p-6 shadow-xl">
             <h3 class="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-5 flex items-center gap-2">
-              <div class="w-1.5 h-1.5 rounded-full bg-[#FBBF24] shadow-[0_0_5px_rgba(251,191,36,0.8)]"></div> CONFLICT CHECK <span class="text-white ml-auto">OCT 24</span>
+              <div class="w-1.5 h-1.5 rounded-full bg-[#FBBF24] shadow-[0_0_5px_rgba(251,191,36,0.8)]"></div> NEW SESSION
             </h3>
-            <div class="space-y-4">
-              <div class="bg-[#111111] border border-[#333] rounded-xl p-4 flex gap-4">
-                <div class="text-sm font-bold text-neutral-400 w-12 mt-0.5">09:00</div>
-                <div>
-                  <div class="text-sm font-bold text-white">Standup Meeting</div>
-                  <div class="text-xs text-neutral-500 font-medium mt-0.5">Team internal</div>
-                </div>
+            <div class="space-y-3 text-sm">
+              <div class="flex justify-between">
+                <span class="text-neutral-500 font-medium">Candidate</span>
+                <span class="text-neutral-200 font-semibold text-right">{{ previewCandidate() }}</span>
               </div>
-              <div class="bg-[#111111] border-l-4 border-l-[#FBBF24] border-t border-r border-b border-[#333] rounded-xl p-4 flex gap-4 items-center">
-                <div class="text-sm font-bold text-neutral-300 w-10">11:30</div>
-                <div class="flex-1">
-                  <div class="text-sm font-bold text-white">Alex Rivera (UI/UX)</div>
-                  <div class="text-xs font-semibold text-[#FBBF24] mt-0.5">Interview Scheduled</div>
-                </div>
-                <span class="material-icons text-neutral-500 text-[18px]">event</span>
+              <div class="flex justify-between">
+                <span class="text-neutral-500 font-medium">Position</span>
+                <span class="text-neutral-200 font-semibold text-right">{{ previewPosition() }}</span>
               </div>
-              <div class="bg-[#1a1a1a] border border-dashed border-neutral-600 rounded-xl p-4 flex gap-4 opacity-70">
-                <div class="text-sm font-bold text-neutral-400 w-12 mt-0.5">
-                   {{ form.value.time ? form.value.time : '14:00' }}
-                </div>
-                <div>
-                  <div class="text-sm font-bold text-white italic">NEW SLOT</div>
-                  <div class="text-xs text-neutral-400 font-medium mt-0.5">Proposed duration {{ form.value.duration }}</div>
-                </div>
+              <div class="flex justify-between">
+                <span class="text-neutral-500 font-medium">Interviewers</span>
+                <span class="text-neutral-200 font-semibold text-right">{{ previewInterviewers() }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-neutral-500 font-medium">Date</span>
+                <span class="text-neutral-200 font-semibold">{{ form.value.date ? (form.value.date | date: 'fullDate') : '-' }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-neutral-500 font-medium">Time</span>
+                <span class="text-neutral-200 font-semibold">{{ form.value.time ? form.value.time + ' (' + form.value.duration + ' min)' : '-' }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-neutral-500 font-medium">Round</span>
+                <span class="text-neutral-200 font-semibold">{{ form.value.type }}</span>
               </div>
             </div>
           </div>
@@ -193,66 +172,134 @@ import { Router } from '@angular/router';
     </div>
   `
 })
-export class AdminScheduleComponent {
-  dataService = inject(DataService);
+export class AdminScheduleComponent implements OnInit {
+  adminService = inject(AdminService);
   router = inject(Router);
 
   isNewCandidate = signal(false);
+  submitting = signal(false);
+  errorMsg = '';
+  successMsg = '';
 
   form = new FormGroup({
-    candidateId: new FormControl('', {nonNullable:true}),
-    interviewer: new FormControl('', {nonNullable:true}),
-    date: new FormControl('', {nonNullable:true}),
-    time: new FormControl('', {nonNullable:true}),
-    duration: new FormControl('45 Minutes', {nonNullable:true}),
-    round: new FormControl('Technical Assessment', {nonNullable:true})
+    candidateId: new FormControl('', { nonNullable: true }),
+    positionId: new FormControl('', { nonNullable: true }),
+    interviewerIds: new FormControl<string[]>([]),
+    date: new FormControl('', { nonNullable: true }),
+    time: new FormControl('', { nonNullable: true }),
+    duration: new FormControl('45', { nonNullable: true }),
+    type: new FormControl('Technical Assessment', { nonNullable: true })
   });
 
   newCandidateForm = new FormGroup({
-    name: new FormControl('', {nonNullable: true}),
-    role: new FormControl('', {nonNullable: true}),
-    department: new FormControl('Engineering', {nonNullable: true}),
-    experience: new FormControl('1 Year', {nonNullable: true})
+    name: new FormControl('', { nonNullable: true }),
+    currentPosition: new FormControl('', { nonNullable: true }),
+    email: new FormControl('', { nonNullable: true }),
+    phone: new FormControl('', { nonNullable: true }),
+    experience: new FormControl('1 Year', { nonNullable: true })
   });
 
+  ngOnInit() {
+    this.adminService.loadScheduleData();
+  }
+
   isFormValid() {
-    if (!this.form.value.interviewer || !this.form.value.date || !this.form.value.time) return false;
+    if (!this.form.value.date || !this.form.value.time || !this.form.value.positionId) return false;
+    if (!this.form.value.interviewerIds || this.form.value.interviewerIds.length === 0) return false;
     if (this.isNewCandidate()) {
-      return this.newCandidateForm.valid && this.newCandidateForm.value.name;
-    } else {
-      return !!this.form.value.candidateId;
+      return this.newCandidateForm.valid &&
+        !!this.newCandidateForm.value.name &&
+        !!this.newCandidateForm.value.email &&
+        !!this.newCandidateForm.value.phone;
     }
+    return !!this.form.value.candidateId;
+  }
+
+  previewCandidate() {
+    if (this.isNewCandidate()) return this.newCandidateForm.value.name || 'New candidate';
+    const c = this.adminService.candidates().find(x => x.id === this.form.value.candidateId);
+    return c ? `${c.firstname} ${c.lastname}` : '-';
+  }
+
+  previewPosition() {
+    const p = this.adminService.positions().find(x => x.id === this.form.value.positionId);
+    return p ? p.title : '-';
+  }
+
+  previewInterviewers() {
+    const ids = this.form.value.interviewerIds || [];
+    const names = ids.map(id => {
+      const i = this.adminService.interviewers().find(x => x.id === id);
+      return i ? `${i.firstname} ${i.lastname}` : null;
+    }).filter(Boolean);
+    return names.length ? names.join(', ') : '-';
   }
 
   schedule() {
-    if (this.isFormValid()) {
-      let candId = Number(this.form.value.candidateId);
-      
-      if (this.isNewCandidate()) {
-        const nc = this.newCandidateForm.value;
-        candId = Date.now();
-        this.dataService.addCandidate({
-          id: candId,
-          name: nc.name!,
-          role: nc.role!,
-          department: nc.department!,
-          experience: nc.experience!,
-          company: 'New Applicant',
-          appliedDate: new Date().toISOString().split('T')[0],
-          status: 'Interviewing'
-        });
-      }
+    if (!this.isFormValid() || this.submitting()) return;
+    this.submitting.set(true);
+    this.errorMsg = '';
+    this.successMsg = '';
 
-      const v = this.form.value;
-      this.dataService.scheduleInterview({
-        id: 'int_' + Date.now(),
-        candidateId: candId,
-        interviewerName: v.interviewer!,
-        date: v.date!,
-        time: v.time!,
-        status: 'Scheduled'
+    const date = this.form.value.date!;
+    const time = this.form.value.time!;
+    const durationMin = Number(this.form.value.duration);
+
+    const startTime = new Date(`${date}T${time}`);
+    const endTime = new Date(startTime.getTime() + durationMin * 60000);
+
+    let candidateId = this.form.value.candidateId!;
+
+    if (this.isNewCandidate()) {
+      const nc = this.newCandidateForm.value;
+      const parts = nc.name!.trim().split(/\s+/);
+      const firstname = parts.shift() || '';
+      const lastname = parts.join(' ') || firstname;
+
+      this.adminService.createCandidate({
+        firstname,
+        lastname,
+        email: nc.email!,
+        phone: nc.phone!,
+        experience: nc.experience,
+        currentPosition: nc.currentPosition || undefined
+      }).subscribe({
+        next: (res) => {
+          candidateId = res.candidate.id;
+          this.adminService.candidates.update(list => [res.candidate, ...list]);
+          this.createInterview(candidateId, startTime, endTime, date);
+        },
+        error: (err) => {
+          this.errorMsg = err.error?.message || 'Failed to create candidate';
+          this.submitting.set(false);
+        }
       });
-      this.router.navigate(['/admin/dashboard']);
+      return;
     }
+
+    this.createInterview(candidateId, startTime, endTime, date);
+  }
+
+  private createInterview(candidateId: string, startTime: Date, endTime: Date, date: string) {
+    this.adminService.createInterview({
+      candidateId,
+      positionId: this.form.value.positionId!,
+      interviewerIds: this.form.value.interviewerIds!,
+      date,
+      startTime: startTime.toISOString(),
+      endTime: endTime.toISOString(),
+      type: this.form.value.type
+    }).subscribe({
+      next: () => {
+        this.submitting.set(false);
+        this.successMsg = 'Interview scheduled successfully!';
+        this.adminService.fetchInterviews();
+        setTimeout(() => this.router.navigate(['/admin/dashboard']), 1200);
+      },
+      error: (err) => {
+        this.submitting.set(false);
+        this.errorMsg = err.error?.message || 'Failed to schedule interview';
+      }
+    });
   }
 }

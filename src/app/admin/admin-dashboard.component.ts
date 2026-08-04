@@ -1,5 +1,6 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, computed, OnInit } from '@angular/core';
 import { DataService } from '../data.service';
+import { AdminService } from '../admin.service';
 import { RouterLink } from '@angular/router';
 
 @Component({
@@ -25,7 +26,7 @@ import { RouterLink } from '@angular/router';
           </div>
           <div>
             <p class="text-neutral-500 text-xs font-semibold uppercase tracking-wider mb-1">Interviews Today</p>
-            <h2 class="text-4xl font-bold text-white">{{ dataService.interviewsTodayCount() > 9 ? dataService.interviewsTodayCount() : '0' + dataService.interviewsTodayCount() }}</h2>
+            <h2 class="text-4xl font-bold text-white">{{ interviewsTodayCount() > 9 ? interviewsTodayCount() : '0' + interviewsTodayCount() }}</h2>
           </div>
         </div>
         <div class="bg-[#161616] border border-[#262626] rounded-xl p-5 flex flex-col justify-between h-36">
@@ -75,18 +76,18 @@ import { RouterLink } from '@angular/router';
                 <div class="bg-[#161616] border border-[#262626] rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-neutral-700 transition-colors">
                   <div class="flex items-center gap-4">
                     <div class="bg-[#111111] border border-[#333] rounded-lg w-14 h-14 flex flex-col items-center justify-center flex-shrink-0 shadow-inner">
-                      <span class="text-[10px] font-bold text-neutral-500 uppercase leading-none">{{ getMonth(interview.date) }}</span>
-                      <span class="text-xl font-extrabold text-white leading-tight mt-0.5">{{ getDay(interview.date) }}</span>
+                      <span class="text-[10px] font-bold text-neutral-500 uppercase leading-none">{{ getMonth(interview.startTime) }}</span>
+                      <span class="text-xl font-extrabold text-white leading-tight mt-0.5">{{ getDay(interview.startTime) }}</span>
                     </div>
                     <div>
-                       <h4 class="font-bold text-white">{{ getCandidateName(interview.candidateId) }}</h4>
-                       <p class="text-sm text-neutral-400 mt-0.5">{{ getCandidateRole(interview.candidateId) }} • {{ interview.time }}</p>
+                       <h4 class="font-bold text-white">{{ getCandidateName(interview) }}</h4>
+                       <p class="text-sm text-neutral-400 mt-0.5">{{ getCandidateRole(interview) }} • {{ getTime(interview.startTime) }}</p>
                     </div>
                   </div>
                   <div class="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto">
                     <div class="flex items-center gap-2 bg-[#111111] px-2 py-1 rounded-full border border-[#262626]">
-                       <div class="w-6 h-6 rounded-full bg-[#262626] flex items-center justify-center text-[9px] font-bold text-white">{{ getInitials(interview.interviewerName) }}</div>
-                       <span class="text-xs text-neutral-400 pr-1">{{ interview.interviewerName.split(' ')[0] }}</span>
+                       <div class="w-6 h-6 rounded-full bg-[#262626] flex items-center justify-center text-[9px] font-bold text-white">{{ getInitials(interview.interviewers[0]?.firstname + ' ' + interview.interviewers[0]?.lastname) }}</div>
+                       <span class="text-xs text-neutral-400 pr-1">{{ interview.interviewers[0]?.firstname }}</span>
                     </div>
                     <button class="w-9 h-9 rounded bg-[#1a1a1a] hover:bg-[#262626] border border-[#333] flex items-center justify-center text-neutral-400 transition-colors">
                       <span class="material-icons text-[18px]">chevron_right</span>
@@ -112,8 +113,8 @@ import { RouterLink } from '@angular/router';
                    <div class="bg-[#111111] border border-[#333] rounded-xl p-4 shadow-inner">
                      <div class="flex justify-between items-start mb-3">
                        <div>
-                         <h4 class="font-bold text-white text-sm">{{ getCandidateName(decision.candidateId) }}</h4>
-                         <p class="text-xs text-neutral-400 mt-0.5">{{ getCandidateRole(decision.candidateId) }}</p>
+                        <h4 class="font-bold text-white text-sm">{{ getMockCandidateName(decision.candidateId) }}</h4>
+                        <p class="text-xs text-neutral-400 mt-0.5">{{ getMockCandidateRole(decision.candidateId) }}</p>
                        </div>
                        <div class="flex items-center gap-1 bg-[#262626] px-2 py-0.5 rounded-full">
                          <span class="material-icons text-[14px] text-[#FBBF24]">star</span>
@@ -159,9 +160,24 @@ import { RouterLink } from '@angular/router';
     </div>
   `
 })
-export class AdminDashboardComponent {
+export class AdminDashboardComponent implements OnInit {
   dataService = inject(DataService);
-  upcomingInterviews = this.dataService.upcomingInterviews;
+  adminService = inject(AdminService);
+
+  upcomingInterviews = computed(() => {
+    return this.adminService.interviews()
+      .filter(i => i.status === 'scheduled')
+      .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+  });
+
+  interviewsTodayCount = computed(() => {
+    const today = new Date().toISOString().split('T')[0];
+    return this.adminService.interviews().filter(i => i.date === today).length;
+  });
+
+  ngOnInit() {
+    this.adminService.fetchInterviews();
+  }
 
   getMonth(dateStr: string) {
     return new Date(dateStr).toLocaleString('default', { month: 'short' });
@@ -169,13 +185,22 @@ export class AdminDashboardComponent {
   getDay(dateStr: string) {
     return new Date(dateStr).getDate().toString().padStart(2, '0');
   }
-  getInitials(name: string) {
-    return name.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
+  getTime(dateStr: string) {
+    return new Date(dateStr).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
   }
-  getCandidateName(id: number) {
+  getInitials(name: string) {
+    return (name || '? ?').split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
+  }
+  getCandidateName(interview: any) {
+    return interview?.candidate ? `${interview.candidate.firstname} ${interview.candidate.lastname}` : 'Unknown';
+  }
+  getCandidateRole(interview: any) {
+    return interview?.candidate?.currentPosition || interview?.position?.title || 'Role';
+  }
+  getMockCandidateName(id: number) {
     return this.dataService.candidates().find(c => c.id === id)?.name || 'Unknown';
   }
-  getCandidateRole(id: number) {
+  getMockCandidateRole(id: number) {
     return this.dataService.candidates().find(c => c.id === id)?.role || 'Role';
   }
 }
