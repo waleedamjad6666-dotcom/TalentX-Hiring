@@ -11,9 +11,9 @@ export const routes: Routes = [
     canActivate: [authGuard, roleGuard('Admin')],
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-      { path: 'dashboard', loadComponent: () => import('./admin/admin-dashboard.component').then(m => m.AdminDashboardComponent) },
-      { path: 'candidates', loadComponent: () => import('./admin/admin-candidates.component').then(m => m.AdminCandidatesComponent) },
-      { path: 'schedule', loadComponent: () => import('./admin/admin-schedule.component').then(m => m.AdminScheduleComponent) }
+      { path: 'dashboard', loadComponent: () => import('./admin/admin-dashboard/admin-dashboard.component').then(m => m.AdminDashboardComponent) },
+      { path: 'candidates', loadComponent: () => import('./admin/admin-candidates/admin-candidates.component').then(m => m.AdminCandidatesComponent) },
+      { path: 'schedule', loadComponent: () => import('./admin/admin-schedule/admin-schedule.component').then(m => m.AdminScheduleComponent) }
     ]
   },
   {

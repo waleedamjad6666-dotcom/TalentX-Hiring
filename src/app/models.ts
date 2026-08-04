@@ -39,6 +39,17 @@ export interface ApiCandidate {
   skills: string[];
 }
 
+export interface CreateCandidateRequest {
+  firstname: string;
+  lastname: string;
+  email: string;
+  phone: string;
+  experience: string;
+  currentCompany: string;
+  currentPosition: string;
+  skills: string[];
+}
+
 export interface ApiPosition {
   id: string;
   title: string;

@@ -1,0 +1,111 @@
+<div class="max-w-6xl mx-auto pb-10">
+  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2 gap-4">
+    <h1 class="text-3xl font-bold text-white">Manage Candidates</h1>
+    <button (click)="showModal.set(true)" class="bg-[#FBBF24] hover:bg-[#FACC15] text-black font-semibold py-2.5 px-5 rounded-lg flex items-center gap-2 transition-colors shadow-lg shadow-[#FBBF24]/10">
+      <span class="material-icons text-sm">person_add</span> Create Candidate
+    </button>
+  </div>
+  <p class="text-neutral-400 mb-8 max-w-xl">Efficiency driven talent acquisition. Review, filter, and progress candidates through the pipeline.</p>
+
+  <!-- Filters Row -->
+  <div class="flex flex-col md:flex-row gap-4 mb-8">
+    <div class="flex-1 relative group">
+      <span class="material-icons absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500 group-focus-within:text-[#FBBF24] transition-colors">search</span>
+      <input type="text" [value]="search()" (input)="updateSearch($event)" placeholder="Search by name, position, email, or skills..." class="w-full bg-[#161616] border border-[#262626] rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-[#FBBF24] transition-colors shadow-inner">
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  @if (adminService.loading()) {
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+      @for (i of [1,2,3]; track i) {
+        <div class="bg-[#161616] border border-[#262626] rounded-2xl p-6 animate-pulse">
+          <div class="flex gap-4 items-center mb-6">
+            <div class="w-12 h-12 rounded-xl bg-[#262626]"></div>
+            <div class="space-y-2 flex-1">
+              <div class="h-4 bg-[#262626] rounded w-32"></div>
+              <div class="h-3 bg-[#262626] rounded w-24"></div>
+            </div>
+          </div>
+          <div class="space-y-3">
+            <div class="h-3 bg-[#262626] rounded"></div>
+            <div class="h-3 bg-[#262626] rounded"></div>
+            <div class="h-3 bg-[#262626] rounded"></div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Error State -->
+  @if (adminService.error()) {
+    <div class="bg-red-500/10 border border-red-500/30 rounded-2xl p-6 mb-8">
+      <div class="flex items-center gap-3">
+        <span class="material-icons text-red-400">error</span>
+        <div>
+          <h3 class="font-bold text-red-400">Failed to load candidates</h3>
+          <p class="text-red-400/80 text-sm mt-1">{{ adminService.error() }}</p>
+        </div>
+      </div>
+      <button (click)="refreshCandidates()" class="mt-4 bg-red-500/20 hover:bg-red-500/30 text-red-400 font-semibold py-2 px-4 rounded-lg transition-colors text-sm">
+        Retry
+      </button>
+    </div>
+  }
+
+  <!-- Candidates Grid -->
+  @if (!adminService.loading()) {
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+      @for (c of filteredCandidates(); track c.id) {
+        <div class="bg-[#161616] border border-[#262626] rounded-2xl p-6 flex flex-col hover:border-[#333] transition-all hover:shadow-lg hover:shadow-black/50">
+          <div class="flex justify-between items-start mb-6">
+            <div class="flex gap-4 items-center">
+              <div class="w-12 h-12 rounded-xl bg-[#FBBF24]/10 text-[#FBBF24] flex items-center justify-center font-bold text-xl border border-[#FBBF24]/20 shadow-inner">
+                {{ getInitials(c.firstname, c.lastname) }}
+              </div>
+              <div>
+                <h3 class="font-bold text-lg text-white leading-tight mb-0.5">{{ getFullName(c) }}</h3>
+                <p class="text-neutral-400 text-sm font-medium">{{ c.currentPosition || 'No position' }}</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="space-y-3.5 mb-8">
+            <div class="flex justify-between text-sm">
+              <span class="text-neutral-500 font-medium">Company</span>
+              <span class="text-neutral-200 font-semibold">{{ c.currentCompany || 'N/A' }}</span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-neutral-500 font-medium">Experience</span>
+              <span class="text-neutral-200 font-semibold">{{ c.experience || 'N/A' }}</span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-neutral-500 font-medium">Email</span>
+              <span class="text-neutral-200 font-semibold">{{ c.email }}</span>
+            </div>
+          </div>
+
+          <div class="mt-auto flex gap-3">
+            <button class="flex-1 bg-[#FBBF24]/10 hover:bg-[#FBBF24]/20 text-[#FBBF24] font-bold py-2.5 rounded-xl transition-colors border border-[#FBBF24]/20">
+              View Details
+            </button>
+            <button class="w-12 flex-shrink-0 bg-[#111111] border border-[#333] hover:bg-[#1a1a1a] text-white rounded-xl flex items-center justify-center transition-colors">
+              <span class="material-icons text-[20px]">more_vert</span>
+            </button>
+          </div>
+        </div>
+      }
+      @if (filteredCandidates().length === 0) {
+        <div class="col-span-full py-16 text-center border border-[#262626] border-dashed rounded-2xl bg-[#111111]">
+          <span class="material-icons text-4xl text-neutral-600 mb-2">person_off</span>
+          <h3 class="text-lg font-bold text-white">No candidates found</h3>
+          <p class="text-neutral-500 mt-1">Try adjusting your search or create a new candidate.</p>
+        </div>
+      }
+    </div>
+  }
+</div>
+
+@if (showModal()) {
+  <app-candidate-modal (closed)="showModal.set(false)" (created)="onCandidateCreated()" />
+}
