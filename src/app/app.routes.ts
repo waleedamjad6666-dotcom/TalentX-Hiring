@@ -14,7 +14,7 @@ export const routes: Routes = [
       { path: 'dashboard', loadComponent: () => import('./admin/admin-dashboard/admin-dashboard.component').then(m => m.AdminDashboardComponent) },
       { path: 'candidates', loadComponent: () => import('./admin/admin-candidates/admin-candidates.component').then(m => m.AdminCandidatesComponent) },
       { path: 'schedule', loadComponent: () => import('./admin/admin-schedule/admin-schedule.component').then(m => m.AdminScheduleComponent) },
-      { path: 'settings', loadComponent: () => import('./admin/admin-settings.component').then(m => m.AdminSettingsComponent) }
+      { path: 'settings', loadComponent: () => import('./admin/admin-settings/admin-settings.component').then(m => m.AdminSettingsComponent) }
     ]
   },
   {
