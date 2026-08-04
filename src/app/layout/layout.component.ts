@@ -10,10 +10,10 @@ import { AuthService } from '../auth.service';
       <!-- Sidebar (Desktop) / Hidden on mobile unless toggled -->
       <aside class="hidden md:flex w-[260px] bg-[#111111] border-r border-[#262626] flex-col justify-between z-20 shadow-2xl">
         <div>
-          <div class="p-6 pb-2">
+          <div class="px-6 pt-6 pb-4">
             <h1 class="text-3xl font-extrabold text-[#FBBF24] tracking-tight">TALENTX</h1>
           </div>
-          <nav class="mt-8 flex flex-col gap-1.5 px-4">
+          <nav class="mt-4 flex flex-col gap-1.5 px-4">
             @for (link of navLinks(); track link.path) {
               <a [routerLink]="link.path" routerLinkActive="bg-[#1a1a1a] text-[#FBBF24] font-medium border-l-2 border-[#FBBF24]" [routerLinkActiveOptions]="{exact: false}" class="flex items-center gap-3 px-4 py-3 rounded-lg text-neutral-400 hover:bg-[#1a1a1a] hover:text-white transition-all border-l-2 border-transparent">
                  <span class="material-icons text-[22px]">{{ link.icon }}</span>
@@ -77,7 +77,8 @@ export class LayoutComponent {
     if (role === 'admin') {
       return [
         { path: '/admin/dashboard', label: 'Dashboard', icon: 'space_dashboard' },
-        { path: '/admin/candidates', label: 'Candidates', icon: 'group' }
+        { path: '/admin/candidates', label: 'Candidates', icon: 'group' },
+        { path: '/admin/settings', label: 'Settings', icon: 'settings' }
       ];
     } else {
       return [

@@ -194,3 +194,50 @@ export interface ApiCreateInterviewRequest {
 export interface ApiCreateInterviewResponse {
   interview: ApiInterview;
 }
+
+export interface ApiDepartment {
+  id: string;
+  name: string;
+  description: string | null;
+}
+
+export interface ApiDepartmentsResponse {
+  departments: ApiDepartment[];
+}
+
+export interface ApiCreateUserRequest {
+  firstname: string;
+  lastname: string;
+  email: string;
+  password: string;
+  role: 'admin' | 'interviewer';
+  designation?: string;
+  phone?: string;
+}
+
+export interface ApiCreateUserResponse {
+  user: {
+    id: string;
+    employeeId: string;
+    firstname: string;
+    lastname: string;
+    email: string;
+    designation: string | null;
+    phone: string | null;
+    role: { id: string; name: string };
+  };
+}
+
+export interface ApiCreatePositionRequest {
+  title: string;
+  departmentId: string;
+  requiredSkills: string[];
+  minimumExperience: number;
+  maximumExperience?: number;
+  description: string;
+  status: string;
+}
+
+export interface ApiCreatePositionResponse {
+  position: ApiPositionWithDepartment;
+}

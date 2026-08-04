@@ -5,15 +5,21 @@ import {
   ApiCandidate,
   ApiInterview,
   ApiInterviewer,
+  ApiDepartment,
   ApiPositionWithDepartment,
   ApiCandidatesResponse,
   ApiInterviewersResponse,
   ApiPositionsResponse,
+  ApiDepartmentsResponse,
   ApiInterviewsListResponse,
   ApiCreateCandidateRequest,
   ApiCreateCandidateResponse,
   ApiCreateInterviewRequest,
-  ApiCreateInterviewResponse
+  ApiCreateInterviewResponse,
+  ApiCreateUserRequest,
+  ApiCreateUserResponse,
+  ApiCreatePositionRequest,
+  ApiCreatePositionResponse
 } from './models';
 
 @Injectable({ providedIn: 'root' })
@@ -23,6 +29,7 @@ export class AdminService {
   candidates = signal<ApiCandidate[]>([]);
   interviewers = signal<ApiInterviewer[]>([]);
   positions = signal<ApiPositionWithDepartment[]>([]);
+  departments = signal<ApiDepartment[]>([]);
   interviews = signal<ApiInterview[]>([]);
 
   loading = signal<boolean>(false);
@@ -61,6 +68,13 @@ export class AdminService {
     });
   }
 
+  loadDepartments() {
+    this.http.get<ApiDepartmentsResponse>('/api/admin/departments').subscribe({
+      next: (res) => this.departments.set(res.departments),
+      error: (err) => this.error.set(err.error?.message || 'Failed to load departments')
+    });
+  }
+
   fetchInterviews() {
     this.http.get<ApiInterviewsListResponse>('/api/admin/interviews').subscribe({
       next: (res) => this.interviews.set(res.interviews),
@@ -74,5 +88,13 @@ export class AdminService {
 
   createInterview(data: ApiCreateInterviewRequest): Observable<ApiCreateInterviewResponse> {
     return this.http.post<ApiCreateInterviewResponse>('/api/admin/interviews', data);
+  }
+
+  createUser(data: ApiCreateUserRequest): Observable<ApiCreateUserResponse> {
+    return this.http.post<ApiCreateUserResponse>('/api/admin/users', data);
+  }
+
+  createPosition(data: ApiCreatePositionRequest): Observable<ApiCreatePositionResponse> {
+    return this.http.post<ApiCreatePositionResponse>('/api/admin/positions', data);
   }
 }
