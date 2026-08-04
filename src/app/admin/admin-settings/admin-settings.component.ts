@@ -1,0 +1,462 @@
+import { Component, inject, signal, OnInit } from '@angular/core';
+import { AdminService } from '../admin.service';
+import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
+
+type SettingsTab = 'admin' | 'interviewer' | 'position';
+
+@Component({
+  selector: 'app-admin-settings',
+  imports: [ReactiveFormsModule],
+  template: `
+    <div class="max-w-5xl mx-auto pb-10">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
+        <div>
+          <div class="flex items-center gap-3 mb-1">
+            <div class="w-10 h-10 rounded-xl bg-[#FBBF24]/10 border border-[#FBBF24]/20 flex items-center justify-center shadow-inner">
+              <span class="material-icons text-[22px] text-[#FBBF24]">settings</span>
+            </div>
+            <h1 class="text-3xl font-bold text-white">Settings</h1>
+          </div>
+          <p class="text-neutral-400 mt-2">Create administrators, interviewers, and job positions for your team.</p>
+        </div>
+        <div class="flex items-center gap-1 bg-[#1a1a1a] border border-[#333] rounded-full px-4 py-1.5 shadow-inner">
+          <span class="material-icons text-[16px] leading-none text-[#FBBF24]">admin_panel_settings</span>
+          <span class="text-xs font-bold text-white uppercase">Admin</span>
+        </div>
+      </div>
+
+      @if (errorMsg) {
+        <div class="bg-red-500/10 border border-red-500/30 text-red-400 p-4 rounded-xl mb-6 text-sm flex items-start gap-3">
+          <span class="material-icons text-[18px] mt-0.5">error_outline</span>
+          <span>{{ errorMsg }}</span>
+        </div>
+      }
+      @if (successMsg) {
+        <div class="bg-green-500/10 border border-green-500/30 text-green-400 p-4 rounded-xl mb-6 text-sm flex items-start gap-3">
+          <span class="material-icons text-[18px] mt-0.5">check_circle</span>
+          <span>{{ successMsg }}</span>
+        </div>
+      }
+
+      <!-- Tabs -->
+      <div class="flex gap-2 mb-6 bg-[#111111] border border-[#262626] rounded-xl p-1.5 w-fit shadow-inner">
+        <button type="button" (click)="switchTab('admin')" [class]="tabClasses('admin')">
+          <span class="material-icons text-[18px]">shield_person</span> Admin
+        </button>
+        <button type="button" (click)="switchTab('interviewer')" [class]="tabClasses('interviewer')">
+          <span class="material-icons text-[18px]">record_voice_over</span> Interviewer
+        </button>
+        <button type="button" (click)="switchTab('position')" [class]="tabClasses('position')">
+          <span class="material-icons text-[18px]">work_outline</span> Job Position
+        </button>
+      </div>
+
+      <div class="bg-[#161616] border border-[#262626] rounded-2xl shadow-xl overflow-hidden">
+        <!-- Card header -->
+        <div class="px-6 md:px-8 py-5 border-b border-[#262626] flex items-center gap-3">
+          <div [class]="headerIconClasses()">
+            <span class="material-icons text-[20px] leading-none flex items-center justify-center w-full h-full" [class]="headerIconColor()">{{ headerIcon() }}</span>
+          </div>
+          <div>
+            <h2 class="text-lg font-bold text-white">{{ headerTitle() }}</h2>
+            <p class="text-xs text-neutral-500 font-medium mt-0.5">{{ headerSubtitle() }}</p>
+          </div>
+        </div>
+
+        <div class="p-6 md:p-8">
+          <!-- Admin Form -->
+          @if (activeTab() === 'admin') {
+            <form [formGroup]="adminForm" (ngSubmit)="createUser('admin')" class="space-y-6">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div>
+                  <label class="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-2 ml-1">First Name</label>
+                  <input type="text" formControlName="firstname" placeholder="e.g. Umar" class="w-full bg-[#111111] border border-[#333] rounded-xl py-3 px-4 text-white outline-none focus:border-[#FBBF24] transition-colors shadow-inner">
+                  @if (touched('admin', 'firstname')) {
+                    <p class="text-red-400 text-xs mt-1 ml-1">First name is required</p>
+                  }
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-2 ml-1">Last Name</label>
+                  <input type="text" formControlName="lastname" placeholder="e.g. Farooq" class="w-full bg-[#111111] border border-[#333] rounded-xl py-3 px-4 text-white outline-none focus:border-[#FBBF24] transition-colors shadow-inner">
+                  @if (touched('admin', 'lastname')) {
+                    <p class="text-red-400 text-xs mt-1 ml-1">Last name is required</p>
+                  }
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-2 ml-1">Email Address</label>
+                <div class="relative">
+                  <span class="material-icons absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500">mail_outline</span>
+                  <input type="email" formControlName="email" placeholder="name@company.com" class="w-full bg-[#111111] border border-[#333] rounded-xl py-3 px-4 text-white outline-none focus:border-[#FBBF24] transition-colors shadow-inner !pl-12">
+                </div>
+                @if (touched('admin', 'email')) {
+                  <p class="text-red-400 text-xs mt-1 ml-1">Enter a valid email address</p>
+                }
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div>
+                  <label class="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-2 ml-1">Password</label>
+                  <div class="relative">
+                    <span class="material-icons absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500">lock_outline</span>
+                    <input [type]="showAdminPassword() ? 'text' : 'password'" formControlName="password" placeholder="Min. 6 characters" class="w-full bg-[#111111] border border-[#333] rounded-xl py-3 px-4 text-white outline-none focus:border-[#FBBF24] transition-colors shadow-inner !pl-12 !pr-12">
+                    <button type="button" (click)="showAdminPassword.set(!showAdminPassword())" class="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-[#FBBF24] transition-colors">
+                      <span class="material-icons text-[20px]">{{ showAdminPassword() ? 'visibility_off' : 'visibility' }}</span>
+                    </button>
+                  </div>
+                  @if (touched('admin', 'password')) {
+                    <p class="text-red-400 text-xs mt-1 ml-1">Password must be at least 6 characters</p>
+                  }
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-2 ml-1">Designation</label>
+                  <input type="text" formControlName="designation" placeholder="e.g. System Administrator" class="w-full bg-[#111111] border border-[#333] rounded-xl py-3 px-4 text-white outline-none focus:border-[#FBBF24] transition-colors shadow-inner">
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-2 ml-1">Phone</label>
+                <div class="relative">
+                  <span class="material-icons absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500">phone</span>
+                  <input type="tel" formControlName="phone" placeholder="+92 300 0000000" class="w-full bg-[#111111] border border-[#333] rounded-xl py-3 px-4 text-white outline-none focus:border-[#FBBF24] transition-colors shadow-inner !pl-12">
+                </div>
+              </div>
+
+              <div class="flex gap-4 pt-4 border-t border-[#262626]">
+                <button type="submit" [disabled]="adminForm.invalid || submitting()" class="flex items-center justify-center gap-2 bg-[#FBBF24] hover:bg-[#FACC15] text-black font-bold py-3 px-8 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_15px_rgba(251,191,36,0.15)] hover:shadow-[0_0_20px_rgba(251,191,36,0.3)]">
+                  <span class="material-icons text-[20px]">person_add</span> {{ submitting() ? 'Creating...' : 'Create Admin' }}
+                </button>
+                <button type="button" (click)="resetForm('admin')" class="px-8 bg-[#111111] border border-[#333] hover:bg-[#1a1a1a] text-white font-bold rounded-xl transition-colors">Clear</button>
+              </div>
+            </form>
+          }
+
+          <!-- Interviewer Form -->
+          @if (activeTab() === 'interviewer') {
+            <form [formGroup]="interviewerForm" (ngSubmit)="createUser('interviewer')" class="space-y-6">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div>
+                  <label class="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-2 ml-1">First Name</label>
+                  <input type="text" formControlName="firstname" placeholder="e.g. Hamza" class="w-full bg-[#111111] border border-[#333] rounded-xl py-3 px-4 text-white outline-none focus:border-[#FBBF24] transition-colors shadow-inner">
+                  @if (touched('interviewer', 'firstname')) {
+                    <p class="text-red-400 text-xs mt-1 ml-1">First name is required</p>
+                  }
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-2 ml-1">Last Name</label>
+                  <input type="text" formControlName="lastname" placeholder="e.g. Ali" class="w-full bg-[#111111] border border-[#333] rounded-xl py-3 px-4 text-white outline-none focus:border-[#FBBF24] transition-colors shadow-inner">
+                  @if (touched('interviewer', 'lastname')) {
+                    <p class="text-red-400 text-xs mt-1 ml-1">Last name is required</p>
+                  }
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-2 ml-1">Email Address</label>
+                <div class="relative">
+                  <span class="material-icons absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500">mail_outline</span>
+                  <input type="email" formControlName="email" placeholder="name@company.com" class="w-full bg-[#111111] border border-[#333] rounded-xl py-3 px-4 text-white outline-none focus:border-[#FBBF24] transition-colors shadow-inner !pl-12">
+                </div>
+                @if (touched('interviewer', 'email')) {
+                  <p class="text-red-400 text-xs mt-1 ml-1">Enter a valid email address</p>
+                }
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div>
+                  <label class="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-2 ml-1">Password</label>
+                  <div class="relative">
+                    <span class="material-icons absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500">lock_outline</span>
+                    <input [type]="showInterviewerPassword() ? 'text' : 'password'" formControlName="password" placeholder="Min. 6 characters" class="w-full bg-[#111111] border border-[#333] rounded-xl py-3 px-4 text-white outline-none focus:border-[#FBBF24] transition-colors shadow-inner !pl-12 !pr-12">
+                    <button type="button" (click)="showInterviewerPassword.set(!showInterviewerPassword())" class="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-[#FBBF24] transition-colors">
+                      <span class="material-icons text-[20px]">{{ showInterviewerPassword() ? 'visibility_off' : 'visibility' }}</span>
+                    </button>
+                  </div>
+                  @if (touched('interviewer', 'password')) {
+                    <p class="text-red-400 text-xs mt-1 ml-1">Password must be at least 6 characters</p>
+                  }
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-2 ml-1">Designation</label>
+                  <input type="text" formControlName="designation" placeholder="e.g. Senior Interviewer" class="w-full bg-[#111111] border border-[#333] rounded-xl py-3 px-4 text-white outline-none focus:border-[#FBBF24] transition-colors shadow-inner">
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-2 ml-1">Phone</label>
+                <div class="relative">
+                  <span class="material-icons absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500">phone</span>
+                  <input type="tel" formControlName="phone" placeholder="+92 300 0000000" class="w-full bg-[#111111] border border-[#333] rounded-xl py-3 px-4 text-white outline-none focus:border-[#FBBF24] transition-colors shadow-inner !pl-12">
+                </div>
+              </div>
+
+              <div class="flex gap-4 pt-4 border-t border-[#262626]">
+                <button type="submit" [disabled]="interviewerForm.invalid || submitting()" class="flex items-center justify-center gap-2 bg-[#FBBF24] hover:bg-[#FACC15] text-black font-bold py-3 px-8 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_15px_rgba(251,191,36,0.15)] hover:shadow-[0_0_20px_rgba(251,191,36,0.3)]">
+                  <span class="material-icons text-[20px]">person_add</span> {{ submitting() ? 'Creating...' : 'Create Interviewer' }}
+                </button>
+                <button type="button" (click)="resetForm('interviewer')" class="px-8 bg-[#111111] border border-[#333] hover:bg-[#1a1a1a] text-white font-bold rounded-xl transition-colors">Clear</button>
+              </div>
+            </form>
+          }
+
+          <!-- Job Position Form -->
+          @if (activeTab() === 'position') {
+            <form [formGroup]="positionForm" (ngSubmit)="createPosition()" class="space-y-6">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div>
+                  <label class="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-2 ml-1">Position Title</label>
+                  <input type="text" formControlName="title" placeholder="e.g. DevOps Engineer" class="w-full bg-[#111111] border border-[#333] rounded-xl py-3 px-4 text-white outline-none focus:border-[#FBBF24] transition-colors shadow-inner">
+                  @if (touched('position', 'title')) {
+                    <p class="text-red-400 text-xs mt-1 ml-1">Title is required</p>
+                  }
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-2 ml-1">Department</label>
+                  <select formControlName="departmentId" class="w-full bg-[#111111] border border-[#333] rounded-xl py-3 px-4 text-white outline-none focus:border-[#FBBF24] transition-colors shadow-inner appearance-none">
+                    <option value="">Select department...</option>
+                    @for (d of adminService.departments(); track d.id) {
+                      <option [value]="d.id">{{ d.name }}</option>
+                    }
+                  </select>
+                  @if (touched('position', 'departmentId')) {
+                    <p class="text-red-400 text-xs mt-1 ml-1">Department is required</p>
+                  }
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-2 ml-1">Required Skills</label>
+                <div class="relative">
+                  <span class="material-icons absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500">build</span>
+                  <input type="text" formControlName="requiredSkills" placeholder="e.g. Docker, Kubernetes, AWS" class="w-full bg-[#111111] border border-[#333] rounded-xl py-3 px-4 text-white outline-none focus:border-[#FBBF24] transition-colors shadow-inner !pl-12">
+                </div>
+                <p class="text-neutral-500 text-xs mt-1 ml-1">Separate skills with commas.</p>
+                @if (touched('position', 'requiredSkills')) {
+                  <p class="text-red-400 text-xs mt-1 ml-1">At least one skill is required</p>
+                }
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div>
+                  <label class="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-2 ml-1">Minimum Experience (Years)</label>
+                  <input type="number" min="0" formControlName="minimumExperience" placeholder="e.g. 3" class="w-full bg-[#111111] border border-[#333] rounded-xl py-3 px-4 text-white outline-none focus:border-[#FBBF24] transition-colors shadow-inner">
+                  @if (touched('position', 'minimumExperience')) {
+                    <p class="text-red-400 text-xs mt-1 ml-1">Enter a valid number</p>
+                  }
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-2 ml-1">Maximum Experience (Years)</label>
+                  <input type="number" min="0" formControlName="maximumExperience" placeholder="e.g. 6 (optional)" class="w-full bg-[#111111] border border-[#333] rounded-xl py-3 px-4 text-white outline-none focus:border-[#FBBF24] transition-colors shadow-inner">
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-2 ml-1">Description</label>
+                <textarea formControlName="description" rows="4" placeholder="Describe the role, responsibilities, and expectations..." class="w-full bg-[#111111] border border-[#333] rounded-xl py-3 px-4 text-white outline-none focus:border-[#FBBF24] transition-colors shadow-inner resize-none"></textarea>
+                @if (touched('position', 'description')) {
+                  <p class="text-red-400 text-xs mt-1 ml-1">Description is required</p>
+                }
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-2 ml-1">Status</label>
+                <select formControlName="status" class="w-full bg-[#111111] border border-[#333] rounded-xl py-3 px-4 text-white outline-none focus:border-[#FBBF24] transition-colors shadow-inner appearance-none">
+                  <option value="open">Open</option>
+                  <option value="closed">Closed</option>
+                </select>
+              </div>
+
+              <div class="flex gap-4 pt-4 border-t border-[#262626]">
+                <button type="submit" [disabled]="positionForm.invalid || submitting()" class="flex items-center justify-center gap-2 bg-[#FBBF24] hover:bg-[#FACC15] text-black font-bold py-3 px-8 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_15px_rgba(251,191,36,0.15)] hover:shadow-[0_0_20px_rgba(251,191,36,0.3)]">
+                  <span class="material-icons text-[20px]">work_add</span> {{ submitting() ? 'Creating...' : 'Create Position' }}
+                </button>
+                <button type="button" (click)="resetForm('position')" class="px-8 bg-[#111111] border border-[#333] hover:bg-[#1a1a1a] text-white font-bold rounded-xl transition-colors">Clear</button>
+              </div>
+            </form>
+          }
+        </div>
+      </div>
+    </div>
+  `
+})
+export class AdminSettingsComponent implements OnInit {
+  adminService = inject(AdminService);
+
+  activeTab = signal<SettingsTab>('admin');
+  submitting = signal(false);
+  errorMsg = '';
+  successMsg = '';
+
+  showAdminPassword = signal(false);
+  showInterviewerPassword = signal(false);
+
+  adminForm = new FormGroup({
+    firstname: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    lastname: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    email: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.email] }),
+    password: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.minLength(6)] }),
+    designation: new FormControl('', { nonNullable: true }),
+    phone: new FormControl('', { nonNullable: true })
+  });
+
+  interviewerForm = new FormGroup({
+    firstname: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    lastname: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    email: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.email] }),
+    password: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.minLength(6)] }),
+    designation: new FormControl('', { nonNullable: true }),
+    phone: new FormControl('', { nonNullable: true })
+  });
+
+  positionForm = new FormGroup({
+    title: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    departmentId: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    requiredSkills: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    minimumExperience: new FormControl<number | null>(null, { validators: [Validators.required, Validators.min(0)] }),
+    maximumExperience: new FormControl<number | null>(null),
+    description: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    status: new FormControl('open', { nonNullable: true })
+  });
+
+  ngOnInit() {
+    this.adminService.loadDepartments();
+  }
+
+  switchTab(tab: SettingsTab) {
+    this.activeTab.set(tab);
+    this.clearMessages();
+  }
+
+  tabClasses(tab: SettingsTab) {
+    const active = this.activeTab() === tab;
+    return `flex items-center gap-2 px-5 py-2.5 rounded-lg font-bold text-sm transition-all ${
+      active
+        ? 'bg-[#FBBF24] text-black shadow-[0_0_12px_rgba(251,191,36,0.25)]'
+        : 'text-neutral-400 hover:text-white hover:bg-[#1a1a1a]'
+    }`;
+  }
+
+  headerTitle() {
+    switch (this.activeTab()) {
+      case 'admin': return 'Create New Admin';
+      case 'interviewer': return 'Create New Interviewer';
+      case 'position': return 'Create New Job Position';
+    }
+  }
+
+  headerSubtitle() {
+    switch (this.activeTab()) {
+      case 'admin': return 'Grant a team member full administrative access.';
+      case 'interviewer': return 'Add an interviewer who can conduct interviews and submit feedback.';
+      case 'position': return 'Define a new open role to assign interviews against.';
+    }
+  }
+
+  headerIcon() {
+    switch (this.activeTab()) {
+      case 'admin': return 'shield_person';
+      case 'interviewer': return 'record_voice_over';
+      case 'position': return 'work_outline';
+    }
+  }
+
+  headerIconClasses() {
+    return 'w-10 h-10 rounded-xl flex items-center justify-center border shadow-inner bg-[#FBBF24]/10 border-[#FBBF24]/20 overflow-hidden';
+  }
+
+  headerIconColor() {
+    return 'text-[#FBBF24]';
+  }
+
+  formFor(tab: SettingsTab): FormGroup {
+    switch (tab) {
+      case 'admin': return this.adminForm;
+      case 'interviewer': return this.interviewerForm;
+      case 'position': return this.positionForm;
+    }
+  }
+
+  touched(tab: SettingsTab, control: string) {
+    const ctrl = this.formFor(tab).get(control);
+    return !!ctrl && ctrl.invalid && ctrl.touched;
+  }
+
+  resetForm(tab: SettingsTab) {
+    const form = this.formFor(tab);
+    form.reset();
+    if (tab === 'position') {
+      form.patchValue({ status: 'open' });
+    }
+    this.clearMessages();
+  }
+
+  clearMessages() {
+    this.errorMsg = '';
+    this.successMsg = '';
+  }
+
+  createUser(role: 'admin' | 'interviewer') {
+    const form = role === 'admin' ? this.adminForm : this.interviewerForm;
+    if (form.invalid) return;
+
+    this.submitting.set(true);
+    this.clearMessages();
+
+    const v = form.getRawValue();
+    this.adminService.createUser({
+      firstname: v.firstname,
+      lastname: v.lastname,
+      email: v.email,
+      password: v.password,
+      role,
+      designation: v.designation || undefined,
+      phone: v.phone || undefined
+    }).subscribe({
+      next: (res) => {
+        this.submitting.set(false);
+        this.successMsg = `${role === 'admin' ? 'Admin' : 'Interviewer'} created successfully! Credentials sent for ${res.user.email} (${res.user.employeeId}).`;
+        form.reset();
+        if (role === 'interviewer') {
+          this.adminService.loadScheduleData();
+        }
+      },
+      error: (err) => {
+        this.submitting.set(false);
+        this.errorMsg = err.error?.message || `Failed to create ${role}`;
+      }
+    });
+  }
+
+  createPosition() {
+    if (this.positionForm.invalid) return;
+
+    this.submitting.set(true);
+    this.clearMessages();
+
+    const v = this.positionForm.getRawValue();
+    const skills = v.requiredSkills.split(',').map(s => s.trim()).filter(Boolean);
+
+    this.adminService.createPosition({
+      title: v.title,
+      departmentId: v.departmentId,
+      requiredSkills: skills,
+      minimumExperience: Number(v.minimumExperience),
+      maximumExperience: v.maximumExperience !== null ? Number(v.maximumExperience) : undefined,
+      description: v.description,
+      status: v.status
+    }).subscribe({
+      next: (res) => {
+        this.submitting.set(false);
+        this.successMsg = `Position "${res.position.title}" created successfully!`;
+        this.positionForm.reset();
+        this.positionForm.patchValue({ status: 'open' });
+        this.adminService.loadScheduleData();
+      },
+      error: (err) => {
+        this.submitting.set(false);
+        this.errorMsg = err.error?.message || 'Failed to create position';
+      }
+    });
+  }
+}
