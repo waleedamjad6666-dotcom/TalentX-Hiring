@@ -1,5 +1,9 @@
-import { Candidate, Interview } from './models';
+import { Candidate, Interview } from './core/models';
 
+/**
+ * @deprecated This file contains mock data used only by DataService.
+ * Real API calls should use AdminService or InterviewerService instead.
+ */
 export const usersData = [
   { id: 1, name: 'Admin System', username: 'admin', password: 'admin123', role: 'Admin' },
   { id: 2, name: 'Sarah Malik', username: 'sarah', password: 'sarah123', role: 'Interviewer' },
