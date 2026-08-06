@@ -1,0 +1,157 @@
+<div class="max-w-6xl mx-auto pb-10">
+  <!-- Header -->
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold text-white mb-2">Interviews</h1>
+    <p class="text-neutral-400">Completed interviews with full feedback from every interviewer.</p>
+  </div>
+
+  <!-- Stats -->
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+    <div class="bg-[#161616] border border-[#262626] rounded-xl p-5">
+      <p class="text-neutral-500 text-xs font-semibold uppercase tracking-wider mb-1">Completed</p>
+      <h2 class="text-4xl font-bold text-white">{{ completedInterviews().length > 9 ? completedInterviews().length : '0' + completedInterviews().length }}</h2>
+    </div>
+    <div class="bg-[#161616] border border-[#262626] rounded-xl p-5">
+      <p class="text-neutral-500 text-xs font-semibold uppercase tracking-wider mb-1">Pending Decision</p>
+      <h2 class="text-4xl font-bold text-[#FBBF24]">{{ pendingCount() > 9 ? pendingCount() : '0' + pendingCount() }}</h2>
+    </div>
+    <div class="bg-[#161616] border border-[#262626] rounded-xl p-5">
+      <p class="text-neutral-500 text-xs font-semibold uppercase tracking-wider mb-1">Hired</p>
+      <h2 class="text-4xl font-bold text-green-400">{{ hiredCount() > 9 ? hiredCount() : '0' + hiredCount() }}</h2>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="flex flex-col sm:flex-row gap-4 mb-8">
+    <div class="relative flex-1">
+      <span class="material-icons absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500 text-[18px]">search</span>
+      <input type="text" (input)="updateSearch($event)" placeholder="Search by candidate, position or code..."
+        class="w-full bg-[#111111] border border-[#333] rounded-xl py-3 pl-12 pr-4 text-white outline-none focus:border-[#FBBF24] transition-colors placeholder:text-neutral-600">
+    </div>
+    <div class="flex gap-2 flex-wrap">
+      @for (opt of filterOptions; track opt.value) {
+        <button (click)="setStatusFilter(opt.value)"
+          [class.bg-[#FBBF24]]="statusFilter() === opt.value"
+          [class.text-black]="statusFilter() === opt.value"
+          [class.bg-[#1a1a1a]]="statusFilter() !== opt.value"
+          [class.border-[#FBBF24]/40]="statusFilter() !== opt.value"
+          [class.text-neutral-300]="statusFilter() !== opt.value"
+          class="px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider border transition-colors">
+          {{ opt.label }}
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- Completed Interviews -->
+  <div class="space-y-6">
+    @for (interview of filteredInterviews(); track interview.id) {
+      <div class="bg-[#161616] border border-[#262626] rounded-2xl overflow-hidden shadow-xl">
+        <!-- Header row -->
+        <div class="px-6 py-5 border-b border-[#262626] flex flex-col lg:flex-row lg:items-center gap-4">
+          <div class="flex items-center gap-4 flex-1">
+            <div class="w-14 h-14 rounded-2xl bg-[#FBBF24]/10 text-[#FBBF24] border border-[#FBBF24]/20 flex items-center justify-center font-extrabold text-xl shadow-inner flex-shrink-0">
+              {{ getInitials(interview.candidate.firstname, interview.candidate.lastname) }}
+            </div>
+            <div>
+              <div class="flex items-center gap-3 flex-wrap">
+                <h4 class="text-lg font-bold text-white">{{ interview.candidate.firstname }} {{ interview.candidate.lastname }}</h4>
+                <span class="text-xs text-neutral-500 font-medium">{{ interview.candidate.candidateCode }}</span>
+                <span [class]="decisionClasses(interview.decision)">{{ decisionLabel(interview.decision) }}</span>
+              </div>
+              <p class="text-sm text-neutral-400 mt-0.5">
+                {{ interview.position.title }} <span class="mx-1 opacity-40">•</span> Round {{ interview.round }}
+                <span class="mx-1 opacity-40">•</span> {{ interview.date | date:'mediumDate' }}
+              </p>
+            </div>
+          </div>
+          <div class="flex items-center gap-6 lg:gap-10">
+            <div class="text-center">
+              <p class="text-xs text-neutral-500 font-semibold uppercase tracking-wider mb-1">Avg Rating</p>
+              <div class="flex items-center gap-1">
+                <span class="material-icons text-[#FBBF24] text-lg">star</span>
+                <span class="text-xl font-extrabold text-white">{{ averageRating(interview.interviewFeedbacks) ?? '-' }}</span>
+              </div>
+            </div>
+            <div class="text-center">
+              <p class="text-xs text-neutral-500 font-semibold uppercase tracking-wider mb-1">Feedbacks</p>
+              <span class="text-xl font-extrabold text-white">{{ interview.interviewFeedbacks?.length ?? 0 }}</span>
+            </div>
+            <div class="text-center hidden sm:block">
+              <p class="text-xs text-neutral-500 font-semibold uppercase tracking-wider mb-1">Interviewers</p>
+              <div class="flex -space-x-2 justify-center">
+                @for (i of interview.interviewers; track i.id) {
+                  <div class="w-7 h-7 rounded-full bg-[#262626] border border-[#161616] flex items-center justify-center text-[9px] font-bold text-white" [title]="i.firstname + ' ' + i.lastname">
+                    {{ i.firstname[0] }}{{ i.lastname[0] }}
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Feedback section -->
+        <div class="px-6 py-5 space-y-4">
+          @if (interview.interviewFeedbacks && interview.interviewFeedbacks.length > 0) {
+            @for (fb of interview.interviewFeedbacks; track fb.id) {
+              <div class="bg-[#111111] border border-[#333] rounded-xl p-5">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                  <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-full bg-[#262626] flex items-center justify-center text-[10px] font-bold text-white">
+                      {{ interviewerInitials(fb) }}
+                    </div>
+                    <div>
+                      <p class="text-sm font-bold text-white">{{ interviewerName(fb) }}</p>
+                      <p class="text-xs text-neutral-500">{{ fb.submittedAt | date:'medium' }}</p>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <div class="flex gap-0.5">
+                      @for (star of [1,2,3,4,5]; track star) {
+                        <span class="material-icons text-[18px]"
+                          [class.text-[#FBBF24]]="star <= fb.rating"
+                          [class.text-[#333]]="star > fb.rating">{{ star <= fb.rating ? 'star' : 'star_border' }}</span>
+                      }
+                    </div>
+                    <span class="text-sm font-bold text-white">{{ fb.rating }}/5</span>
+                  </div>
+                </div>
+                <div class="flex items-start gap-2 mb-3">
+                  <span class="material-icons text-[16px] text-neutral-500 mt-0.5">recommend</span>
+                  <span class="text-sm font-semibold text-neutral-200">{{ recommendationLabel(fb.recommendation) }}</span>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p class="text-[11px] font-bold text-green-400 uppercase tracking-widest mb-1">Strengths</p>
+                    <p class="text-sm text-neutral-300">{{ fb.positiveComments || '—' }}</p>
+                  </div>
+                  <div>
+                    <p class="text-[11px] font-bold text-red-400 uppercase tracking-widest mb-1">Concerns</p>
+                    <p class="text-sm text-neutral-300">{{ fb.negativeComments || '—' }}</p>
+                  </div>
+                </div>
+                @if (fb.additionalComments) {
+                  <div class="mt-4 pt-4 border-t border-[#262626]">
+                    <p class="text-[11px] font-bold text-neutral-500 uppercase tracking-widest mb-1">Additional Comments</p>
+                    <p class="text-sm text-neutral-300">{{ fb.additionalComments }}</p>
+                  </div>
+                }
+              </div>
+            }
+          } @else {
+            <div class="text-center text-neutral-500 py-6">
+              No feedback submitted yet for this interview.
+            </div>
+          }
+        </div>
+      </div>
+    }
+    @if (filteredInterviews().length === 0) {
+      <div class="bg-[#161616] border border-[#262626] border-dashed rounded-2xl p-12 text-center">
+        <span class="material-icons text-5xl text-neutral-600 mb-3 block">fact_check</span>
+        <p class="text-neutral-500 font-medium">No completed interviews found.</p>
+        <p class="text-neutral-600 text-sm mt-1">Completed interviews with feedback will appear here.</p>
+      </div>
+    }
+  </div>
+</div>

@@ -1,8 +1,8 @@
-import { Component, inject, computed, OnInit } from '@angular/core';
-import { DataService } from '../../../core/services/data.service';
+import { Component, inject, computed, signal, OnInit } from '@angular/core';
 import { AdminService } from '../../../core/services/admin.service';
 import { RouterLink } from '@angular/router';
 import { getInitialsFromName } from '../../../shared/utils';
+import { ApiInterview, FeedbackResponse } from '../../../core/models';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -10,12 +10,16 @@ import { getInitialsFromName } from '../../../shared/utils';
   templateUrl: './admin-dashboard.component.html'
 })
 export class AdminDashboardComponent implements OnInit {
-  dataService = inject(DataService);
   adminService = inject(AdminService);
 
+  decidingId = signal<string | null>(null);
+  decisionMsg = signal('');
+
   upcomingInterviews = computed(() => {
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
     return this.adminService.interviews()
-      .filter(i => i.status === 'scheduled')
+      .filter(i => i.status === 'scheduled' && new Date(i.startTime).getTime() >= todayStart)
       .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
   });
 
@@ -24,10 +28,67 @@ export class AdminDashboardComponent implements OnInit {
     return this.adminService.interviews().filter(i => i.date === today).length;
   });
 
+  pendingFeedbackCount = computed(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return this.adminService.interviews().filter(i => {
+      if (i.status !== 'scheduled') return false;
+      return new Date(i.startTime) <= today;
+    }).length;
+  });
+
+  totalPipelineCount = computed(() => this.adminService.candidates().length);
+
+  pendingDecisions = computed(() =>
+    this.adminService.interviews()
+      .filter(i => i.status === 'completed' && i.decision === 'pending' && (i.interviewFeedbacks?.length ?? 0) > 0)
+      .sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime())
+  );
+
   ngOnInit() {
     this.adminService.fetchInterviews();
+    this.adminService.fetchCandidates();
   }
 
+  makeDecision(interview: ApiInterview, decision: 'hired' | 'rejected' | 'hold' | 'next_round') {
+    if (this.decidingId()) return;
+    this.decidingId.set(interview.id);
+    this.decisionMsg.set('');
+
+    this.adminService.updateInterviewDecision(interview.id, decision).subscribe({
+      next: () => {
+        this.decidingId.set(null);
+        this.decisionMsg.set(`${interview.candidate.firstname} ${interview.candidate.lastname} marked as ${this.decisionLabel(decision)}.`);
+        setTimeout(() => this.decisionMsg.set(''), 4000);
+      },
+      error: (err) => {
+        this.decidingId.set(null);
+        this.decisionMsg.set(err.error?.message || 'Failed to update decision.');
+      }
+    });
+  }
+
+  decisionLabel(decision: string) {
+    switch (decision) {
+      case 'hired': return 'Hired';
+      case 'rejected': return 'Rejected';
+      case 'hold': return 'On Hold';
+      default: return 'Advanced to Next Round';
+    }
+  }
+
+  avgRating(feedbacks: FeedbackResponse[] | undefined) {
+    if (!feedbacks || feedbacks.length === 0) return null;
+    const sum = feedbacks.reduce((acc, f) => acc + f.rating, 0);
+    return (sum / feedbacks.length).toFixed(1);
+  }
+
+  getCandidateName(interview: ApiInterview) {
+    return interview?.candidate ? `${interview.candidate.firstname} ${interview.candidate.lastname}` : 'Unknown';
+  }
+  getCandidateRole(interview: ApiInterview) {
+    return interview?.candidate?.currentPosition || interview?.position?.title || 'Role';
+  }
   getMonth(dateStr: string) {
     return new Date(dateStr).toLocaleString('default', { month: 'short' });
   }
@@ -39,11 +100,5 @@ export class AdminDashboardComponent implements OnInit {
   }
   getInitials(name: string) {
     return getInitialsFromName(name);
-  }
-  getCandidateName(interview: any) {
-    return interview?.candidate ? `${interview.candidate.firstname} ${interview.candidate.lastname}` : 'Unknown';
-  }
-  getCandidateRole(interview: any) {
-    return interview?.candidate?.currentPosition || interview?.position?.title || 'Role';
   }
 }
