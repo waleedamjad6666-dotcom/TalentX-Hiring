@@ -1,0 +1,172 @@
+@if (loading()) {
+  <div class="flex items-center justify-center py-20">
+    <span class="material-icons text-4xl text-[#FBBF24] animate-spin">progress_activity</span>
+    <span class="ml-3 text-neutral-400 font-medium">Loading candidate details...</span>
+  </div>
+} @else if (error()) {
+  <div class="max-w-4xl mx-auto pb-10">
+    <div class="bg-red-500/10 border border-red-500/30 rounded-2xl p-6 text-center">
+      <span class="material-icons text-4xl text-red-400 mb-2">error</span>
+      <p class="text-red-400 font-medium">{{ error() }}</p>
+    </div>
+    <div class="mt-6 flex justify-center">
+      <button type="button" class="px-8 py-4 rounded-xl border border-[#333] text-white font-bold hover:bg-[#1a1a1a] transition-colors" (click)="goBack()">Back to Candidates</button>
+    </div>
+  </div>
+} @else if (candidate()) {
+  <div class="max-w-4xl mx-auto pb-10">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row gap-6 sm:items-center mb-8 border-b border-[#262626] pb-8">
+      <div class="w-20 h-20 rounded-2xl bg-[#FBBF24]/10 text-[#FBBF24] border border-[#FBBF24]/20 flex items-center justify-center font-extrabold text-3xl shadow-inner flex-shrink-0">
+         {{ getInitials(candidate()?.firstname, candidate()?.lastname) }}
+      </div>
+      <div class="flex-1">
+        <div class="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-2 flex items-center gap-2">
+          <span class="hover:text-white cursor-pointer transition-colors" (click)="goBack()">Candidates</span>
+          <span class="material-icons text-[14px]">chevron_right</span> Candidate Details
+        </div>
+        <h1 class="text-4xl font-extrabold text-white mb-2 tracking-tight">{{ candidate()?.firstname }} {{ candidate()?.lastname }}</h1>
+        <p class="text-neutral-400 font-medium text-lg">
+          <span class="text-[#FBBF24]">{{ candidate()?.currentPosition || 'No position' }}</span>
+          @if (candidate()?.currentCompany) {
+            <span class="mx-2 opacity-30">|</span> {{ candidate()?.currentCompany }}
+          }
+        </p>
+      </div>
+      <div class="flex flex-col gap-2 items-start sm:items-end">
+         <span class="bg-[#111111] border border-[#333] text-neutral-400 px-4 py-1.5 rounded-full text-xs font-bold tracking-wide">ID: {{ candidate()?.id }}</span>
+         @if (candidate()?.candidateCode) {
+           <span class="bg-[#FBBF24]/10 border border-[#FBBF24]/30 text-[#FBBF24] px-4 py-1.5 rounded-full text-xs font-bold tracking-wide">{{ candidate()?.candidateCode }}</span>
+         }
+      </div>
+    </div>
+
+    <!-- Candidate Details Content -->
+    <div class="space-y-8">
+      <!-- Top Row -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+         <!-- Candidate Info Card -->
+         <div class="bg-[#161616] border border-[#262626] rounded-3xl p-8 shadow-xl">
+            <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-5">Candidate Information</h3>
+            <div class="space-y-4">
+              <div>
+                <p class="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-1">Email</p>
+                <p class="text-white font-medium">{{ candidate()?.email }}</p>
+              </div>
+              <div>
+                <p class="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-1">Phone</p>
+                <p class="text-white font-medium">{{ candidate()?.phone }}</p>
+              </div>
+              <div>
+                <p class="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-1">Company</p>
+                <p class="text-white font-medium">{{ candidate()?.currentCompany || 'N/A' }}</p>
+              </div>
+              <div>
+                <p class="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-1">Experience</p>
+                <p class="text-white font-medium">{{ candidate()?.experience || 'N/A' }}</p>
+              </div>
+            </div>
+         </div>
+
+         <!-- Resume & Notes -->
+         <div class="bg-[#161616] border border-[#262626] rounded-3xl p-8 shadow-xl">
+            <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-5">Resume & Notes</h3>
+            <div class="space-y-4">
+              <div>
+                <p class="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Resume</p>
+                @if (candidate()?.resumeUrl) {
+                  <button (click)="downloadResume()" class="inline-flex items-center gap-2 bg-[#FBBF24]/10 hover:bg-[#FBBF24]/20 text-[#FBBF24] font-semibold py-2.5 px-4 rounded-xl transition-colors border border-[#FBBF24]/20">
+                    <span class="material-icons text-[18px]">description</span> Download Resume
+                  </button>
+                } @else {
+                  <p class="text-neutral-500 font-medium">No resume uploaded</p>
+                }
+              </div>
+              <div>
+                <p class="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Notes</p>
+                <div class="w-full bg-[#111111] border border-[#333] rounded-2xl p-4 text-neutral-400 min-h-[80px]">
+                  <p>{{ candidate()?.notes || 'No notes available' }}</p>
+                </div>
+              </div>
+            </div>
+         </div>
+      </div>
+
+      <!-- Skills & Qualifications -->
+      <div class="bg-[#161616] border border-[#262626] rounded-3xl p-8 shadow-xl">
+        <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-5">Skills & Qualifications</h3>
+        @if (candidate()?.skills && candidate()!.skills.length > 0) {
+          <div class="flex flex-wrap gap-2">
+            @for (skill of candidate()?.skills; track skill) {
+              <span class="px-4 py-2 rounded-full border border-[#333] text-sm font-medium text-neutral-300">{{ skill }}</span>
+            }
+          </div>
+        } @else {
+          <p class="text-neutral-500">No skills listed</p>
+        }
+      </div>
+
+      <!-- Interview History -->
+      <div class="bg-[#161616] border border-[#262626] rounded-3xl p-8 shadow-xl">
+        <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-5">Interview History</h3>
+        @if (candidate()?.interviews && candidate()!.interviews!.length > 0) {
+          <div class="space-y-4">
+            @for (interview of candidate()?.interviews; track interview.id) {
+              <div class="bg-[#111111] border border-[#333] rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div class="flex-1">
+                  <div class="flex items-center gap-3 mb-2">
+                    <span class="text-white font-semibold">Round {{ interview.round }}</span>
+                    @if (interview.type) {
+                      <span class="bg-[#FBBF24]/10 text-[#FBBF24] text-xs font-bold px-2 py-0.5 rounded">{{ interview.type }}</span>
+                    }
+                    <span class="text-xs font-bold px-2 py-0.5 rounded
+                      @if (interview.status === 'completed') { bg-green-500/10 text-green-400 }
+                      @else if (interview.status === 'scheduled') { bg-blue-500/10 text-blue-400 }
+                      @else { bg-yellow-500/10 text-yellow-400 }
+                    ">{{ interview.status }}</span>
+                  </div>
+                  <div class="flex flex-wrap gap-4 text-sm text-neutral-400">
+                    <span class="flex items-center gap-1">
+                      <span class="material-icons text-[16px]">calendar_today</span> {{ interview.date }}
+                    </span>
+                    <span class="flex items-center gap-1">
+                      <span class="material-icons text-[16px]">schedule</span> {{ interview.startTime }} - {{ interview.endTime }}
+                    </span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2">
+                  @for (interviewer of interview.interviewers; track interviewer.id) {
+                    <span class="bg-[#262626] text-neutral-300 text-xs font-medium px-2 py-1 rounded">{{ interviewer.firstname }} {{ interviewer.lastname }}</span>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="text-center py-8">
+            <span class="material-icons text-4xl text-neutral-600 mb-2">event_busy</span>
+            <p class="text-neutral-500">No interviews scheduled yet</p>
+          </div>
+        }
+      </div>
+
+      <!-- Footer Actions -->
+      <div class="flex flex-col sm:flex-row items-center justify-between pt-8 border-t border-[#262626] gap-6">
+         <div class="flex items-center gap-2 text-neutral-500 font-medium text-sm">
+           <span class="material-icons text-[18px]">info</span> Candidate details and interview history
+         </div>
+         <div class="flex gap-4 w-full sm:w-auto">
+           <button type="button" class="flex-1 sm:flex-none px-8 py-4 rounded-xl bg-[#FBBF24] hover:bg-[#FACC15] text-black font-extrabold transition-all shadow-[0_0_15px_rgba(251,191,36,0.15)] hover:shadow-[0_0_20px_rgba(251,191,36,0.3)]" (click)="goBack()">Back to Candidates</button>
+         </div>
+      </div>
+    </div>
+  </div>
+} @else {
+  <div class="max-w-4xl mx-auto pb-10">
+    <div class="bg-[#161616] border border-[#262626] rounded-2xl p-10 text-center">
+      <span class="material-icons text-4xl text-neutral-500 mb-3">person_off</span>
+      <p class="text-neutral-400 font-medium mb-6">Candidate not found.</p>
+      <button type="button" class="px-8 py-4 rounded-xl bg-[#FBBF24] hover:bg-[#FACC15] text-black font-bold transition-all" (click)="goBack()">Back to Candidates</button>
+    </div>
+  </div>
+}
