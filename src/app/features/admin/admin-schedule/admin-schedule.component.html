@@ -36,7 +36,7 @@
 
             @if (!isNewCandidate()) {
               <select formControlName="candidateId" class="w-full bg-[#111111] border border-[#333] rounded-xl py-3.5 px-4 text-white outline-none focus:border-[#FBBF24] appearance-none transition-colors">
-                <option value="">Select candidate...</option>
+                <option value="">Select candidate</option>
                 @for (c of adminService.candidates(); track c.id) {
                   <option [value]="c.id">{{ c.firstname }} {{ c.lastname }} ({{ c.currentPosition || c.email }})</option>
                 }
@@ -64,7 +64,7 @@
           <div>
             <label class="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-2 ml-1">Job Position</label>
             <select formControlName="positionId" class="w-full bg-[#111111] border border-[#333] rounded-xl py-3.5 px-4 text-white outline-none focus:border-[#FBBF24] appearance-none transition-colors">
-              <option value="">Select position...</option>
+              <option value="">Select position</option>
               @for (p of adminService.positions(); track p.id) {
                 <option [value]="p.id">{{ p.title }}{{ p.department ? ' (' + p.department.name + ')' : '' }}</option>
               }

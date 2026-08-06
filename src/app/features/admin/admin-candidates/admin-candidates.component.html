@@ -1,7 +1,7 @@
 <div class="max-w-6xl mx-auto pb-10">
   <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2 gap-4">
     <h1 class="text-3xl font-bold text-white">Manage Candidates</h1>
-    <button (click)="showModal.set(true)" class="bg-[#FBBF24] hover:bg-[#FACC15] text-black font-semibold py-2.5 px-5 rounded-lg flex items-center gap-2 transition-colors shadow-lg shadow-[#FBBF24]/10">
+    <button (click)="openCreate()" class="bg-[#FBBF24] hover:bg-[#FACC15] text-black font-semibold py-2.5 px-5 rounded-lg flex items-center gap-2 transition-colors shadow-lg shadow-[#FBBF24]/10">
       <span class="material-icons text-sm">person_add</span> Create Candidate
     </button>
   </div>
@@ -11,7 +11,7 @@
   <div class="flex flex-col md:flex-row gap-4 mb-8">
     <div class="flex-1 relative group">
       <span class="material-icons absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500 group-focus-within:text-[#FBBF24] transition-colors">search</span>
-      <input type="text" [value]="search()" (input)="updateSearch($event)" placeholder="Search by name, position, email, or skills..." class="w-full bg-[#161616] border border-[#262626] rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-[#FBBF24] transition-colors shadow-inner">
+      <input type="text" [value]="search()" (input)="updateSearch($event)" placeholder="Search by name, position, email, company, experience, or skills" class="w-full bg-[#161616] border border-[#262626] rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-[#FBBF24] transition-colors shadow-inner">
     </div>
   </div>
 
@@ -86,12 +86,24 @@
           </div>
 
           <div class="mt-auto flex gap-3">
-            <button class="flex-1 bg-[#FBBF24]/10 hover:bg-[#FBBF24]/20 text-[#FBBF24] font-bold py-2.5 rounded-xl transition-colors border border-[#FBBF24]/20">
+            <button (click)="viewDetails(c)" class="flex-1 bg-[#FBBF24]/10 hover:bg-[#FBBF24]/20 text-[#FBBF24] font-bold py-2.5 rounded-xl transition-colors border border-[#FBBF24]/20">
               View Details
             </button>
-            <button class="w-12 flex-shrink-0 bg-[#111111] border border-[#333] hover:bg-[#1a1a1a] text-white rounded-xl flex items-center justify-center transition-colors">
-              <span class="material-icons text-[20px]">more_vert</span>
-            </button>
+            <div class="relative">
+              <button (click)="toggleDropdown(c.id, $event)" class="w-12 flex-shrink-0 bg-[#111111] border border-[#333] hover:bg-[#1a1a1a] text-white py-2.5 rounded-xl flex items-center justify-center transition-colors">
+                <span class="material-icons text-[20px]">more_vert</span>
+              </button>
+              @if (activeDropdown() === c.id) {
+                <div class="absolute right-0 top-full mt-2 w-40 bg-[#1a1a1a] border border-[#333] rounded-xl shadow-2xl z-40 overflow-hidden">
+                  <button (click)="openEdit(c, $event)" class="w-full flex items-center gap-3 px-4 py-3 text-sm text-neutral-300 hover:bg-[#262626] hover:text-white transition-colors">
+                    <span class="material-icons text-[18px]">edit</span> Edit
+                  </button>
+                  <button (click)="openDelete(c, $event)" class="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 transition-colors">
+                    <span class="material-icons text-[18px]">delete</span> Delete
+                  </button>
+                </div>
+              }
+            </div>
           </div>
         </div>
       }
@@ -106,6 +118,15 @@
   }
 </div>
 
+<!-- Click outside to close dropdown -->
+@if (activeDropdown()) {
+  <div class="fixed inset-0 z-30" (click)="closeDropdown()"></div>
+}
+
 @if (showModal()) {
-  <app-candidate-modal (closed)="showModal.set(false)" (created)="onCandidateCreated()" />
+  <app-candidate-modal [candidate]="selectedCandidate()" (closed)="showModal.set(false)" (created)="onCandidateSaved()" (updated)="onCandidateSaved()" />
+}
+
+@if (deletingCandidate()) {
+  <app-delete-candidate-dialog [candidateId]="deletingCandidate()!.id" [candidateName]="getFullName(deletingCandidate()!)" (closed)="deletingCandidate.set(null)" (deleted)="onCandidateDeleted()" />
 }

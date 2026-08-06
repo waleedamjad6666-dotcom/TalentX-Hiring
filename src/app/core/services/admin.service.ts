@@ -14,6 +14,10 @@ import {
   ApiInterviewsListResponse,
   ApiCreateCandidateRequest,
   ApiCreateCandidateResponse,
+  ApiUpdateCandidateRequest,
+  ApiUpdateCandidateResponse,
+  ApiDeleteCandidateResponse,
+  ApiCandidateDetailResponse,
   ApiCreateInterviewRequest,
   ApiCreateInterviewResponse,
   ApiCreateUserRequest,
@@ -123,5 +127,23 @@ export class AdminService {
         this.interviews.update(list => list.map(i => i.id === res.interview.id ? { ...i, decision: res.interview.decision, decisionUpdatedAt: res.interview.decisionUpdatedAt } : i));
       })
     );
+  }
+
+  fetchCandidate(id: string): Observable<ApiCandidateDetailResponse> {
+    return this.http.get<ApiCandidateDetailResponse>(`/api/admin/candidates/${id}`);
+  }
+
+  updateCandidate(id: string, data: ApiUpdateCandidateRequest): Observable<ApiUpdateCandidateResponse> {
+    return this.http.put<ApiUpdateCandidateResponse>(`/api/admin/candidates/${id}`, data);
+  }
+
+  deleteCandidate(id: string): Observable<ApiDeleteCandidateResponse> {
+    return this.http.delete<ApiDeleteCandidateResponse>(`/api/admin/candidates/${id}`);
+  }
+
+  downloadResume(id: string): Observable<Blob> {
+    return this.http.get(`/api/admin/candidates/${id}/resume`, {
+      responseType: 'blob'
+    });
   }
 }

@@ -196,6 +196,36 @@ export interface ApiCreateCandidateResponse {
   candidate: ApiCandidate;
 }
 
+export interface ApiUpdateCandidateRequest {
+  firstname?: string;
+  lastname?: string;
+  email?: string;
+  phone?: string;
+  experience?: string;
+  currentCompany?: string;
+  currentPosition?: string;
+  skills?: string[];
+  notes?: string;
+}
+
+export interface ApiUpdateCandidateResponse {
+  candidate: ApiCandidate;
+}
+
+export interface ApiDeleteCandidateResponse {
+  message: string;
+}
+
+export interface ApiCandidateDetail extends ApiCandidate {
+  resumeUrl?: string;
+  notes?: string;
+  interviews?: ApiInterview[];
+}
+
+export interface ApiCandidateDetailResponse {
+  candidate: ApiCandidateDetail;
+}
+
 export interface ApiCreateInterviewRequest {
   candidateId: string;
   positionId: string;
