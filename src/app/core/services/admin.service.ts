@@ -19,7 +19,9 @@ import {
   ApiCreateUserRequest,
   ApiCreateUserResponse,
   ApiCreatePositionRequest,
-  ApiCreatePositionResponse
+  ApiCreatePositionResponse,
+  ApiUpdateDecisionRequest,
+  ApiUpdateDecisionResponse
 } from '../models';
 
 @Injectable({ providedIn: 'root' })
@@ -113,5 +115,13 @@ export class AdminService {
 
   createPosition(data: ApiCreatePositionRequest): Observable<ApiCreatePositionResponse> {
     return this.http.post<ApiCreatePositionResponse>('/api/admin/positions', data);
+  }
+
+  updateInterviewDecision(interviewId: string, decision: ApiUpdateDecisionRequest['decision']): Observable<ApiUpdateDecisionResponse> {
+    return this.http.patch<ApiUpdateDecisionResponse>(`/api/admin/interviews/${interviewId}/decision`, { decision }).pipe(
+      tap((res) => {
+        this.interviews.update(list => list.map(i => i.id === res.interview.id ? { ...i, decision: res.interview.decision, decisionUpdatedAt: res.interview.decisionUpdatedAt } : i));
+      })
+    );
   }
 }

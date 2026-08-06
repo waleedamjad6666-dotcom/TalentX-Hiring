@@ -9,6 +9,19 @@
     </a>
   </div>
 
+  @if (decisionMsg()) {
+    <div [class.bg-green-500/10]="!decisionMsg().includes('Failed')"
+         [class.border-green-500/30]="!decisionMsg().includes('Failed')"
+         [class.text-green-400]="!decisionMsg().includes('Failed')"
+         [class.bg-red-500/10]="decisionMsg().includes('Failed')"
+         [class.border-red-500/30]="decisionMsg().includes('Failed')"
+         [class.text-red-400]="decisionMsg().includes('Failed')"
+         class="border rounded-xl p-4 mb-6 text-sm font-medium flex items-center gap-3">
+      <span class="material-icons text-[18px]">{{ decisionMsg().includes('Failed') ? 'error_outline' : 'check_circle' }}</span>
+      {{ decisionMsg() }}
+    </div>
+  }
+
   <!-- Stats Grid -->
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
     <div class="bg-[#161616] border border-[#262626] rounded-xl p-5 flex flex-col justify-between h-36">
@@ -23,13 +36,13 @@
     <div class="bg-[#161616] border border-[#262626] rounded-xl p-5 flex flex-col justify-between h-36">
       <div class="flex justify-between items-start">
         <div class="w-8 h-8 rounded bg-neutral-800 flex items-center justify-center text-[#FBBF24]"><span class="material-icons text-[18px]">rate_review</span></div>
-        @if (dataService.pendingFeedbackCount() > 0) {
+        @if (pendingFeedbackCount() > 0) {
           <span class="text-red-400 text-xs font-semibold">Action Req</span>
         }
       </div>
       <div>
         <p class="text-neutral-500 text-xs font-semibold uppercase tracking-wider mb-1">Pending Feedback</p>
-        <h2 class="text-4xl font-bold text-white">{{ dataService.pendingFeedbackCount() > 9 ? dataService.pendingFeedbackCount() : '0' + dataService.pendingFeedbackCount() }}</h2>
+        <h2 class="text-4xl font-bold text-white">{{ pendingFeedbackCount() > 9 ? pendingFeedbackCount() : '0' + pendingFeedbackCount() }}</h2>
       </div>
     </div>
     <div class="bg-[#161616] border border-[#262626] rounded-xl p-5 flex flex-col justify-between h-36">
@@ -39,20 +52,20 @@
       </div>
       <div>
         <p class="text-neutral-500 text-xs font-semibold uppercase tracking-wider mb-1">In Pipeline</p>
-        <h2 class="text-4xl font-bold text-white">{{ dataService.totalPipelineCount() }}</h2>
+        <h2 class="text-4xl font-bold text-white">{{ totalPipelineCount() > 9 ? totalPipelineCount() : '0' + totalPipelineCount() }}</h2>
       </div>
     </div>
     <div class="bg-[#161616] border border-[#FBBF24] rounded-xl p-5 flex flex-col justify-between h-36 relative overflow-hidden">
        <div class="absolute inset-0 bg-gradient-to-br from-[#FBBF24]/10 to-transparent"></div>
        <div class="relative flex justify-between items-start">
         <div class="w-8 h-8 rounded bg-[#FBBF24] flex items-center justify-center text-black"><span class="material-icons text-[18px]">gavel</span></div>
-        @if (dataService.pendingDecisions().length > 0) {
+        @if (pendingDecisions().length > 0) {
           <span class="bg-[#FBBF24] text-black text-[10px] font-bold px-2 py-0.5 rounded uppercase shadow-sm">Action Req</span>
         }
       </div>
       <div class="relative">
         <p class="text-neutral-300 text-xs font-semibold uppercase tracking-wider mb-1">Pending Decisions</p>
-        <h2 class="text-4xl font-bold text-white">{{ dataService.pendingDecisions().length > 9 ? dataService.pendingDecisions().length : '0' + dataService.pendingDecisions().length }}</h2>
+        <h2 class="text-4xl font-bold text-white">{{ pendingDecisions().length > 9 ? pendingDecisions().length : '0' + pendingDecisions().length }}</h2>
       </div>
     </div>
   </div>
@@ -61,6 +74,9 @@
      <div class="lg:col-span-2">
         <div class="flex justify-between items-center mb-4">
           <h3 class="text-xl font-bold text-white">Upcoming Interviews</h3>
+          <a routerLink="/admin/interviews" class="text-xs font-bold text-[#FBBF24] hover:text-[#FACC15] uppercase tracking-wider flex items-center gap-1 transition-colors">
+            Completed <span class="material-icons text-[14px]">chevron_right</span>
+          </a>
         </div>
         <div class="space-y-3">
           @for (interview of upcomingInterviews(); track interview.id) {
@@ -80,9 +96,7 @@
                    <div class="w-6 h-6 rounded-full bg-[#262626] flex items-center justify-center text-[9px] font-bold text-white">{{ getInitials(interview.interviewers[0]?.firstname + ' ' + interview.interviewers[0]?.lastname) }}</div>
                    <span class="text-xs text-neutral-400 pr-1">{{ interview.interviewers[0]?.firstname }}</span>
                 </div>
-                <button class="w-9 h-9 rounded bg-[#1a1a1a] hover:bg-[#262626] border border-[#333] flex items-center justify-center text-neutral-400 transition-colors">
-                  <span class="material-icons text-[18px]">chevron_right</span>
-                </button>
+                <span class="text-xs font-bold text-neutral-500 uppercase tracking-wider px-3 py-1.5 rounded-lg bg-[#111111] border border-[#333]">Scheduled</span>
               </div>
             </div>
           }
@@ -98,41 +112,54 @@
      <div class="space-y-6">
         <!-- Pending Decisions -->
         <div class="bg-[#161616] border border-[#262626] rounded-xl p-6">
-           <h3 class="font-bold text-white mb-6">Pending Decisions</h3>
+           <div class="flex items-center justify-between mb-6">
+             <h3 class="font-bold text-white">Pending Decisions</h3>
+             <a routerLink="/admin/interviews" class="text-xs font-bold text-[#FBBF24] hover:text-[#FACC15] uppercase tracking-wider flex items-center gap-1 transition-colors">
+               View All <span class="material-icons text-[14px]">chevron_right</span>
+             </a>
+           </div>
            <div class="space-y-4">
-             @for (decision of dataService.pendingDecisions(); track decision.id) {
+             @for (interview of pendingDecisions(); track interview.id) {
                <div class="bg-[#111111] border border-[#333] rounded-xl p-4 shadow-inner">
                  <div class="flex justify-between items-start mb-3">
                    <div>
-                     <h4 class="font-bold text-white text-sm">{{ dataService.candidates().find(c => c.id === decision.candidateId)?.name || 'Unknown' }}</h4>
-                     <p class="text-xs text-neutral-400 mt-0.5">{{ dataService.candidates().find(c => c.id === decision.candidateId)?.role || 'Role' }}</p>
+                     <h4 class="font-bold text-white text-sm">{{ getCandidateName(interview) }}</h4>
+                     <p class="text-xs text-neutral-400 mt-0.5">{{ getCandidateRole(interview) }}</p>
                    </div>
-                   <div class="flex items-center gap-1 bg-[#262626] px-2 py-0.5 rounded-full">
-                     <span class="material-icons text-[14px] text-[#FBBF24]">star</span>
-                     <span class="text-xs font-bold text-white">{{ decision.feedback?.rating }}</span>
+                   <div class="flex items-center gap-2">
+                     <div class="flex items-center gap-1 bg-[#262626] px-2 py-0.5 rounded-full">
+                       <span class="material-icons text-[14px] text-[#FBBF24]">star</span>
+                       <span class="text-xs font-bold text-white">{{ avgRating(interview.interviewFeedbacks) ?? '-' }}</span>
+                     </div>
                    </div>
                  </div>
-                 <p class="text-xs text-neutral-300 italic mb-4 line-clamp-2">"{{ decision.feedback?.additional || decision.feedback?.positive }}"</p>
-                 
+                 @if (interview.interviewFeedbacks && interview.interviewFeedbacks[0]) {
+                   <div class="flex items-center gap-2 mb-3">
+                     <span class="text-[10px] font-bold uppercase tracking-widest text-neutral-500 px-2 py-0.5 rounded bg-[#1a1a1a] border border-[#262626]">{{ interview.interviewFeedbacks[0].recommendation }}</span>
+                     <span class="text-xs text-neutral-500">{{ interview.interviewFeedbacks.length }} feedback{{ interview.interviewFeedbacks.length > 1 ? 's' : '' }}</span>
+                   </div>
+                   <p class="text-xs text-neutral-300 italic mb-4 line-clamp-2">"{{ interview.interviewFeedbacks[0].additionalComments || interview.interviewFeedbacks[0].positiveComments }}"</p>
+                 }
                  <div class="grid grid-cols-2 gap-2">
-                    <button (click)="dataService.updateHiringDecision(decision.id, 'Offer Sent')" class="py-2 bg-green-500/10 hover:bg-green-500/20 border border-green-500/30 text-green-400 text-xs font-bold rounded-lg transition-colors">
-                      Hire
-                    </button>
-                    <button (click)="dataService.updateHiringDecision(decision.id, 'Proceed to Next Round')" class="py-2 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 text-blue-400 text-xs font-bold rounded-lg transition-colors">
-                      Next Round
-                    </button>
-                    <button (click)="dataService.updateHiringDecision(decision.id, 'Hold')" class="py-2 bg-neutral-500/10 hover:bg-neutral-500/20 border border-neutral-600 text-neutral-400 text-xs font-bold rounded-lg transition-colors">
-                      Hold
-                    </button>
-                    <button (click)="dataService.updateHiringDecision(decision.id, 'Rejected')" class="py-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 text-xs font-bold rounded-lg transition-colors">
-                      Reject
-                    </button>
+                   <button (click)="makeDecision(interview, 'hired')" [disabled]="decidingId()" class="py-2 bg-green-500/10 hover:bg-green-500/20 border border-green-500/30 text-green-400 text-xs font-bold rounded-lg transition-colors disabled:opacity-50">
+                     {{ decidingId() === interview.id ? 'Updating...' : 'Hire' }}
+                   </button>
+                   <button (click)="makeDecision(interview, 'next_round')" [disabled]="decidingId()" class="py-2 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 text-blue-400 text-xs font-bold rounded-lg transition-colors disabled:opacity-50">
+                     Next Round
+                   </button>
+                   <button (click)="makeDecision(interview, 'hold')" [disabled]="decidingId()" class="py-2 bg-neutral-500/10 hover:bg-neutral-500/20 border border-neutral-600 text-neutral-400 text-xs font-bold rounded-lg transition-colors disabled:opacity-50">
+                     Hold
+                   </button>
+                   <button (click)="makeDecision(interview, 'rejected')" [disabled]="decidingId()" class="py-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 text-xs font-bold rounded-lg transition-colors disabled:opacity-50">
+                     Reject
+                   </button>
                  </div>
                </div>
              }
-             @if (dataService.pendingDecisions().length === 0) {
+             @if (pendingDecisions().length === 0) {
                 <div class="text-center text-neutral-500 text-sm py-4">
-                   No pending decisions.
+                   <span class="material-icons text-3xl text-neutral-600 mb-2 block">how_to_reg</span>
+                   No pending decisions. Feedback awaiting your review will appear here.
                 </div>
              }
            </div>

@@ -75,6 +75,9 @@ export interface ApiInterview {
   startTime: string;
   endTime: string;
   status: string;
+  decision: string;
+  decisionUpdatedAt?: string | null;
+  decisionUpdatedBy?: string | null;
   candidateId: string;
   candidate: ApiCandidate;
   positionId: string;
@@ -83,6 +86,7 @@ export interface ApiInterview {
   creator: ApiUser;
   interviewerIds: string[];
   interviewers: ApiUser[];
+  interviewFeedbacks?: FeedbackResponse[];
   createdAt: string;
   updatedAt: string;
 }
@@ -205,6 +209,22 @@ export interface ApiCreateInterviewRequest {
 
 export interface ApiCreateInterviewResponse {
   interview: ApiInterview;
+}
+
+export type InterviewDecision = 'pending' | 'hired' | 'rejected' | 'hold' | 'next_round';
+
+export interface ApiUpdateDecisionRequest {
+  decision: InterviewDecision;
+}
+
+export interface ApiUpdateDecisionResponse {
+  interview: {
+    id: string;
+    status: string;
+    decision: string;
+    decisionUpdatedAt: string | null;
+    decisionUpdatedBy: string | null;
+  };
 }
 
 export interface ApiDepartmentsResponse {
