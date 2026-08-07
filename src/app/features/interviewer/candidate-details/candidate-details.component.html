@@ -22,66 +22,55 @@
       </div>
       <div class="flex-1">
         <div class="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-2 flex items-center gap-2">
-          <span class="hover:text-white cursor-pointer transition-colors" (click)="router.navigate(['/interviewer/dashboard'])">Interviews</span> 
+          <span class="hover:text-white cursor-pointer transition-colors" (click)="router.navigate(['/interviewer/dashboard'])">Interviews</span>
           <span class="material-icons text-[14px]">chevron_right</span> Candidate Details
         </div>
         <h1 class="text-4xl font-extrabold text-white mb-2 tracking-tight">{{ interviewerService.candidate()?.firstname }} {{ interviewerService.candidate()?.lastname }}</h1>
         <p class="text-neutral-400 font-medium text-lg">
-          <span class="text-[#FBBF24]">{{ interviewerService.candidate()?.currentPosition }}</span> <span class="mx-2 opacity-30">|</span> Technical Interview
+          <span class="text-[#FBBF24]">{{ interviewerService.candidate()?.currentPosition }}</span>
+          @if (interviewerService.candidate()?.currentCompany) {
+            <span class="mx-2 opacity-30">|</span> {{ interviewerService.candidate()?.currentCompany }}
+          }
         </p>
       </div>
       <div class="flex flex-col gap-2 items-start sm:items-end">
          <span class="bg-[#111111] border border-[#333] text-neutral-400 px-4 py-1.5 rounded-full text-xs font-bold tracking-wide">ID: {{ interviewerService.candidate()?.id }}</span>
-         <span class="bg-[#FBBF24] text-black px-4 py-1.5 rounded-full text-xs font-extrabold tracking-widest shadow-[0_0_10px_rgba(251,191,36,0.3)]">SCHEDULED</span>
+         @if (interviewerService.candidate()?.candidateCode) {
+           <span class="bg-[#FBBF24]/10 border border-[#FBBF24]/30 text-[#FBBF24] px-4 py-1.5 rounded-full text-xs font-bold tracking-wide">{{ interviewerService.candidate()?.candidateCode }}</span>
+         }
       </div>
     </div>
 
     <!-- Candidate Details Content -->
     <div class="space-y-8">
-      <!-- Top Row -->
+      <!-- Contact & Professional Info -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-         <!-- Candidate Info Card -->
+         <!-- Contact Info -->
          <div class="bg-[#161616] border border-[#262626] rounded-3xl p-8 shadow-xl">
-            <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-5">Candidate Information</h3>
+            <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-5">Contact Information</h3>
             <div class="space-y-4">
               <div>
-                <p class="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-1">Company</p>
-                <p class="text-white font-medium">{{ interviewerService.candidate()?.currentCompany }}</p>
+                <p class="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-1">Email</p>
+                <p class="text-white font-medium">{{ interviewerService.candidate()?.email }}</p>
               </div>
               <div>
-                <p class="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-1">Department</p>
-                <p class="text-white font-medium"></p>
-              </div>
-              <div>
-                <p class="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-1">Experience</p>
-                <p class="text-white font-medium">{{ interviewerService.candidate()?.experience }}</p>
-              </div>
-              <div>
-                <p class="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-1">Applied Date</p>
-                <p class="text-white font-medium"></p>
-              </div>
-              <div>
-                <p class="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-1">Status</p>
-                <p class="text-white font-medium"></p>
+                <p class="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-1">Phone</p>
+                <p class="text-white font-medium">{{ interviewerService.candidate()?.phone }}</p>
               </div>
             </div>
          </div>
 
-         <!-- Interview Schedule -->
+         <!-- Professional Info -->
          <div class="bg-[#161616] border border-[#262626] rounded-3xl p-8 shadow-xl">
-            <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-5">Interview Schedule</h3>
+            <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-5">Professional Info</h3>
             <div class="space-y-4">
               <div>
-                <p class="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-1">Date</p>
-                <p class="text-white font-medium"></p>
+                <p class="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-1">Current Company</p>
+                <p class="text-white font-medium">{{ interviewerService.candidate()?.currentCompany || 'N/A' }}</p>
               </div>
               <div>
-                <p class="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-1">Time</p>
-                <p class="text-white font-medium"></p>
-              </div>
-              <div>
-                <p class="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-1">Interview Type</p>
-                <p class="text-white font-medium">Technical Interview</p>
+                <p class="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-1">Experience</p>
+                <p class="text-white font-medium">{{ interviewerService.candidate()?.experience || 'N/A' }}</p>
               </div>
             </div>
          </div>
@@ -90,18 +79,22 @@
       <!-- Skills & Qualifications -->
       <div class="bg-[#161616] border border-[#262626] rounded-3xl p-8 shadow-xl">
         <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-5">Skills & Qualifications</h3>
-        <div class="flex flex-wrap gap-2">
-          @for (skill of interviewerService.candidate()?.skills; track skill) {
-            <span class="px-4 py-2 rounded-full border border-[#333] text-sm font-medium text-neutral-300">{{ skill }}</span>
-          }
-        </div>
+        @if (interviewerService.candidate()?.skills && interviewerService.candidate()!.skills.length > 0) {
+          <div class="flex flex-wrap gap-2">
+            @for (skill of interviewerService.candidate()?.skills; track skill) {
+              <span class="px-4 py-2 rounded-full border border-[#333] text-sm font-medium text-neutral-300">{{ skill }}</span>
+            }
+          </div>
+        } @else {
+          <p class="text-neutral-500">No skills listed</p>
+        }
       </div>
 
       <!-- Additional Notes -->
       <div class="bg-[#161616] p-6 rounded-3xl border border-[#262626]">
         <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-4 ml-2">Notes for Interviewer</h3>
         <div class="w-full bg-[#111111] border border-[#333] rounded-2xl p-5 text-neutral-400">
-          <p>{{ interviewerService.candidate()?.notes }}</p>
+          <p>{{ interviewerService.candidate()?.notes || 'No notes available' }}</p>
         </div>
       </div>
 

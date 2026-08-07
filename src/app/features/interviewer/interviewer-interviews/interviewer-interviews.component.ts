@@ -2,6 +2,7 @@ import { Component, inject, computed, signal, OnInit } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { InterviewerService } from '../../../core/services/interviewer.service';
+import { isInterviewStarted } from '../../../shared/utils';
 
 @Component({
   selector: 'app-interviewer-interviews',
@@ -56,4 +57,6 @@ export class InterviewerInterviewsComponent implements OnInit {
     this.dateFrom.set('');
     this.dateTo.set('');
   }
+
+  isInterviewStarted = isInterviewStarted;
 }

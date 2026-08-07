@@ -3,7 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { InterviewerService } from '../../../core/services/interviewer.service';
 import { ReactiveFormsModule, FormGroup, FormControl } from '@angular/forms';
 import { DatePipe } from '@angular/common';
-import { getInitials } from '../../../shared/utils';
+import { getInitials, isInterviewStarted } from '../../../shared/utils';
 
 @Component({
   selector: 'app-interviewer-feedback',
@@ -21,6 +21,7 @@ export class InterviewerFeedbackComponent implements OnInit {
   error = signal<string | null>(null);
   alreadySubmitted = signal(false);
   existingFeedback = signal<any>(null);
+  interviewNotStarted = signal(false);
 
   rating = signal(0);
 
@@ -37,7 +38,11 @@ export class InterviewerFeedbackComponent implements OnInit {
   }
 
   get interview() {
-    return this.interviewerService.interviews().find(i => i.id === this.interviewId) || null;
+    const found = this.interviewerService.interviews().find(i => i.id === this.interviewId) || null;
+    if (found && !isInterviewStarted(found)) {
+      this.interviewNotStarted.set(true);
+    }
+    return found;
   }
 
   get candidate() {
