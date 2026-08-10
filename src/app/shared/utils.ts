@@ -1,3 +1,7 @@
+export function isInterviewStarted(interview: { startTime: string }): boolean {
+  return new Date(interview.startTime) <= new Date();
+}
+
 export function getInitials(firstname?: string, lastname?: string): string {
   const first = firstname?.[0] || '';
   const last = lastname?.[0] || '';

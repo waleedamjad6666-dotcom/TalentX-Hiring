@@ -3,6 +3,7 @@ import { DatePipe } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
 import { InterviewerService } from '../../../core/services/interviewer.service';
 import { RouterLink, Router } from '@angular/router';
+import { isInterviewStarted } from '../../../shared/utils';
 
 @Component({
   selector: 'app-interviewer-dashboard',
@@ -34,10 +35,12 @@ export class InterviewerDashboardComponent implements OnInit {
 
   dashboardPastInterviews = computed(() => this.pastInterviews().slice(0, 3));
 
-  hiredCount = computed(() => this.pastInterviews().length);
-  rejectedCount = computed(() => 0);
+  hiredCount = computed(() => this.pastInterviews().filter(i => i.decision === 'hired').length);
+  rejectedCount = computed(() => this.pastInterviews().filter(i => i.decision === 'rejected').length);
 
   viewFeedback(interviewId: string) {
     this.router.navigate(['/interviewer/feedback', interviewId]);
   }
+
+  isInterviewStarted = isInterviewStarted;
 }

@@ -67,9 +67,16 @@
             <a [routerLink]="['/interviewer/candidate-details', inv.candidateId]" class="bg-[#FBBF24] hover:bg-[#FACC15] text-black font-bold px-6 py-3 rounded-xl transition-all shadow-[0_0_10px_rgba(251,191,36,0.15)] whitespace-nowrap text-center">
               Candidate Details
             </a>
-            <a [routerLink]="['/interviewer/feedback', inv.id]" class="bg-[#FBBF24] hover:bg-[#FACC15] text-black font-bold px-6 py-3 rounded-xl transition-all shadow-[0_0_10px_rgba(251,191,36,0.15)] whitespace-nowrap text-center">
-              Evaluate Candidate
-            </a>
+            @if (isInterviewStarted(inv)) {
+              <a [routerLink]="['/interviewer/feedback', inv.id]" class="bg-[#FBBF24] hover:bg-[#FACC15] text-black font-bold px-6 py-3 rounded-xl transition-all shadow-[0_0_10px_rgba(251,191,36,0.15)] whitespace-nowrap text-center">
+                Evaluate Candidate
+              </a>
+            } @else {
+              <span class="bg-neutral-700 text-neutral-400 font-bold px-6 py-3 rounded-xl whitespace-nowrap text-center cursor-not-allowed opacity-50"
+                    title="Feedback available after the interview starts at {{ inv.startTime | date:'medium' }}">
+                Evaluate Candidate
+              </span>
+            }
           </div>
         </div>
       }

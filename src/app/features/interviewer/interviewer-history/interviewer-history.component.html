@@ -48,12 +48,24 @@
           <table class="w-full text-left text-sm whitespace-nowrap">
             <thead class="bg-[#111111] border-b border-[#262626] text-neutral-400 text-xs uppercase tracking-widest font-bold">
               <tr>
-                <th class="p-5">Candidate</th>
-                <th class="p-5">Position</th>
-                <th class="p-5">Date</th>
-                <th class="p-5">Round</th>
-                <th class="p-5">Type</th>
-                <th class="p-5">Status</th>
+                <th class="p-5 cursor-pointer hover:text-[#FBBF24] transition-colors select-none" (click)="toggleSort('candidate')">
+                  Candidate <span class="material-icons text-sm align-middle ml-1">{{ sortIcon('candidate') }}</span>
+                </th>
+                <th class="p-5 cursor-pointer hover:text-[#FBBF24] transition-colors select-none" (click)="toggleSort('position')">
+                  Position <span class="material-icons text-sm align-middle ml-1">{{ sortIcon('position') }}</span>
+                </th>
+                <th class="p-5 cursor-pointer hover:text-[#FBBF24] transition-colors select-none" (click)="toggleSort('date')">
+                  Date <span class="material-icons text-sm align-middle ml-1">{{ sortIcon('date') }}</span>
+                </th>
+                <th class="p-5 cursor-pointer hover:text-[#FBBF24] transition-colors select-none" (click)="toggleSort('round')">
+                  Round <span class="material-icons text-sm align-middle ml-1">{{ sortIcon('round') }}</span>
+                </th>
+                <th class="p-5 cursor-pointer hover:text-[#FBBF24] transition-colors select-none" (click)="toggleSort('type')">
+                  Type <span class="material-icons text-sm align-middle ml-1">{{ sortIcon('type') }}</span>
+                </th>
+                <th class="p-5 cursor-pointer hover:text-[#FBBF24] transition-colors select-none" (click)="toggleSort('status')">
+                  Status <span class="material-icons text-sm align-middle ml-1">{{ sortIcon('status') }}</span>
+                </th>
                 <th class="p-5">Action</th>
               </tr>
             </thead>

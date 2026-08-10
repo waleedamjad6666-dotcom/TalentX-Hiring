@@ -9,6 +9,22 @@
     <p class="text-red-400 font-medium">{{ error() }}</p>
   </div>
 } @else if (interview) {
+  @if (interviewNotStarted()) {
+    <div class="max-w-4xl mx-auto pb-10">
+      <div class="bg-[#FBBF24]/10 border border-[#FBBF24]/30 rounded-2xl p-10 text-center">
+        <span class="material-icons text-5xl text-[#FBBF24] mb-4">schedule</span>
+        <h2 class="text-2xl font-bold text-white mb-2">Feedback Not Yet Available</h2>
+        <p class="text-neutral-400 font-medium mb-6">
+          You can submit feedback after the interview starts on
+          <span class="text-[#FBBF24]">{{ interview.startTime | date:'medium' }}</span>.
+        </p>
+        <button (click)="router.navigate(['/interviewer/dashboard'])"
+                class="px-8 py-3 rounded-xl bg-[#FBBF24] hover:bg-[#FACC15] text-black font-bold transition-all">
+          Back to Dashboard
+        </button>
+      </div>
+    </div>
+  } @else {
   <div class="max-w-4xl mx-auto pb-10">
     <!-- Header -->
     <div class="flex flex-col sm:flex-row gap-6 sm:items-center mb-8 border-b border-[#262626] pb-8">
@@ -45,61 +61,41 @@
     }
 
     <form [formGroup]="form" class="space-y-8">
-      <!-- Top Row -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-         <!-- Rating Card -->
-         <div class="bg-[#161616] border border-[#262626] rounded-3xl p-8 shadow-xl">
-            <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-5">Overall Performance Rating</h3>
-            <div class="flex gap-3 mb-8">
-               @for (star of [1,2,3,4,5]; track star) {
-                 <span class="material-icons text-5xl cursor-pointer transition-all hover:scale-110"
-                       [class.cursor-not-allowed]="alreadySubmitted()"
-                       [class.pointer-events-none]="alreadySubmitted()"
-                       (click)="!alreadySubmitted() && rating.set(star)"
-                       [class.text-[#FBBF24]]="star <= rating()"
-                       [class.drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]]="star <= rating()"
-                       [class.text-[#333]]="star > rating()">
-                 {{ star <= rating() ? 'star' : 'star_border' }}
-                 </span>
-               }
+      <!-- Rating & Recommendation -->
+      <div class="bg-[#161616] border border-[#262626] rounded-3xl p-8 shadow-xl">
+        <div class="flex flex-col md:flex-row md:items-center gap-8 md:gap-12">
+          <div class="flex-1">
+            <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-4">Overall Performance Rating</h3>
+            <div class="flex gap-3">
+              @for (star of [1,2,3,4,5]; track star) {
+                <span class="material-icons text-5xl cursor-pointer transition-all hover:scale-110"
+                      [class.cursor-not-allowed]="alreadySubmitted()"
+                      [class.pointer-events-none]="alreadySubmitted()"
+                      (click)="!alreadySubmitted() && rating.set(star)"
+                      [class.text-[#FBBF24]]="star <= rating()"
+                      [class.drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]]="star <= rating()"
+                      [class.text-[#333]]="star > rating()">
+                  {{ star <= rating() ? 'star' : 'star_border' }}
+                </span>
+              }
             </div>
-            <div class="border-t border-[#262626] pt-8">
-               <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-4">Recommended Status</h3>
-               <div class="relative">
-                 <select formControlName="recommended" [attr.disabled]="alreadySubmitted() ? '' : null" class="w-full bg-[#111111] border border-[#333] rounded-xl py-4 px-5 text-white font-medium outline-none focus:border-[#FBBF24] appearance-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                    <option value="" disabled>Select Recommendation</option>
-                    <option value="Yes">Yes, Recommend for Hire</option>
-                    <option value="No">No, Do Not Recommend</option>
-                    <option value="Hold">Hold for Review</option>
-                 </select>
-                 <span class="material-icons absolute right-4 top-1/2 -translate-y-1/2 text-neutral-500 pointer-events-none">expand_more</span>
-               </div>
-            </div>
-         </div>
+          </div>
 
-         <!-- Strengths & Updates -->
-         <div class="bg-[#161616] border border-[#262626] rounded-3xl p-8 shadow-xl">
-            <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-5">Primary Strengths</h3>
-            <div class="flex flex-wrap gap-2 mb-8">
-              <span class="px-4 py-2 rounded-full border border-[#333] text-sm font-medium text-neutral-300 hover:bg-[#1a1a1a] hover:border-[#555] cursor-pointer transition-all">Architecture</span>
-              <span class="px-4 py-2 rounded-full border border-[#333] text-sm font-medium text-neutral-300 hover:bg-[#1a1a1a] hover:border-[#555] cursor-pointer transition-all">Communication</span>
-              <span class="px-4 py-2 rounded-full border border-[#333] text-sm font-medium text-neutral-300 hover:bg-[#1a1a1a] hover:border-[#555] cursor-pointer transition-all">Problem Solving</span>
-              <span class="px-4 py-2 rounded-full border border-[#333] text-sm font-medium text-neutral-300 hover:bg-[#1a1a1a] hover:border-[#555] cursor-pointer transition-all">React Expertise</span>
+          <div class="hidden md:block w-px h-16 bg-[#262626]"></div>
+
+          <div class="flex-1">
+            <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-4">Recommended Status</h3>
+            <div class="relative">
+              <select formControlName="recommended" [attr.disabled]="alreadySubmitted() ? '' : null" class="w-full bg-[#111111] border border-[#333] rounded-xl py-4 px-5 text-white font-medium outline-none focus:border-[#FBBF24] appearance-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                <option value="" disabled>Select Recommendation</option>
+                <option value="Yes">Yes, Recommend for Hire</option>
+                <option value="No">No, Do Not Recommend</option>
+                <option value="Hold">Hold for Review</option>
+              </select>
+              <span class="material-icons absolute right-4 top-1/2 -translate-y-1/2 text-neutral-500 pointer-events-none">expand_more</span>
             </div>
-            <div class="border-t border-[#262626] pt-8">
-               <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-5">Hiring Updates</h3>
-               <div class="flex flex-col sm:flex-row gap-6">
-                  <label class="flex items-center gap-3 cursor-pointer group">
-                     <input type="checkbox" class="w-5 h-5 rounded border-[#444] bg-[#111111] checked:bg-[#FBBF24] accent-[#FBBF24] cursor-pointer" [attr.disabled]="alreadySubmitted() ? '' : null">
-                     <span class="text-sm font-medium text-neutral-300 group-hover:text-white transition-colors">Send to HR Ops</span>
-                  </label>
-                  <label class="flex items-center gap-3 cursor-pointer group">
-                     <input type="checkbox" class="w-5 h-5 rounded border-[#444] bg-[#111111] checked:bg-[#FBBF24] accent-[#FBBF24] cursor-pointer" [attr.disabled]="alreadySubmitted() ? '' : null">
-                     <span class="text-sm font-medium text-neutral-300 group-hover:text-white transition-colors">Notify Manager</span>
-                  </label>
-               </div>
-            </div>
-         </div>
+          </div>
+        </div>
       </div>
 
       <!-- Textareas Row -->
@@ -146,4 +142,5 @@
       </div>
     </form>
   </div>
+  }
 }

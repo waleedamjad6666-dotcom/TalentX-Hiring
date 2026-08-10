@@ -15,18 +15,33 @@
       <p class="text-red-400 font-medium">{{ interviewerService.error() }}</p>
     </div>
   } @else {
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10">
-      <div class="bg-[#161616] border border-[#262626] rounded-2xl p-6 shadow-lg shadow-black/20">
-        <p class="text-neutral-500 text-xs font-bold uppercase tracking-widest mb-2">Total Conducted</p>
-        <h2 class="text-5xl font-extrabold text-white">{{ pastInterviews().length }}</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
+      <div class="bg-[#161616] border border-[#262626] rounded-xl p-5 flex flex-col justify-between h-36 cursor-default transition-all duration-300 hover:-translate-y-1.5 hover:border-[#333] hover:shadow-lg hover:shadow-black/50">
+        <div class="flex justify-between items-start">
+          <div class="w-8 h-8 rounded bg-neutral-800 flex items-center justify-center text-[#FBBF24]"><span class="material-icons text-[18px]">check_circle</span></div>
+        </div>
+        <div>
+          <p class="text-neutral-500 text-xs font-semibold uppercase tracking-wider mb-1">Total Conducted</p>
+          <h2 class="text-4xl font-bold text-white">{{ pastInterviews().length > 9 ? pastInterviews().length : '0' + pastInterviews().length }}</h2>
+        </div>
       </div>
-      <div class="bg-[#161616] border border-[#262626] rounded-2xl p-6 shadow-lg shadow-black/20">
-        <p class="text-neutral-500 text-xs font-bold uppercase tracking-widest mb-2">Recommended for Hire</p>
-        <h2 class="text-5xl font-extrabold text-green-400 drop-shadow-[0_0_10px_rgba(74,222,128,0.2)]">{{ hiredCount() }}</h2>
+      <div class="bg-[#161616] border border-[#262626] rounded-xl p-5 flex flex-col justify-between h-36 cursor-default transition-all duration-300 hover:-translate-y-1.5 hover:border-[#333] hover:shadow-lg hover:shadow-black/50">
+        <div class="flex justify-between items-start">
+          <div class="w-8 h-8 rounded bg-neutral-800 flex items-center justify-center text-green-400"><span class="material-icons text-[18px]">thumb_up</span></div>
+        </div>
+        <div>
+          <p class="text-neutral-500 text-xs font-semibold uppercase tracking-wider mb-1">Recommended for Hire</p>
+          <h2 class="text-4xl font-bold text-green-400">{{ hiredCount() > 9 ? hiredCount() : '0' + hiredCount() }}</h2>
+        </div>
       </div>
-      <div class="bg-[#161616] border border-[#262626] rounded-2xl p-6 shadow-lg shadow-black/20">
-        <p class="text-neutral-500 text-xs font-bold uppercase tracking-widest mb-2">Rejected</p>
-        <h2 class="text-5xl font-extrabold text-red-400 drop-shadow-[0_0_10px_rgba(248,113,113,0.2)]">{{ rejectedCount() }}</h2>
+      <div class="bg-[#161616] border border-[#262626] rounded-xl p-5 flex flex-col justify-between h-36 cursor-default transition-all duration-300 hover:-translate-y-1.5 hover:border-[#333] hover:shadow-lg hover:shadow-black/50">
+        <div class="flex justify-between items-start">
+          <div class="w-8 h-8 rounded bg-neutral-800 flex items-center justify-center text-red-400"><span class="material-icons text-[18px]">person_remove</span></div>
+        </div>
+        <div>
+          <p class="text-neutral-500 text-xs font-semibold uppercase tracking-wider mb-1">Rejected</p>
+          <h2 class="text-4xl font-bold text-red-400">{{ rejectedCount() > 9 ? rejectedCount() : '0' + rejectedCount() }}</h2>
+        </div>
       </div>
     </div>
 
@@ -55,14 +70,21 @@
                  <span class="material-icons text-[16px]">event</span> {{ inv.date }} at {{ inv.startTime | date:'shortTime' }}
                </div>
              </div>
-             <div class="flex flex-col gap-3">
-              <a [routerLink]="['/interviewer/candidate-details', inv.candidateId]" class="bg-[#FBBF24] hover:bg-[#FACC15] text-black font-bold px-6 py-3 rounded-xl transition-all shadow-[0_0_10px_rgba(251,191,36,0.15)] whitespace-nowrap text-center">
-                  Candidate Details
-                </a>
-               <a [routerLink]="['/interviewer/feedback', inv.id]" class="bg-[#FBBF24] hover:bg-[#FACC15] text-black font-bold px-6 py-3 rounded-xl transition-all shadow-[0_0_10px_rgba(251,191,36,0.15)] whitespace-nowrap text-center">
-                 Evaluate Candidate
-               </a>
-             </div>
+              <div class="flex flex-col gap-3">
+               <a [routerLink]="['/interviewer/candidate-details', inv.candidateId]" class="bg-[#FBBF24] hover:bg-[#FACC15] text-black font-bold px-6 py-3 rounded-xl transition-all shadow-[0_0_10px_rgba(251,191,36,0.15)] whitespace-nowrap text-center">
+                   Candidate Details
+                 </a>
+                @if (isInterviewStarted(inv)) {
+                  <a [routerLink]="['/interviewer/feedback', inv.id]" class="bg-[#FBBF24] hover:bg-[#FACC15] text-black font-bold px-6 py-3 rounded-xl transition-all shadow-[0_0_10px_rgba(251,191,36,0.15)] whitespace-nowrap text-center">
+                    Evaluate Candidate
+                  </a>
+                } @else {
+                  <span class="bg-neutral-700 text-neutral-400 font-bold px-6 py-3 rounded-xl whitespace-nowrap text-center cursor-not-allowed opacity-50"
+                        title="Feedback available after the interview starts at {{ inv.startTime | date:'medium' }}">
+                    Evaluate Candidate
+                  </span>
+                }
+              </div>
            </div>
          }
        </div>
