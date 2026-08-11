@@ -1,8 +1,11 @@
 import { Component, inject, computed, signal, OnInit } from '@angular/core';
 import { DatePipe } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
 import { AdminService } from '../../../core/services/admin.service';
 import { getInitials } from '../../../shared/utils';
 import { FeedbackResponse } from '../../../core/models';
+
+type StatusFilter = 'all' | 'today' | 'pending' | 'hired' | 'rejected' | 'hold' | 'next_round';
 
 @Component({
   selector: 'app-admin-interviews',
@@ -11,12 +14,14 @@ import { FeedbackResponse } from '../../../core/models';
 })
 export class AdminInterviewsComponent implements OnInit {
   adminService = inject(AdminService);
+  route = inject(ActivatedRoute);
 
   search = signal('');
-  statusFilter = signal<'all' | 'pending' | 'hired' | 'rejected' | 'hold' | 'next_round'>('all');
+  statusFilter = signal<StatusFilter>('all');
 
-  filterOptions: { value: 'all' | 'pending' | 'hired' | 'rejected' | 'hold' | 'next_round'; label: string }[] = [
+  filterOptions: { value: StatusFilter; label: string }[] = [
     { value: 'all', label: 'All' },
+    { value: 'today', label: 'Interviews Today' },
     { value: 'pending', label: 'Pending' },
     { value: 'hired', label: 'Hired' },
     { value: 'next_round', label: 'Next Round' },
@@ -26,6 +31,10 @@ export class AdminInterviewsComponent implements OnInit {
 
   ngOnInit() {
     this.adminService.fetchInterviews();
+    const filter = this.route.snapshot.queryParamMap.get('filter');
+    if (filter && this.filterOptions.some(o => o.value === filter)) {
+      this.statusFilter.set(filter as StatusFilter);
+    }
   }
 
   completedInterviews = computed(() =>
@@ -41,12 +50,14 @@ export class AdminInterviewsComponent implements OnInit {
   filteredInterviews = computed(() => {
     const s = this.search().toLowerCase();
     const f = this.statusFilter();
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     return this.completedInterviews().filter(i => {
       const name = `${i.candidate.firstname} ${i.candidate.lastname}`.toLowerCase();
       const pos = i.position.title.toLowerCase();
       const code = (i.candidate.candidateCode || '').toLowerCase();
       const matchText = !s || name.includes(s) || pos.includes(s) || code.includes(s);
-      const matchStatus = f === 'all' || i.decision === f;
+      const matchStatus = f === 'all' || (f === 'today' ? i.date === todayStr : i.decision === f);
       return matchText && matchStatus;
     });
   });
@@ -55,7 +66,7 @@ export class AdminInterviewsComponent implements OnInit {
     this.search.set((e.target as HTMLInputElement).value);
   }
 
-  setStatusFilter(f: 'all' | 'pending' | 'hired' | 'rejected' | 'hold' | 'next_round') {
+  setStatusFilter(f: StatusFilter) {
     this.statusFilter.set(f);
   }
 

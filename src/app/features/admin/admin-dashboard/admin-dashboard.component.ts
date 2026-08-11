@@ -24,24 +24,32 @@ export class AdminDashboardComponent implements OnInit {
   });
 
   interviewsTodayCount = computed(() => {
-    const today = new Date().toISOString().split('T')[0];
-    return this.adminService.interviews().filter(i => i.date === today).length;
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    return this.adminService.interviews()
+      .filter(i => i.date === todayStr && (i.status === 'scheduled' || i.status === 'in-progress'))
+      .length;
   });
 
   pendingFeedbackCount = computed(() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return this.adminService.interviews().filter(i => {
-      if (i.status !== 'scheduled') return false;
-      return new Date(i.startTime) <= today;
-    }).length;
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    return this.adminService.interviews()
+      .filter(i => i.status === 'scheduled' && i.date === todayStr)
+      .length;
   });
 
-  totalPipelineCount = computed(() => this.adminService.candidates().length);
+  hiredCount = computed(() =>
+    this.adminService.interviews().filter(i => i.status === 'completed' && i.decision === 'hired').length
+  );
+
+  rejectedCount = computed(() =>
+    this.adminService.interviews().filter(i => i.status === 'completed' && i.decision === 'rejected').length
+  );
 
   pendingDecisions = computed(() =>
     this.adminService.interviews()
-      .filter(i => i.status === 'completed' && i.decision === 'pending' && (i.interviewFeedbacks?.length ?? 0) > 0)
+      .filter(i => i.status === 'completed' && i.decision === 'pending')
       .sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime())
   );
 
