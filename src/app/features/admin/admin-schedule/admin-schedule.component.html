@@ -26,38 +26,15 @@
 
         <form [formGroup]="form" class="space-y-6">
           <div>
-            <div class="flex justify-between mb-2 items-end">
-              <label class="block text-xs font-bold text-neutral-400 uppercase tracking-widest ml-1">Candidate</label>
-              <label class="flex items-center gap-2 text-xs font-bold text-white cursor-pointer bg-[#111111] border border-[#333] px-3 py-1 rounded-lg">
-                <input type="checkbox" [checked]="isNewCandidate()" (change)="isNewCandidate.set(!isNewCandidate())" class="accent-[#FBBF24]">
-                Add New Candidate
-              </label>
-            </div>
-
-            @if (!isNewCandidate()) {
-              <select formControlName="candidateId" class="w-full bg-[#111111] border border-[#333] rounded-xl py-3.5 px-4 text-white outline-none focus:border-[#FBBF24] appearance-none transition-colors">
-                <option value="">Select candidate</option>
-                @for (c of adminService.candidates(); track c.id) {
-                  <option [value]="c.id">{{ c.firstname }} {{ c.lastname }} ({{ c.currentPosition || c.email }})</option>
-                }
-              </select>
-              @if (adminService.loading() && adminService.candidates().length === 0) {
-                <p class="text-neutral-500 text-xs mt-2">Loading candidates...</p>
+            <label class="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-2 ml-1">Candidate</label>
+            <select formControlName="candidateId" class="w-full bg-[#111111] border border-[#333] rounded-xl py-3.5 px-4 text-white outline-none focus:border-[#FBBF24] appearance-none transition-colors">
+              <option value="">Select candidate</option>
+              @for (c of adminService.candidates(); track c.id) {
+                <option [value]="c.id">{{ c.firstname }} {{ c.lastname }} ({{ c.currentPosition || c.email }})</option>
               }
-            } @else {
-              <div [formGroup]="newCandidateForm" class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-[#111111] border border-[#333] p-4 rounded-xl shadow-inner">
-                <input type="text" formControlName="name" placeholder="Full Name" class="bg-[#161616] border border-[#262626] rounded-lg px-4 py-2 text-white outline-none focus:border-[#FBBF24]">
-                <input type="text" formControlName="currentPosition" placeholder="Role (e.g. Frontend Developer)" class="bg-[#161616] border border-[#262626] rounded-lg px-4 py-2 text-white outline-none focus:border-[#FBBF24]">
-                <input type="email" formControlName="email" placeholder="Email" class="bg-[#161616] border border-[#262626] rounded-lg px-4 py-2 text-white outline-none focus:border-[#FBBF24]">
-                <input type="text" formControlName="phone" placeholder="Phone" class="bg-[#161616] border border-[#262626] rounded-lg px-4 py-2 text-white outline-none focus:border-[#FBBF24]">
-                <select formControlName="experience" class="bg-[#161616] border border-[#262626] rounded-lg px-4 py-2 text-white outline-none focus:border-[#FBBF24] appearance-none">
-                  <option value="1 Year">1 Year</option>
-                  <option value="2 Years">2 Years</option>
-                  <option value="3 Years">3 Years</option>
-                  <option value="4 Years">4 Years</option>
-                  <option value="5+ Years">5+ Years</option>
-                </select>
-              </div>
+            </select>
+            @if (adminService.loading() && adminService.candidates().length === 0) {
+              <p class="text-neutral-500 text-xs mt-2">Loading candidates...</p>
             }
           </div>
 
