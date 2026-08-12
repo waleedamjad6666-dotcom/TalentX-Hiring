@@ -160,6 +160,14 @@ export class AdminService {
     );
   }
 
+  updateRoundDecision(interviewId: string, roundId: string, decision: ApiUpdateDecisionRequest['decision']): Observable<any> {
+    return this.http.patch<any>(`/api/admin/interviews/${interviewId}/rounds/${roundId}/decision`, { decision }).pipe(
+      tap(() => {
+        this.fetchInterviews();
+      })
+    );
+  }
+
   fetchCandidate(id: string): Observable<ApiCandidateDetailResponse> {
     return this.http.get<ApiCandidateDetailResponse>(`/api/admin/candidates/${id}`);
   }

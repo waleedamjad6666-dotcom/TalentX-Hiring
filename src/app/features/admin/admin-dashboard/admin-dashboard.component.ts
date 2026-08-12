@@ -4,6 +4,14 @@ import { RouterLink } from '@angular/router';
 import { getInitialsFromName } from '../../../shared/utils';
 import { ApiInterview, ApiInterviewRound, FeedbackResponse } from '../../../core/models';
 
+export interface PendingDecision {
+  id: string;
+  type: 'interview' | 'round';
+  interview: ApiInterview;
+  round?: ApiInterviewRound;
+  feedbacks: FeedbackResponse[];
+}
+
 @Component({
   selector: 'app-admin-dashboard',
   imports: [RouterLink],
@@ -53,26 +61,56 @@ export class AdminDashboardComponent implements OnInit {
     this.adminService.interviews().filter(i => i.status === 'completed' && i.decision === 'rejected').length
   );
 
-  pendingDecisions = computed(() =>
-    this.adminService.interviews()
-      .filter(i => i.status === 'completed' && i.decision === 'pending')
-      .sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime())
-  );
+  pendingDecisions = computed<PendingDecision[]>(() => {
+    const list: PendingDecision[] = [];
+    for (const interview of this.adminService.interviews()) {
+      if (interview.rounds && interview.rounds.length > 0) {
+        for (const round of interview.rounds) {
+          if (round.status === 'completed' && (!round.decision || round.decision === 'pending')) {
+            const feedbacks = (interview.interviewFeedbacks || []).filter(
+              (f) => f.roundId === round.id
+            );
+            list.push({
+              id: `${interview.id}-round-${round.id}`,
+              type: 'round',
+              interview,
+              round,
+              feedbacks
+            });
+          }
+        }
+      } else {
+        if (interview.status === 'completed' && interview.decision === 'pending') {
+          list.push({
+            id: interview.id,
+            type: 'interview',
+            interview,
+            feedbacks: interview.interviewFeedbacks || []
+          });
+        }
+      }
+    }
+    return list.sort((a, b) => new Date(b.interview.startTime).getTime() - new Date(a.interview.startTime).getTime());
+  });
 
   ngOnInit() {
     this.adminService.fetchInterviews();
     this.adminService.fetchCandidates();
   }
 
-  makeDecision(interview: ApiInterview, decision: 'hired' | 'rejected' | 'hold' | 'next_round') {
+  makeDecision(item: PendingDecision, decision: 'hired' | 'rejected' | 'hold' | 'next_round') {
     if (this.decidingId()) return;
-    this.decidingId.set(interview.id);
+    this.decidingId.set(item.id);
     this.decisionMsg.set('');
 
-    this.adminService.updateInterviewDecision(interview.id, decision).subscribe({
+    const obs = item.type === 'round'
+      ? this.adminService.updateRoundDecision(item.interview.id, item.round!.id, decision)
+      : this.adminService.updateInterviewDecision(item.interview.id, decision);
+
+    obs.subscribe({
       next: () => {
         this.decidingId.set(null);
-        this.decisionMsg.set(`${interview.candidate.firstname} ${interview.candidate.lastname} marked as ${this.decisionLabel(decision)}.`);
+        this.decisionMsg.set(`${item.interview.candidate.firstname} ${item.interview.candidate.lastname} marked as ${this.decisionLabel(decision)}.`);
         setTimeout(() => this.decisionMsg.set(''), 4000);
       },
       error: (err) => {

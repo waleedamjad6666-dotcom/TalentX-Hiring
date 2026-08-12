@@ -100,6 +100,9 @@
                   <span class="w-5 h-5 rounded-full bg-[#262626] text-white text-[9px] font-bold flex items-center justify-center">{{ round.roundNumber }}</span>
                   <span class="text-xs font-bold text-white">{{ round.type || 'Interview' }}</span>
                   <span [class]="roundStatusClasses(round.status)">{{ round.status }}</span>
+                  @if (round.decision && round.decision !== 'pending') {
+                    <span [class]="decisionClasses(round.decision)" class="px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase tracking-wider">{{ decisionLabel(round.decision) }}</span>
+                  }
                   <span class="text-[11px] text-neutral-500">{{ roundDateTime(round) }}</span>
                 </div>
               }
@@ -115,6 +118,9 @@
                 <span class="w-6 h-6 rounded-full bg-[#262626] text-white text-[10px] font-bold flex items-center justify-center">{{ group.round.roundNumber }}</span>
                 <p class="text-sm font-bold text-white">{{ group.round.type || 'Interview' }}</p>
                 <span [class]="roundStatusClasses(group.round.status)">{{ group.round.status }}</span>
+                @if (group.round.decision && group.round.decision !== 'pending') {
+                  <span [class]="decisionClasses(group.round.decision)" class="px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase tracking-wider">{{ decisionLabel(group.round.decision) }}</span>
+                }
                 <span class="text-xs text-neutral-500">{{ roundDateTime(group.round) }}</span>
               </div>
             }

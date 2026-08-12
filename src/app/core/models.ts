@@ -77,6 +77,9 @@ export interface ApiInterviewRound {
   startTime: string | null;
   endTime: string | null;
   status: string;
+  decision?: string;
+  decisionUpdatedAt?: string | null;
+  decisionUpdatedBy?: string | null;
   interviewerIds: string[];
   interviewers: ApiUser[];
   interviewFeedbacks?: FeedbackResponse[];
