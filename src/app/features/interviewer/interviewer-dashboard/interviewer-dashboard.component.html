@@ -66,21 +66,21 @@
              <div>
                <h3 class="font-bold text-xl text-white mb-1">{{ inv.candidate.firstname }} {{ inv.candidate.lastname }}</h3>
                <p class="text-sm font-medium text-neutral-400 mb-4">{{ inv.position.title }}</p>
-               <div class="flex items-center gap-2 text-xs font-bold text-[#FBBF24] bg-[#FBBF24]/10 w-max px-3 py-1.5 rounded-lg border border-[#FBBF24]/20">
-                 <span class="material-icons text-[16px]">event</span> {{ inv.date }} at {{ inv.startTime | date:'shortTime' }}
-               </div>
-             </div>
-              <div class="flex flex-col gap-3">
-               <a [routerLink]="['/interviewer/candidate-details', inv.candidateId]" class="bg-[#FBBF24] hover:bg-[#FACC15] text-black font-bold px-6 py-3 rounded-xl transition-all shadow-[0_0_10px_rgba(251,191,36,0.15)] whitespace-nowrap text-center">
-                   Candidate Details
-                 </a>
-                @if (isInterviewStarted(inv)) {
+                <div class="flex items-center gap-2 text-xs font-bold text-[#FBBF24] bg-[#FBBF24]/10 w-max px-3 py-1.5 rounded-lg border border-[#FBBF24]/20">
+                  <span class="material-icons text-[16px]">event</span> {{ interviewDate(inv) }} at {{ interviewStartTime(inv) | date:'shortTime' }}
+                </div>
+              </div>
+               <div class="flex flex-col gap-3">
+                <a [routerLink]="['/interviewer/candidate-details', inv.candidateId]" class="bg-[#FBBF24] hover:bg-[#FACC15] text-black font-bold px-6 py-3 rounded-xl transition-all shadow-[0_0_10px_rgba(251,191,36,0.15)] whitespace-nowrap text-center">
+                    Candidate Details
+                  </a>
+                @if (canEvaluate(inv)) {
                   <a [routerLink]="['/interviewer/feedback', inv.id]" class="bg-[#FBBF24] hover:bg-[#FACC15] text-black font-bold px-6 py-3 rounded-xl transition-all shadow-[0_0_10px_rgba(251,191,36,0.15)] whitespace-nowrap text-center">
                     Evaluate Candidate
                   </a>
                 } @else {
                   <span class="bg-neutral-700 text-neutral-400 font-bold px-6 py-3 rounded-xl whitespace-nowrap text-center cursor-not-allowed opacity-50"
-                        title="Feedback available after the interview starts at {{ inv.startTime | date:'medium' }}">
+                        title="Feedback available after the interview starts at {{ interviewStartTime(inv) | date:'medium' }}">
                     Evaluate Candidate
                   </span>
                 }
@@ -117,14 +117,14 @@
                      <div class="font-bold text-white text-base">{{ inv.candidate.firstname }} {{ inv.candidate.lastname }}</div>
                      <div class="text-xs font-medium text-neutral-500 mt-0.5">{{ inv.position.title }}</div>
                    </td>
-                   <td class="p-5 text-neutral-300 font-medium">{{ inv.date }}</td>
-                   <td class="p-5 text-neutral-300 font-medium">Round {{ inv.round }}</td>
-                   <td class="p-5 text-neutral-300 font-medium">{{ inv.type || 'N/A' }}</td>
-                   <td class="p-5">
-                     <span class="px-3 py-1 rounded-full text-[11px] font-bold tracking-wide uppercase bg-green-500/20 text-green-400">
-                       {{ inv.status }}
-                     </span>
-                   </td>
+                    <td class="p-5 text-neutral-300 font-medium">{{ interviewDate(inv) }}</td>
+                    <td class="p-5 text-neutral-300 font-medium">{{ interviewRoundLabel(inv) }}</td>
+                    <td class="p-5 text-neutral-300 font-medium">{{ interviewType(inv) || 'N/A' }}</td>
+                    <td class="p-5">
+                      <span class="px-3 py-1 rounded-full text-[11px] font-bold tracking-wide uppercase bg-green-500/20 text-green-400">
+                        {{ interviewStatus(inv) }}
+                      </span>
+                    </td>
                    <td class="p-5">
                      <button (click)="viewFeedback(inv.id)" class="px-4 py-2 rounded-lg bg-[#FBBF24]/10 text-[#FBBF24] text-xs font-bold tracking-wide hover:bg-[#FBBF24]/20 transition-colors border border-[#FBBF24]/20">
                        View Feedback

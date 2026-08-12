@@ -76,12 +76,12 @@
                     <div class="font-bold text-white text-base">{{ inv.candidate.firstname }} {{ inv.candidate.lastname }}</div>
                   </td>
                   <td class="p-5 text-neutral-300 font-medium">{{ inv.position.title }}</td>
-                  <td class="p-5 text-neutral-300 font-medium">{{ inv.date }}</td>
-                  <td class="p-5 text-neutral-300 font-medium">Round {{ inv.round }}</td>
-                  <td class="p-5 text-neutral-300 font-medium">{{ inv.type || 'N/A' }}</td>
+                  <td class="p-5 text-neutral-300 font-medium">{{ interviewDate(inv) }}</td>
+                  <td class="p-5 text-neutral-300 font-medium">{{ interviewRoundLabel(inv) }}</td>
+                  <td class="p-5 text-neutral-300 font-medium">{{ interviewType(inv) || 'N/A' }}</td>
                   <td class="p-5">
                     <span class="px-3 py-1 rounded-full text-[11px] font-bold tracking-wide uppercase bg-green-500/20 text-green-400">
-                      {{ inv.status }}
+                      {{ interviewStatus(inv) }}
                     </span>
                   </td>
                   <td class="p-5">

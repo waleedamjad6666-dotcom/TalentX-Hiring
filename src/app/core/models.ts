@@ -67,6 +67,24 @@ export interface ApiUser {
   email: string;
 }
 
+export interface ApiInterviewRound {
+  id: string;
+  interviewId: string;
+  roundNumber: number;
+  type: string | null;
+  duration: number;
+  date: string | null;
+  startTime: string | null;
+  endTime: string | null;
+  status: string;
+  decision?: string;
+  decisionUpdatedAt?: string | null;
+  decisionUpdatedBy?: string | null;
+  interviewerIds: string[];
+  interviewers: ApiUser[];
+  interviewFeedbacks?: FeedbackResponse[];
+}
+
 export interface ApiInterview {
   id: string;
   round: number;
@@ -86,6 +104,7 @@ export interface ApiInterview {
   creator: ApiUser;
   interviewerIds: string[];
   interviewers: ApiUser[];
+  rounds?: ApiInterviewRound[];
   interviewFeedbacks?: FeedbackResponse[];
   createdAt: string;
   updatedAt: string;
@@ -114,6 +133,7 @@ export interface ApiCandidateResponse {
 
 export interface SubmitFeedbackRequest {
   interviewId: string;
+  roundId?: string;
   rating: number;
   recommendation: 'Yes' | 'No' | 'Hold';
   positiveComments: string;
@@ -121,12 +141,21 @@ export interface SubmitFeedbackRequest {
   additionalComments: string;
 }
 
+export interface FeedbackRoundRef {
+  id: string;
+  roundNumber: number;
+  type: string | null;
+  date: string | null;
+}
+
 export interface FeedbackResponse {
   id: string;
   interviewId: string;
+  roundId?: string | null;
   candidateId: string;
   interviewerId: string;
   interviewer?: ApiUser;
+  round?: FeedbackRoundRef;
   rating: number;
   recommendation: string;
   positiveComments: string;
@@ -140,7 +169,7 @@ export interface SubmitFeedbackResponse {
 }
 
 export interface GetFeedbackResponse {
-  feedback: FeedbackResponse | null;
+  feedback: FeedbackResponse | FeedbackResponse[] | null;
 }
 
 export interface ApiInterviewer {
@@ -226,19 +255,45 @@ export interface ApiCandidateDetailResponse {
   candidate: ApiCandidateDetail;
 }
 
+export interface ApiCreateInterviewRound {
+  interviewerIds: string[];
+  type?: string;
+  duration: number;
+  date?: string;
+  startTime?: string;
+  endTime?: string;
+}
+
 export interface ApiCreateInterviewRequest {
   candidateId: string;
   positionId: string;
-  interviewerIds: string[];
-  date: string;
-  startTime: string;
-  endTime: string;
+  interviewerIds?: string[];
+  date?: string;
+  startTime?: string;
+  endTime?: string;
   round?: number;
   type?: string;
+  rounds?: ApiCreateInterviewRound[];
 }
 
 export interface ApiCreateInterviewResponse {
   interview: ApiInterview;
+}
+
+export interface ApiRoundsResponse {
+  rounds: ApiInterviewRound[];
+}
+
+export interface ApiAddRoundsResponse {
+  rounds: ApiInterviewRound[];
+}
+
+export interface ApiUpdateRoundScheduleResponse {
+  round: ApiInterviewRound;
+}
+
+export interface ApiCancelRoundResponse {
+  round: ApiInterviewRound;
 }
 
 export type InterviewDecision = 'pending' | 'hired' | 'rejected' | 'hold' | 'next_round';

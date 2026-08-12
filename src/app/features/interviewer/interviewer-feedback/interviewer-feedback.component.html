@@ -16,7 +16,7 @@
         <h2 class="text-2xl font-bold text-white mb-2">Feedback Not Yet Available</h2>
         <p class="text-neutral-400 font-medium mb-6">
           You can submit feedback after the interview starts on
-          <span class="text-[#FBBF24]">{{ interview.startTime | date:'medium' }}</span>.
+          <span class="text-[#FBBF24]">{{ (selectedRound()?.startTime || interview.startTime) | date:'medium' }}</span>.
         </p>
         <button (click)="router.navigate(['/interviewer/dashboard'])"
                 class="px-8 py-3 rounded-xl bg-[#FBBF24] hover:bg-[#FACC15] text-black font-bold transition-all">
@@ -38,7 +38,7 @@
         </div>
         <h1 class="text-4xl font-extrabold text-white mb-2 tracking-tight">{{ candidate?.firstname }} {{ candidate?.lastname }}</h1>
         <p class="text-neutral-400 font-medium text-lg">
-          <span class="text-[#FBBF24]">{{ interview.position.title }}</span> <span class="mx-2 opacity-30">|</span> Round {{ interview.round }}
+          <span class="text-[#FBBF24]">{{ interview.position.title }}</span> <span class="mx-2 opacity-30">|</span> {{ selectedRoundLabel() }}
         </p>
       </div>
       <div class="flex flex-col gap-2 items-start sm:items-end">
@@ -51,11 +51,28 @@
       </div>
     </div>
 
+    @if (hasRounds()) {
+      <div class="bg-[#161616] border border-[#262626] rounded-2xl p-5 mb-8">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+          <div class="flex items-center gap-2 flex-shrink-0">
+            <span class="material-icons text-[18px] text-[#FBBF24]">layers</span>
+            <span class="text-xs font-bold text-neutral-400 uppercase tracking-widest">Select Round</span>
+          </div>
+          <select [value]="selectedRound()?.id || ''" (change)="selectRound($event)" [disabled]="submitting()"
+            class="w-full sm:w-auto bg-[#111111] border border-[#333] rounded-xl py-3 px-4 text-white font-medium outline-none focus:border-[#FBBF24] appearance-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+            @for (round of myRounds(); track round.id) {
+              <option [value]="round.id">Round {{ round.roundNumber }} — {{ round.type || 'Interview' }} ({{ round.status }})</option>
+            }
+          </select>
+        </div>
+      </div>
+    }
+
     @if (alreadySubmitted()) {
       <div class="bg-green-500/10 border border-green-500/30 rounded-2xl p-6 mb-8">
         <div class="flex items-center gap-3">
           <span class="material-icons text-green-400">check_circle</span>
-          <p class="text-green-400 font-medium">You have already submitted feedback for this interview. The form is now read-only.</p>
+          <p class="text-green-400 font-medium">You have already submitted feedback for this {{ hasRounds() ? 'round' : 'interview' }}. The form is now read-only.</p>
         </div>
       </div>
     }

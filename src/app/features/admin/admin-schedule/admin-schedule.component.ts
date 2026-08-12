@@ -1,12 +1,22 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { AdminService } from '../../../core/services/admin.service';
-import { ReactiveFormsModule, FormGroup, FormControl } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule, FormGroup, FormControl } from '@angular/forms';
 import { DatePipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
+import { ApiCreateInterviewRound } from '../../../core/models';
+
+interface MockRound {
+  id: number;
+  interviewerIds: string[];
+  type: string;
+  duration: string;
+  date: string;
+  time: string;
+}
 
 @Component({
   selector: 'app-admin-schedule',
-  imports: [ReactiveFormsModule, DatePipe, RouterLink],
+  imports: [ReactiveFormsModule, FormsModule, DatePipe, RouterLink],
   templateUrl: './admin-schedule.component.html'
 })
 export class AdminScheduleComponent implements OnInit {
@@ -16,6 +26,10 @@ export class AdminScheduleComponent implements OnInit {
   submitting = signal(false);
   errorMsg = '';
   successMsg = '';
+
+  rounds: MockRound[] = [];
+  private nextRoundId = 2;
+  maxRounds = 5;
 
   form = new FormGroup({
     candidateId: new FormControl('', { nonNullable: true }),
@@ -58,29 +72,97 @@ export class AdminScheduleComponent implements OnInit {
 
   schedule() {
     if (!this.isFormValid() || this.submitting()) return;
+
+    for (const round of this.rounds) {
+      if (!this.isRoundValid(round)) {
+        this.errorMsg = `Round ${round.id}: each additional round requires at least one interviewer and a duration.`;
+        return;
+      }
+    }
+
     this.submitting.set(true);
     this.errorMsg = '';
     this.successMsg = '';
 
-    const date = this.form.value.date!;
-    const time = this.form.value.time!;
-    const durationMin = Number(this.form.value.duration);
+    const rounds: ApiCreateInterviewRound[] = [
+      this.buildRoundPayload(
+        this.form.value.interviewerIds!,
+        this.form.value.type || 'Technical Assessment',
+        Number(this.form.value.duration),
+        this.form.value.date!,
+        this.form.value.time!
+      )
+    ];
 
-    const startTime = new Date(`${date}T${time}`);
-    const endTime = new Date(startTime.getTime() + durationMin * 60000);
+    for (const round of this.rounds) {
+      rounds.push(this.buildRoundPayload(
+        round.interviewerIds,
+        round.type,
+        Number(round.duration),
+        round.date,
+        round.time
+      ));
+    }
 
-    this.createInterview(this.form.value.candidateId!, startTime, endTime, date);
+    this.createInterview(this.form.value.candidateId!, rounds);
   }
 
-  private createInterview(candidateId: string, startTime: Date, endTime: Date, date: string) {
+  private buildRoundPayload(
+    interviewerIds: string[],
+    type: string,
+    duration: number,
+    date: string,
+    time: string
+  ): ApiCreateInterviewRound {
+    const payload: ApiCreateInterviewRound = { interviewerIds, type, duration };
+    if (date && time) {
+      const startTime = new Date(`${date}T${time}`);
+      const endTime = new Date(startTime.getTime() + duration * 60000);
+      payload.date = date;
+      payload.startTime = startTime.toISOString();
+      payload.endTime = endTime.toISOString();
+    }
+    return payload;
+  }
+
+  addRound() {
+    if (this.rounds.length >= this.maxRounds) return;
+    this.rounds.push({
+      id: this.nextRoundId++,
+      interviewerIds: [],
+      type: 'Technical Assessment',
+      duration: '45',
+      date: '',
+      time: ''
+    });
+  }
+
+  removeRound(index: number) {
+    this.rounds.splice(index, 1);
+  }
+
+  previewRoundInterviewers(round: MockRound) {
+    const ids = round.interviewerIds || [];
+    const names = ids.map(id => {
+      const i = this.adminService.interviewers().find(x => x.id === id);
+      return i ? `${i.firstname} ${i.lastname}` : null;
+    }).filter(Boolean);
+    return names.length ? names.join(', ') : '-';
+  }
+
+  isRoundValid(round: MockRound) {
+    return round.interviewerIds.length > 0 && round.duration;
+  }
+
+  canAddRound() {
+    return this.rounds.length < this.maxRounds;
+  }
+
+  private createInterview(candidateId: string, rounds: ApiCreateInterviewRound[]) {
     this.adminService.createInterview({
       candidateId,
       positionId: this.form.value.positionId!,
-      interviewerIds: this.form.value.interviewerIds!,
-      date,
-      startTime: startTime.toISOString(),
-      endTime: endTime.toISOString(),
-      type: this.form.value.type
+      rounds
     }).subscribe({
       next: () => {
         this.submitting.set(false);

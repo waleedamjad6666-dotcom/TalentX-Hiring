@@ -3,7 +3,7 @@ import { DatePipe } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { AdminService } from '../../../core/services/admin.service';
 import { getInitials } from '../../../shared/utils';
-import { FeedbackResponse } from '../../../core/models';
+import { ApiInterview, ApiInterviewRound, FeedbackResponse } from '../../../core/models';
 
 type StatusFilter = 'all' | 'today' | 'pending' | 'hired' | 'rejected' | 'hold' | 'next_round';
 
@@ -80,6 +80,34 @@ export class AdminInterviewsComponent implements OnInit {
 
   interviewerInitials(fb: FeedbackResponse) {
     return fb.interviewer ? getInitials(fb.interviewer.firstname, fb.interviewer.lastname) : '?';
+  }
+
+  feedbackGroups(interview: ApiInterview): { round?: ApiInterviewRound; feedbacks: FeedbackResponse[] }[] {
+    const fb = interview.interviewFeedbacks || [];
+    if (interview.rounds && interview.rounds.length > 0) {
+      return interview.rounds.map(round => ({
+        round,
+        feedbacks: fb.filter(f => f.roundId === round.id)
+      }));
+    }
+    return [{ feedbacks: fb }];
+  }
+
+  roundStatusClasses(status: string) {
+    const base = 'text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider';
+    switch (status) {
+      case 'scheduled': return `${base} bg-blue-500/15 text-blue-400 border border-blue-500/30`;
+      case 'in-progress': return `${base} bg-amber-500/15 text-amber-400 border border-amber-500/30`;
+      case 'completed': return `${base} bg-green-500/15 text-green-400 border border-green-500/30`;
+      case 'cancelled': return `${base} bg-red-500/15 text-red-400 border border-red-500/30`;
+      default: return `${base} bg-neutral-500/15 text-neutral-400 border border-neutral-600`;
+    }
+  }
+
+  roundDateTime(round: ApiInterviewRound) {
+    if (!round.date) return 'Not scheduled';
+    if (!round.startTime) return round.date;
+    return `${round.date} at ${new Date(round.startTime).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`;
   }
 
   averageRating(feedbacks: FeedbackResponse[] | undefined) {
