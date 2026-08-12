@@ -3,7 +3,7 @@ import { DatePipe } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
 import { InterviewerService } from '../../../core/services/interviewer.service';
 import { RouterLink, Router } from '@angular/router';
-import { isInterviewStarted } from '../../../shared/utils';
+import { ApiInterview, ApiInterviewRound } from '../../../core/models';
 
 @Component({
   selector: 'app-interviewer-dashboard',
@@ -17,6 +17,42 @@ export class InterviewerDashboardComponent implements OnInit {
 
   ngOnInit() {
     this.interviewerService.fetchInterviews();
+  }
+
+  myRounds(interview: ApiInterview): ApiInterviewRound[] {
+    const uid = this.auth.currentUser()?.id;
+    if (!uid) return [];
+    return (interview.rounds || []).filter(r => r.interviewerIds.includes(uid));
+  }
+
+  interviewDate(interview: ApiInterview): string {
+    return this.myRounds(interview)[0]?.date || interview.date;
+  }
+
+  interviewStartTime(interview: ApiInterview): string {
+    return this.myRounds(interview)[0]?.startTime || interview.startTime;
+  }
+
+  interviewRoundLabel(interview: ApiInterview): string {
+    const round = this.myRounds(interview)[0];
+    if (round && interview.rounds?.length) {
+      return `Round ${round.roundNumber} of ${interview.rounds.length}`;
+    }
+    return `Round ${interview.round}`;
+  }
+
+  interviewType(interview: ApiInterview): string | null {
+    const round = this.myRounds(interview)[0];
+    return round?.type || interview.type || null;
+  }
+
+  interviewStatus(interview: ApiInterview): string {
+    return this.myRounds(interview)[0]?.status || interview.status;
+  }
+
+  canEvaluate(interview: ApiInterview): boolean {
+    const start = this.myRounds(interview)[0]?.startTime || interview.startTime;
+    return new Date(start) <= new Date();
   }
 
   upcomingInterviews = computed(() =>
@@ -41,6 +77,4 @@ export class InterviewerDashboardComponent implements OnInit {
   viewFeedback(interviewId: string) {
     this.router.navigate(['/interviewer/feedback', interviewId]);
   }
-
-  isInterviewStarted = isInterviewStarted;
 }

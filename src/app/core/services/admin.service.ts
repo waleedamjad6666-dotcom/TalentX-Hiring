@@ -25,7 +25,12 @@ import {
   ApiCreatePositionRequest,
   ApiCreatePositionResponse,
   ApiUpdateDecisionRequest,
-  ApiUpdateDecisionResponse
+  ApiUpdateDecisionResponse,
+  ApiRoundsResponse,
+  ApiAddRoundsResponse,
+  ApiUpdateRoundScheduleResponse,
+  ApiCancelRoundResponse,
+  ApiCreateInterviewRound
 } from '../models';
 
 @Injectable({ providedIn: 'root' })
@@ -111,6 +116,32 @@ export class AdminService {
 
   createInterview(data: ApiCreateInterviewRequest): Observable<ApiCreateInterviewResponse> {
     return this.http.post<ApiCreateInterviewResponse>('/api/admin/interviews', data);
+  }
+
+  getInterviewRounds(interviewId: string): Observable<ApiRoundsResponse> {
+    return this.http.get<ApiRoundsResponse>(`/api/admin/interviews/${interviewId}/rounds`);
+  }
+
+  addInterviewRounds(interviewId: string, rounds: ApiCreateInterviewRound[]): Observable<ApiAddRoundsResponse> {
+    return this.http.post<ApiAddRoundsResponse>(`/api/admin/interviews/${interviewId}/rounds`, { rounds });
+  }
+
+  updateRoundSchedule(
+    interviewId: string,
+    roundId: string,
+    schedule: { date: string; startTime: string; endTime: string }
+  ): Observable<ApiUpdateRoundScheduleResponse> {
+    return this.http.patch<ApiUpdateRoundScheduleResponse>(
+      `/api/admin/interviews/${interviewId}/rounds/${roundId}/schedule`,
+      schedule
+    );
+  }
+
+  cancelRound(interviewId: string, roundId: string): Observable<ApiCancelRoundResponse> {
+    return this.http.patch<ApiCancelRoundResponse>(
+      `/api/admin/interviews/${interviewId}/rounds/${roundId}/cancel`,
+      {}
+    );
   }
 
   createUser(data: ApiCreateUserRequest): Observable<ApiCreateUserResponse> {

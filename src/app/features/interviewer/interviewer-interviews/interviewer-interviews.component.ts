@@ -2,7 +2,8 @@ import { Component, inject, computed, signal, OnInit } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { InterviewerService } from '../../../core/services/interviewer.service';
-import { isInterviewStarted } from '../../../shared/utils';
+import { AuthService } from '../../../core/services/auth.service';
+import { ApiInterview, ApiInterviewRound } from '../../../core/models';
 
 @Component({
   selector: 'app-interviewer-interviews',
@@ -11,12 +12,59 @@ import { isInterviewStarted } from '../../../shared/utils';
 })
 export class InterviewerInterviewsComponent implements OnInit {
   interviewerService = inject(InterviewerService);
+  authService = inject(AuthService);
   search = signal('');
   dateFrom = signal<string>('');
   dateTo = signal<string>('');
 
   ngOnInit() {
     this.interviewerService.fetchInterviews();
+  }
+
+  myRounds(interview: ApiInterview): ApiInterviewRound[] {
+    const uid = this.authService.currentUser()?.id;
+    if (!uid) return [];
+    return (interview.rounds || []).filter(r => r.interviewerIds.includes(uid));
+  }
+
+  interviewDate(interview: ApiInterview): string {
+    return this.myRounds(interview)[0]?.date || interview.date;
+  }
+
+  interviewStartTime(interview: ApiInterview): string {
+    return this.myRounds(interview)[0]?.startTime || interview.startTime;
+  }
+
+  interviewRoundLabel(interview: ApiInterview): string {
+    const round = this.myRounds(interview)[0];
+    if (round && interview.rounds?.length) {
+      return `Round ${round.roundNumber} of ${interview.rounds.length}`;
+    }
+    return `Round ${interview.round}`;
+  }
+
+  interviewType(interview: ApiInterview): string | null {
+    const round = this.myRounds(interview)[0];
+    return round?.type || interview.type || null;
+  }
+
+  roundStatus(interview: ApiInterview): string {
+    return this.myRounds(interview)[0]?.status || interview.status;
+  }
+
+  roundStatusClasses(status: string) {
+    switch (status) {
+      case 'scheduled': return 'text-xs font-bold text-blue-400 bg-blue-500/10 border-blue-500/20';
+      case 'in-progress': return 'text-xs font-bold text-amber-400 bg-amber-500/10 border-amber-500/20';
+      case 'completed': return 'text-xs font-bold text-green-400 bg-green-500/10 border-green-500/20';
+      case 'cancelled': return 'text-xs font-bold text-red-400 bg-red-500/10 border-red-500/20';
+      default: return 'text-xs font-bold text-neutral-400 bg-neutral-400/10 border-neutral-400/20';
+    }
+  }
+
+  canEvaluate(interview: ApiInterview): boolean {
+    const start = this.myRounds(interview)[0]?.startTime || interview.startTime;
+    return new Date(start) <= new Date();
   }
 
   scheduledInterviews = computed(() =>
@@ -35,8 +83,8 @@ export class InterviewerInterviewsComponent implements OnInit {
       const round = String(i.round);
       const type = (i.type || '').toLowerCase();
       const matchText = !s || candidateName.includes(s) || positionTitle.includes(s) || round.includes(s) || type.includes(s);
-      const matchFrom = !from || i.date >= from;
-      const matchTo = !to || i.date <= to;
+      const matchFrom = !from || this.interviewDate(i) >= from;
+      const matchTo = !to || this.interviewDate(i) <= to;
       return matchText && matchFrom && matchTo;
     });
   });
@@ -57,6 +105,4 @@ export class InterviewerInterviewsComponent implements OnInit {
     this.dateFrom.set('');
     this.dateTo.set('');
   }
-
-  isInterviewStarted = isInterviewStarted;
 }

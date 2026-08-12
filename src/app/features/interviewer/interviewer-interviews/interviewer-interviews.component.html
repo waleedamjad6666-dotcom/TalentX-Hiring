@@ -50,30 +50,31 @@
             <h3 class="font-bold text-xl text-white mb-1">{{ inv.candidate.firstname }} {{ inv.candidate.lastname }}</h3>
             <p class="text-sm font-medium text-neutral-400 mb-4">{{ inv.position.title }}</p>
             <div class="text-xs font-bold text-[#FBBF24] bg-[#FBBF24]/10 w-max px-3 py-1.5 rounded-lg border border-[#FBBF24]/20 mb-3">
-              <span class="material-icons text-[16px] align-middle">event</span> {{ inv.date }} at {{ inv.startTime | date:'shortTime' }}
+              <span class="material-icons text-[16px] align-middle">event</span> {{ interviewDate(inv) }} at {{ interviewStartTime(inv) | date:'shortTime' }}
             </div>
             <div class="flex items-center gap-3 text-xs font-bold">
               <span class="text-neutral-400 bg-neutral-400/10 px-3 py-1.5 rounded-lg border border-neutral-400/20">
-                Round {{ inv.round }}
+                {{ interviewRoundLabel(inv) }}
               </span>
-              @if (inv.type) {
+              @if (interviewType(inv)) {
                 <span class="text-neutral-400 bg-neutral-400/10 px-3 py-1.5 rounded-lg border border-neutral-400/20">
-                  {{ inv.type }}
+                  {{ interviewType(inv) }}
                 </span>
               }
+              <span class="px-3 py-1.5 rounded-lg border" [class]="roundStatusClasses(roundStatus(inv))">{{ roundStatus(inv) }}</span>
             </div>
           </div>
           <div class="flex flex-col gap-3">
             <a [routerLink]="['/interviewer/candidate-details', inv.candidateId]" class="bg-[#FBBF24] hover:bg-[#FACC15] text-black font-bold px-6 py-3 rounded-xl transition-all shadow-[0_0_10px_rgba(251,191,36,0.15)] whitespace-nowrap text-center">
               Candidate Details
             </a>
-            @if (isInterviewStarted(inv)) {
+            @if (canEvaluate(inv)) {
               <a [routerLink]="['/interviewer/feedback', inv.id]" class="bg-[#FBBF24] hover:bg-[#FACC15] text-black font-bold px-6 py-3 rounded-xl transition-all shadow-[0_0_10px_rgba(251,191,36,0.15)] whitespace-nowrap text-center">
                 Evaluate Candidate
               </a>
             } @else {
               <span class="bg-neutral-700 text-neutral-400 font-bold px-6 py-3 rounded-xl whitespace-nowrap text-center cursor-not-allowed opacity-50"
-                    title="Feedback available after the interview starts at {{ inv.startTime | date:'medium' }}">
+                    title="Feedback available after the interview starts at {{ interviewStartTime(inv) | date:'medium' }}">
                 Evaluate Candidate
               </span>
             }

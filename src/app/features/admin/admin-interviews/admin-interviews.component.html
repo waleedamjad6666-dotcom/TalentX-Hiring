@@ -90,55 +90,87 @@
           </div>
         </div>
 
+        <!-- Rounds strip -->
+        @if (interview.rounds && interview.rounds.length > 0) {
+          <div class="px-6 py-4 border-b border-[#262626] bg-[#111111]/60">
+            <p class="text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-3">Rounds</p>
+            <div class="flex flex-wrap gap-2">
+              @for (round of interview.rounds; track round.id) {
+                <div class="bg-[#161616] border border-[#333] rounded-xl px-3 py-2 flex items-center gap-2">
+                  <span class="w-5 h-5 rounded-full bg-[#262626] text-white text-[9px] font-bold flex items-center justify-center">{{ round.roundNumber }}</span>
+                  <span class="text-xs font-bold text-white">{{ round.type || 'Interview' }}</span>
+                  <span [class]="roundStatusClasses(round.status)">{{ round.status }}</span>
+                  <span class="text-[11px] text-neutral-500">{{ roundDateTime(round) }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
         <!-- Feedback section -->
         <div class="px-6 py-5 space-y-4">
-          @if (interview.interviewFeedbacks && interview.interviewFeedbacks.length > 0) {
-            @for (fb of interview.interviewFeedbacks; track fb.id) {
-              <div class="bg-[#111111] border border-[#333] rounded-xl p-5">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-                  <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-full bg-[#262626] flex items-center justify-center text-[10px] font-bold text-white">
-                      {{ interviewerInitials(fb) }}
-                    </div>
-                    <div>
-                      <p class="text-sm font-bold text-white">{{ interviewerName(fb) }}</p>
-                      <p class="text-xs text-neutral-500">{{ fb.submittedAt | date:'medium' }}</p>
-                    </div>
-                  </div>
-                  <div class="flex items-center gap-3">
-                    <div class="flex gap-0.5">
-                      @for (star of [1,2,3,4,5]; track star) {
-                        <span class="material-icons text-[18px]"
-                          [class.text-[#FBBF24]]="star <= fb.rating"
-                          [class.text-[#333]]="star > fb.rating">{{ star <= fb.rating ? 'star' : 'star_border' }}</span>
-                      }
-                    </div>
-                    <span class="text-sm font-bold text-white">{{ fb.rating }}/5</span>
-                  </div>
-                </div>
-                <div class="flex items-start gap-2 mb-3">
-                  <span class="material-icons text-[16px] text-neutral-500 mt-0.5">recommend</span>
-                  <span class="text-sm font-semibold text-neutral-200">{{ recommendationLabel(fb.recommendation) }}</span>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <p class="text-[11px] font-bold text-green-400 uppercase tracking-widest mb-1">Strengths</p>
-                    <p class="text-sm text-neutral-300">{{ fb.positiveComments || '—' }}</p>
-                  </div>
-                  <div>
-                    <p class="text-[11px] font-bold text-red-400 uppercase tracking-widest mb-1">Concerns</p>
-                    <p class="text-sm text-neutral-300">{{ fb.negativeComments || '—' }}</p>
-                  </div>
-                </div>
-                @if (fb.additionalComments) {
-                  <div class="mt-4 pt-4 border-t border-[#262626]">
-                    <p class="text-[11px] font-bold text-neutral-500 uppercase tracking-widest mb-1">Additional Comments</p>
-                    <p class="text-sm text-neutral-300">{{ fb.additionalComments }}</p>
-                  </div>
-                }
+          @for (group of feedbackGroups(interview); track group.round ? group.round.id : 'flat') {
+            @if (group.round) {
+              <div class="flex items-center gap-3 mb-1 pt-2 first:pt-0">
+                <span class="w-6 h-6 rounded-full bg-[#262626] text-white text-[10px] font-bold flex items-center justify-center">{{ group.round.roundNumber }}</span>
+                <p class="text-sm font-bold text-white">{{ group.round.type || 'Interview' }}</p>
+                <span [class]="roundStatusClasses(group.round.status)">{{ group.round.status }}</span>
+                <span class="text-xs text-neutral-500">{{ roundDateTime(group.round) }}</span>
               </div>
             }
-          } @else {
+            @if (group.feedbacks.length > 0) {
+              @for (fb of group.feedbacks; track fb.id) {
+                <div class="bg-[#111111] border border-[#333] rounded-xl p-5">
+                  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                    <div class="flex items-center gap-3">
+                      <div class="w-9 h-9 rounded-full bg-[#262626] flex items-center justify-center text-[10px] font-bold text-white">
+                        {{ interviewerInitials(fb) }}
+                      </div>
+                      <div>
+                        <p class="text-sm font-bold text-white">{{ interviewerName(fb) }}</p>
+                        <p class="text-xs text-neutral-500">{{ fb.submittedAt | date:'medium' }}</p>
+                      </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                      <div class="flex gap-0.5">
+                        @for (star of [1,2,3,4,5]; track star) {
+                          <span class="material-icons text-[18px]"
+                            [class.text-[#FBBF24]]="star <= fb.rating"
+                            [class.text-[#333]]="star > fb.rating">{{ star <= fb.rating ? 'star' : 'star_border' }}</span>
+                        }
+                      </div>
+                      <span class="text-sm font-bold text-white">{{ fb.rating }}/5</span>
+                    </div>
+                  </div>
+                  <div class="flex items-start gap-2 mb-3">
+                    <span class="material-icons text-[16px] text-neutral-500 mt-0.5">recommend</span>
+                    <span class="text-sm font-semibold text-neutral-200">{{ recommendationLabel(fb.recommendation) }}</span>
+                  </div>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <p class="text-[11px] font-bold text-green-400 uppercase tracking-widest mb-1">Strengths</p>
+                      <p class="text-sm text-neutral-300">{{ fb.positiveComments || '—' }}</p>
+                    </div>
+                    <div>
+                      <p class="text-[11px] font-bold text-red-400 uppercase tracking-widest mb-1">Concerns</p>
+                      <p class="text-sm text-neutral-300">{{ fb.negativeComments || '—' }}</p>
+                    </div>
+                  </div>
+                  @if (fb.additionalComments) {
+                    <div class="mt-4 pt-4 border-t border-[#262626]">
+                      <p class="text-[11px] font-bold text-neutral-500 uppercase tracking-widest mb-1">Additional Comments</p>
+                      <p class="text-sm text-neutral-300">{{ fb.additionalComments }}</p>
+                    </div>
+                  }
+                </div>
+              }
+            } @else if (group.round) {
+              <div class="bg-[#111111] border border-dashed border-[#333] rounded-xl p-5 text-center text-neutral-500 text-sm">
+                No feedback submitted yet for Round {{ group.round.roundNumber }}.
+              </div>
+            }
+          }
+          @if (!(interview.rounds && interview.rounds.length > 0) && (feedbackGroups(interview).length === 0 || feedbackGroups(interview)[0].feedbacks.length === 0)) {
             <div class="text-center text-neutral-500 py-6">
               No feedback submitted yet for this interview.
             </div>

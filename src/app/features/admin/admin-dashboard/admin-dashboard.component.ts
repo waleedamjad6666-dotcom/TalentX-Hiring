@@ -2,7 +2,7 @@ import { Component, inject, computed, signal, OnInit } from '@angular/core';
 import { AdminService } from '../../../core/services/admin.service';
 import { RouterLink } from '@angular/router';
 import { getInitialsFromName } from '../../../shared/utils';
-import { ApiInterview, FeedbackResponse } from '../../../core/models';
+import { ApiInterview, ApiInterviewRound, FeedbackResponse } from '../../../core/models';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -14,6 +14,12 @@ export class AdminDashboardComponent implements OnInit {
 
   decidingId = signal<string | null>(null);
   decisionMsg = signal('');
+
+  schedulingRoundId = signal<string | null>(null);
+  schedulingDate = signal('');
+  schedulingTime = signal('');
+  actingRoundId = signal<string | null>(null);
+  roundMsg = signal('');
 
   upcomingInterviews = computed(() => {
     const now = new Date();
@@ -108,5 +114,96 @@ export class AdminDashboardComponent implements OnInit {
   }
   getInitials(name: string) {
     return getInitialsFromName(name);
+  }
+
+  beginScheduleRound(round: ApiInterviewRound) {
+    this.schedulingRoundId.set(round.id);
+    this.schedulingDate.set('');
+    this.schedulingTime.set('');
+    this.roundMsg.set('');
+  }
+
+  clearScheduleRound() {
+    this.schedulingRoundId.set(null);
+    this.schedulingDate.set('');
+    this.schedulingTime.set('');
+  }
+
+  updateScheduleDate(e: Event) {
+    this.schedulingDate.set((e.target as HTMLInputElement).value);
+  }
+
+  updateScheduleTime(e: Event) {
+    this.schedulingTime.set((e.target as HTMLInputElement).value);
+  }
+
+  getSchedulingRound(interview: ApiInterview): ApiInterviewRound | undefined {
+    return interview.rounds?.find(r => r.id === this.schedulingRoundId());
+  }
+
+  actionableRounds(interview: ApiInterview): ApiInterviewRound[] {
+    return (interview.rounds || []).filter(r => r.status === 'pending' || r.status === 'scheduled');
+  }
+
+  saveRoundSchedule(interview: ApiInterview) {
+    const round = this.getSchedulingRound(interview);
+    if (!round) return;
+    if (!this.schedulingDate() || !this.schedulingTime()) {
+      this.roundMsg.set('Please provide both a date and a time.');
+      return;
+    }
+    this.actingRoundId.set(round.id);
+    const startTime = new Date(`${this.schedulingDate()}T${this.schedulingTime()}`);
+    const endTime = new Date(startTime.getTime() + round.duration * 60000);
+    this.adminService.updateRoundSchedule(interview.id, round.id, {
+      date: this.schedulingDate(),
+      startTime: startTime.toISOString(),
+      endTime: endTime.toISOString()
+    }).subscribe({
+      next: () => {
+        this.actingRoundId.set(null);
+        this.clearScheduleRound();
+        this.roundMsg.set(`Round ${round.roundNumber} scheduled.`);
+        this.adminService.fetchInterviews();
+        setTimeout(() => this.roundMsg.set(''), 4000);
+      },
+      error: (err) => {
+        this.actingRoundId.set(null);
+        this.roundMsg.set(err.error?.message || 'Failed to schedule round.');
+      }
+    });
+  }
+
+  cancelRoundAction(interview: ApiInterview, round: ApiInterviewRound) {
+    this.actingRoundId.set(round.id);
+    this.adminService.cancelRound(interview.id, round.id).subscribe({
+      next: () => {
+        this.actingRoundId.set(null);
+        this.roundMsg.set(`Round ${round.roundNumber} cancelled.`);
+        this.adminService.fetchInterviews();
+        setTimeout(() => this.roundMsg.set(''), 4000);
+      },
+      error: (err) => {
+        this.actingRoundId.set(null);
+        this.roundMsg.set(err.error?.message || 'Failed to cancel round.');
+      }
+    });
+  }
+
+  roundStatusClasses(status: string) {
+    const base = 'text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider';
+    switch (status) {
+      case 'scheduled': return `${base} bg-blue-500/15 text-blue-400 border border-blue-500/30`;
+      case 'in-progress': return `${base} bg-amber-500/15 text-amber-400 border border-amber-500/30`;
+      case 'completed': return `${base} bg-green-500/15 text-green-400 border border-green-500/30`;
+      case 'cancelled': return `${base} bg-red-500/15 text-red-400 border border-red-500/30`;
+      default: return `${base} bg-neutral-500/15 text-neutral-400 border border-neutral-600`;
+    }
+  }
+
+  roundDateTime(round: ApiInterviewRound) {
+    if (!round.date) return 'Not scheduled';
+    if (!round.startTime) return round.date;
+    return `${round.date} at ${new Date(round.startTime).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`;
   }
 }

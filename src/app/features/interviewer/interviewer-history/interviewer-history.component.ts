@@ -1,6 +1,8 @@
 import { Component, inject, computed, signal, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { InterviewerService } from '../../../core/services/interviewer.service';
+import { AuthService } from '../../../core/services/auth.service';
+import { ApiInterview } from '../../../core/models';
 
 @Component({
   selector: 'app-interviewer-history',
@@ -8,12 +10,44 @@ import { InterviewerService } from '../../../core/services/interviewer.service';
 })
 export class InterviewerHistoryComponent implements OnInit {
   interviewerService = inject(InterviewerService);
+  authService = inject(AuthService);
   router = inject(Router);
   search = signal('');
   dateFrom = signal<string>('');
   dateTo = signal<string>('');
   sortColumn = signal<string>('date');
   sortDirection = signal<'asc' | 'desc'>('desc');
+
+  myRound(interview: ApiInterview) {
+    const uid = this.authService.currentUser()?.id;
+    if (!uid) return undefined;
+    return (interview.rounds || []).find(r => r.interviewerIds.includes(uid));
+  }
+
+  interviewRoundLabel(interview: ApiInterview): string {
+    const round = this.myRound(interview);
+    if (round && interview.rounds?.length) {
+      return `Round ${round.roundNumber} of ${interview.rounds.length}`;
+    }
+    return `Round ${interview.round}`;
+  }
+
+  interviewType(interview: ApiInterview): string | null {
+    const round = this.myRound(interview);
+    return round?.type || interview.type || null;
+  }
+
+  interviewDate(interview: ApiInterview): string {
+    return this.myRound(interview)?.date || interview.date;
+  }
+
+  interviewStartTime(interview: ApiInterview): string {
+    return this.myRound(interview)?.startTime || interview.startTime;
+  }
+
+  interviewStatus(interview: ApiInterview): string {
+    return this.myRound(interview)?.status || interview.status;
+  }
 
   ngOnInit() {
     this.interviewerService.fetchInterviews();
