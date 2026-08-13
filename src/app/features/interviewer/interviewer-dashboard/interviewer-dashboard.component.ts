@@ -47,7 +47,14 @@ export class InterviewerDashboardComponent implements OnInit {
   }
 
   interviewStatus(interview: ApiInterview): string {
-    return this.myRounds(interview)[0]?.status || interview.status;
+    const status = this.myRounds(interview)[0]?.status || interview.status;
+    if (status === 'scheduled' || status === 'pending') {
+      const startTime = this.interviewStartTime(interview);
+      if (startTime && new Date(startTime) <= new Date()) {
+        return 'in-progress';
+      }
+    }
+    return status;
   }
 
   canEvaluate(interview: ApiInterview): boolean {

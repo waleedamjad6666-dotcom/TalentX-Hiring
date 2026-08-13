@@ -1,146 +1,169 @@
 <div class="max-w-6xl mx-auto pb-10">
   <div class="mb-8 border-b border-[#262626] pb-6">
-     <h1 class="text-3xl font-bold text-white mb-2">My Interviews</h1>
-     <p class="text-neutral-400 font-medium">Welcome back, {{ auth.currentUser()?.name }}. Review your upcoming schedules and past evaluations.</p>
+    <h1 class="text-3xl font-bold text-white mb-2">My Interviews</h1>
+    <p class="text-neutral-400 font-medium">Welcome back, {{ auth.currentUser()?.name }}. Review your upcoming schedules
+      and past evaluations.</p>
   </div>
 
   @if (interviewerService.loading()) {
-    <div class="flex items-center justify-center py-20">
-      <span class="material-icons text-4xl text-[#FBBF24] animate-spin">progress_activity</span>
-      <span class="ml-3 text-neutral-400 font-medium">Loading interviews...</span>
-    </div>
+  <div class="flex items-center justify-center py-20">
+    <span class="material-icons text-4xl text-[#FBBF24] animate-spin">progress_activity</span>
+    <span class="ml-3 text-neutral-400 font-medium">Loading interviews...</span>
+  </div>
   } @else if (interviewerService.error()) {
-    <div class="bg-red-500/10 border border-red-500/30 rounded-2xl p-6 text-center">
-      <span class="material-icons text-4xl text-red-400 mb-2">error</span>
-      <p class="text-red-400 font-medium">{{ interviewerService.error() }}</p>
-    </div>
+  <div class="bg-red-500/10 border border-red-500/30 rounded-2xl p-6 text-center">
+    <span class="material-icons text-4xl text-red-400 mb-2">error</span>
+    <p class="text-red-400 font-medium">{{ interviewerService.error() }}</p>
+  </div>
   } @else {
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
-      <div class="bg-[#161616] border border-[#262626] rounded-xl p-5 flex flex-col justify-between h-36 cursor-default transition-all duration-300 hover:-translate-y-1.5 hover:border-[#333] hover:shadow-lg hover:shadow-black/50">
-        <div class="flex justify-between items-start">
-          <div class="w-8 h-8 rounded bg-neutral-800 flex items-center justify-center text-[#FBBF24]"><span class="material-icons text-[18px]">check_circle</span></div>
-        </div>
-        <div>
-          <p class="text-neutral-500 text-xs font-semibold uppercase tracking-wider mb-1">Total Conducted</p>
-          <h2 class="text-4xl font-bold text-white">{{ pastInterviews().length > 9 ? pastInterviews().length : '0' + pastInterviews().length }}</h2>
-        </div>
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
+    <div
+      class="bg-[#161616] border border-[#262626] rounded-xl p-5 flex flex-col justify-between h-36 cursor-default transition-all duration-300 hover:-translate-y-1.5 hover:border-[#333] hover:shadow-lg hover:shadow-black/50">
+      <div class="flex justify-between items-start">
+        <div class="w-8 h-8 rounded bg-neutral-800 flex items-center justify-center text-[#FBBF24]"><span
+            class="material-icons text-[18px]">check_circle</span></div>
       </div>
-      <div class="bg-[#161616] border border-[#262626] rounded-xl p-5 flex flex-col justify-between h-36 cursor-default transition-all duration-300 hover:-translate-y-1.5 hover:border-[#333] hover:shadow-lg hover:shadow-black/50">
-        <div class="flex justify-between items-start">
-          <div class="w-8 h-8 rounded bg-neutral-800 flex items-center justify-center text-green-400"><span class="material-icons text-[18px]">thumb_up</span></div>
-        </div>
-        <div>
-          <p class="text-neutral-500 text-xs font-semibold uppercase tracking-wider mb-1">Recommended for Hire</p>
-          <h2 class="text-4xl font-bold text-green-400">{{ hiredCount() > 9 ? hiredCount() : '0' + hiredCount() }}</h2>
-        </div>
-      </div>
-      <div class="bg-[#161616] border border-[#262626] rounded-xl p-5 flex flex-col justify-between h-36 cursor-default transition-all duration-300 hover:-translate-y-1.5 hover:border-[#333] hover:shadow-lg hover:shadow-black/50">
-        <div class="flex justify-between items-start">
-          <div class="w-8 h-8 rounded bg-neutral-800 flex items-center justify-center text-red-400"><span class="material-icons text-[18px]">person_remove</span></div>
-        </div>
-        <div>
-          <p class="text-neutral-500 text-xs font-semibold uppercase tracking-wider mb-1">Rejected</p>
-          <h2 class="text-4xl font-bold text-red-400">{{ rejectedCount() > 9 ? rejectedCount() : '0' + rejectedCount() }}</h2>
-        </div>
+      <div>
+        <p class="text-neutral-500 text-xs font-semibold uppercase tracking-wider mb-1">Total Conducted</p>
+        <h2 class="text-4xl font-bold text-white">{{ pastInterviews().length > 9 ? pastInterviews().length : '0' +
+          pastInterviews().length }}</h2>
       </div>
     </div>
+    <div
+      class="bg-[#161616] border border-[#262626] rounded-xl p-5 flex flex-col justify-between h-36 cursor-default transition-all duration-300 hover:-translate-y-1.5 hover:border-[#333] hover:shadow-lg hover:shadow-black/50">
+      <div class="flex justify-between items-start">
+        <div class="w-8 h-8 rounded bg-neutral-800 flex items-center justify-center text-green-400"><span
+            class="material-icons text-[18px]">thumb_up</span></div>
+      </div>
+      <div>
+        <p class="text-neutral-500 text-xs font-semibold uppercase tracking-wider mb-1">Recommended for Hire</p>
+        <h2 class="text-4xl font-bold text-green-400">{{ hiredCount() > 9 ? hiredCount() : '0' + hiredCount() }}</h2>
+      </div>
+    </div>
+    <div
+      class="bg-[#161616] border border-[#262626] rounded-xl p-5 flex flex-col justify-between h-36 cursor-default transition-all duration-300 hover:-translate-y-1.5 hover:border-[#333] hover:shadow-lg hover:shadow-black/50">
+      <div class="flex justify-between items-start">
+        <div class="w-8 h-8 rounded bg-neutral-800 flex items-center justify-center text-red-400"><span
+            class="material-icons text-[18px]">person_remove</span></div>
+      </div>
+      <div>
+        <p class="text-neutral-500 text-xs font-semibold uppercase tracking-wider mb-1">Rejected</p>
+        <h2 class="text-4xl font-bold text-red-400">{{ rejectedCount() > 9 ? rejectedCount() : '0' + rejectedCount() }}
+        </h2>
+      </div>
+    </div>
+  </div>
 
-    <div class="mb-12">
-       <div class="flex items-center gap-3 mb-5">
-         <h2 class="text-xl font-bold text-white">Upcoming Schedule</h2>
-         <span class="bg-[#FBBF24]/20 text-[#FBBF24] text-xs font-bold px-2 py-0.5 rounded-full">{{ upcomingInterviews().length }}</span>
-         @if (upcomingInterviews().length > 2) {
-           <a routerLink="/interviewer/interviews" class="text-xs font-bold text-[#FBBF24] hover:text-[#FACC15] transition-colors ml-auto">View All →</a>
-         }
-       </div>
+  <div class="mb-12">
+    <div class="flex items-center gap-3 mb-5">
+      <h2 class="text-xl font-bold text-white">Upcoming Schedule</h2>
+      <span class="bg-[#FBBF24]/20 text-[#FBBF24] text-xs font-bold px-2 py-0.5 rounded-full">{{
+        upcomingInterviews().length }}</span>
+      @if (upcomingInterviews().length > 2) {
+      <a routerLink="/interviewer/interviews"
+        class="text-xs font-bold text-[#FBBF24] hover:text-[#FACC15] transition-colors ml-auto">View All →</a>
+      }
+    </div>
 
-       @if (upcomingInterviews().length === 0) {
-         <div class="bg-[#161616] border border-[#262626] border-dashed rounded-2xl p-10 text-center text-neutral-500 flex flex-col items-center">
-           <span class="material-icons text-4xl mb-3 opacity-50">event_available</span>
-           <p class="font-medium">No upcoming interviews scheduled.</p>
-         </div>
-       }
-       <div class="grid gap-4 md:grid-cols-2">
-         @for (inv of dashboardUpcomingInterviews(); track inv.id) {
-           <div class="bg-[#161616] border border-[#262626] rounded-2xl p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-6 hover:border-[#333] transition-colors shadow-lg">
-             <div>
-               <h3 class="font-bold text-xl text-white mb-1">{{ inv.candidate.firstname }} {{ inv.candidate.lastname }}</h3>
-               <p class="text-sm font-medium text-neutral-400 mb-4">{{ inv.position.title }}</p>
-                <div class="flex items-center gap-2 text-xs font-bold text-[#FBBF24] bg-[#FBBF24]/10 w-max px-3 py-1.5 rounded-lg border border-[#FBBF24]/20">
-                  <span class="material-icons text-[16px]">event</span> {{ interviewDate(inv) }} at {{ interviewStartTime(inv) | date:'shortTime' }}
+    @if (upcomingInterviews().length === 0) {
+    <div
+      class="bg-[#161616] border border-[#262626] border-dashed rounded-2xl p-10 text-center text-neutral-500 flex flex-col items-center">
+      <span class="material-icons text-4xl mb-3 opacity-50">event_available</span>
+      <p class="font-medium">No upcoming interviews scheduled.</p>
+    </div>
+    }
+    <div class="grid gap-4 md:grid-cols-2">
+      @for (inv of dashboardUpcomingInterviews(); track inv.id) {
+      <div
+        class="bg-[#161616] border border-[#262626] rounded-2xl p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-6 hover:border-[#333] transition-colors shadow-lg">
+        <div>
+          <h3 class="font-bold text-xl text-white mb-1">{{ inv.candidate.firstname }} {{ inv.candidate.lastname }}</h3>
+          <p class="text-sm font-medium text-neutral-400 mb-4">{{ inv.position.title }}</p>
+          <div
+            class="flex items-center gap-2 text-xs font-bold text-[#FBBF24] bg-[#FBBF24]/10 w-max px-3 py-1.5 rounded-lg border border-[#FBBF24]/20">
+            <span class="material-icons text-[16px]">event</span> {{ interviewDate(inv) }} at {{ interviewStartTime(inv)
+            | date:'shortTime' }}
+          </div>
+        </div>
+        <div class="flex flex-col gap-3">
+          <a [routerLink]="['/interviewer/candidate-details', inv.candidateId]"
+            class="bg-[#FBBF24] hover:bg-[#FACC15] text-black font-bold px-6 py-3 rounded-xl transition-all shadow-[0_0_10px_rgba(251,191,36,0.15)] whitespace-nowrap text-center">
+            Candidate Details
+          </a>
+          @if (canEvaluate(inv)) {
+          <a [routerLink]="['/interviewer/feedback', inv.id]"
+            class="bg-[#FBBF24] hover:bg-[#FACC15] text-black font-bold px-6 py-3 rounded-xl transition-all shadow-[0_0_10px_rgba(251,191,36,0.15)] whitespace-nowrap text-center">
+            Evaluate Candidate
+          </a>
+          } @else {
+          <span
+            class="bg-neutral-700 text-neutral-400 font-bold px-6 py-3 rounded-xl whitespace-nowrap text-center cursor-not-allowed opacity-50"
+            title="Feedback available after the interview starts at {{ interviewStartTime(inv) | date:'medium' }}">
+            Evaluate Candidate
+          </span>
+          }
+        </div>
+      </div>
+      }
+    </div>
+  </div>
+
+  <div>
+    <div class="flex items-center gap-3 mb-5">
+      <h2 class="text-xl font-bold text-white">Past Evaluations & Results</h2>
+      @if (pastInterviews().length > 3) {
+      <a routerLink="/interviewer/history"
+        class="text-xs font-bold text-[#FBBF24] hover:text-[#FACC15] transition-colors ml-auto">View All →</a>
+      }
+    </div>
+    <div class="bg-[#161616] border border-[#262626] rounded-2xl overflow-hidden shadow-xl">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm whitespace-nowrap">
+          <thead
+            class="bg-[#111111] border-b border-[#262626] text-neutral-400 text-xs uppercase tracking-widest font-bold">
+            <tr>
+              <th class="p-5">Candidate</th>
+              <th class="p-5">Date</th>
+              <th class="p-5">Round</th>
+              <th class="p-5">Type</th>
+              <th class="p-5">Status</th>
+              <th class="p-5">Action</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-[#262626]">
+            @for (inv of dashboardPastInterviews(); track inv.id) {
+            <tr class="hover:bg-[#1a1a1a] transition-colors">
+              <td class="p-5">
+                <div class="font-bold text-white text-base">{{ inv.candidate.firstname }} {{ inv.candidate.lastname }}
                 </div>
-              </div>
-               <div class="flex flex-col gap-3">
-                <a [routerLink]="['/interviewer/candidate-details', inv.candidateId]" class="bg-[#FBBF24] hover:bg-[#FACC15] text-black font-bold px-6 py-3 rounded-xl transition-all shadow-[0_0_10px_rgba(251,191,36,0.15)] whitespace-nowrap text-center">
-                    Candidate Details
-                  </a>
-                @if (canEvaluate(inv)) {
-                  <a [routerLink]="['/interviewer/feedback', inv.id]" class="bg-[#FBBF24] hover:bg-[#FACC15] text-black font-bold px-6 py-3 rounded-xl transition-all shadow-[0_0_10px_rgba(251,191,36,0.15)] whitespace-nowrap text-center">
-                    Evaluate Candidate
-                  </a>
-                } @else {
-                  <span class="bg-neutral-700 text-neutral-400 font-bold px-6 py-3 rounded-xl whitespace-nowrap text-center cursor-not-allowed opacity-50"
-                        title="Feedback available after the interview starts at {{ interviewStartTime(inv) | date:'medium' }}">
-                    Evaluate Candidate
-                  </span>
-                }
-              </div>
-           </div>
-         }
-       </div>
+                <div class="text-xs font-medium text-neutral-500 mt-0.5">{{ inv.position.title }}</div>
+              </td>
+              <td class="p-5 text-neutral-300 font-medium">{{ interviewDate(inv) }}</td>
+              <td class="p-5 text-neutral-300 font-medium">{{ interviewRoundLabel(inv) }}</td>
+              <td class="p-5 text-neutral-300 font-medium">{{ interviewType(inv) || 'N/A' }}</td>
+              <td class="p-5">
+                <span
+                  class="px-3 py-1 rounded-full text-[11px] font-bold tracking-wide uppercase bg-green-500/20 text-green-400">
+                  {{ interviewStatus(inv) }}
+                </span>
+              </td>
+              <td class="p-5">
+                <button (click)="viewFeedback(inv.id)"
+                  class="px-4 py-2 rounded-lg bg-[#FBBF24]/10 text-[#FBBF24] text-xs font-bold tracking-wide hover:bg-[#FBBF24]/20 transition-colors border border-[#FBBF24]/20">
+                  View Feedback
+                </button>
+              </td>
+            </tr>
+            }
+            @if (dashboardPastInterviews().length === 0) {
+            <tr>
+              <td colspan="6" class="p-8 text-center text-neutral-500 font-medium">No past evaluations found.</td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
     </div>
-
-    <div>
-       <div class="flex items-center gap-3 mb-5">
-         <h2 class="text-xl font-bold text-white">Past Evaluations & Results</h2>
-         @if (pastInterviews().length > 3) {
-           <a routerLink="/interviewer/history" class="text-xs font-bold text-[#FBBF24] hover:text-[#FACC15] transition-colors ml-auto">View All →</a>
-         }
-       </div>
-       <div class="bg-[#161616] border border-[#262626] rounded-2xl overflow-hidden shadow-xl">
-         <div class="overflow-x-auto">
-           <table class="w-full text-left text-sm whitespace-nowrap">
-             <thead class="bg-[#111111] border-b border-[#262626] text-neutral-400 text-xs uppercase tracking-widest font-bold">
-               <tr>
-                 <th class="p-5">Candidate</th>
-                 <th class="p-5">Date</th>
-                 <th class="p-5">Round</th>
-                 <th class="p-5">Type</th>
-                 <th class="p-5">Status</th>
-                 <th class="p-5">Action</th>
-               </tr>
-             </thead>
-             <tbody class="divide-y divide-[#262626]">
-               @for (inv of dashboardPastInterviews(); track inv.id) {
-                 <tr class="hover:bg-[#1a1a1a] transition-colors">
-                   <td class="p-5">
-                     <div class="font-bold text-white text-base">{{ inv.candidate.firstname }} {{ inv.candidate.lastname }}</div>
-                     <div class="text-xs font-medium text-neutral-500 mt-0.5">{{ inv.position.title }}</div>
-                   </td>
-                    <td class="p-5 text-neutral-300 font-medium">{{ interviewDate(inv) }}</td>
-                    <td class="p-5 text-neutral-300 font-medium">{{ interviewRoundLabel(inv) }}</td>
-                    <td class="p-5 text-neutral-300 font-medium">{{ interviewType(inv) || 'N/A' }}</td>
-                    <td class="p-5">
-                      <span class="px-3 py-1 rounded-full text-[11px] font-bold tracking-wide uppercase bg-green-500/20 text-green-400">
-                        {{ interviewStatus(inv) }}
-                      </span>
-                    </td>
-                   <td class="p-5">
-                     <button (click)="viewFeedback(inv.id)" class="px-4 py-2 rounded-lg bg-[#FBBF24]/10 text-[#FBBF24] text-xs font-bold tracking-wide hover:bg-[#FBBF24]/20 transition-colors border border-[#FBBF24]/20">
-                       View Feedback
-                     </button>
-                   </td>
-                 </tr>
-               }
-               @if (dashboardPastInterviews().length === 0) {
-                 <tr>
-                   <td colspan="6" class="p-8 text-center text-neutral-500 font-medium">No past evaluations found.</td>
-                 </tr>
-               }
-             </tbody>
-           </table>
-         </div>
-       </div>
-    </div>
+  </div>
   }
 </div>
