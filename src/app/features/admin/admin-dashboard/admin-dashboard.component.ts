@@ -1,4 +1,5 @@
 import { Component, inject, computed, signal, OnInit } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { AdminService } from '../../../core/services/admin.service';
 import { RouterLink } from '@angular/router';
 import { getInitialsFromName } from '../../../shared/utils';
@@ -14,7 +15,7 @@ export interface PendingDecision {
 
 @Component({
   selector: 'app-admin-dashboard',
-  imports: [RouterLink],
+  imports: [RouterLink, DatePipe],
   templateUrl: './admin-dashboard.component.html'
 })
 export class AdminDashboardComponent implements OnInit {
@@ -28,6 +29,41 @@ export class AdminDashboardComponent implements OnInit {
   schedulingTime = signal('');
   actingRoundId = signal<string | null>(null);
   roundMsg = signal('');
+  selectedRoundFeedback = signal<{ interviewId: string; roundId: string } | null>(null);
+  activeModalFeedback = signal<{ interview: ApiInterview; round: ApiInterviewRound } | null>(null);
+
+  openFeedbackModal(interview: ApiInterview, round: ApiInterviewRound) {
+    this.activeModalFeedback.set({ interview, round });
+  }
+
+  closeFeedbackModal() {
+    this.activeModalFeedback.set(null);
+  }
+
+  interviewerName(fb: FeedbackResponse) {
+    return fb.interviewer ? `${fb.interviewer.firstname} ${fb.interviewer.lastname}` : 'Interviewer';
+  }
+
+  interviewerInitials(fb: FeedbackResponse) {
+    return fb.interviewer ? getInitialsFromName(`${fb.interviewer.firstname} ${fb.interviewer.lastname}`) : '?';
+  }
+
+  recommendationLabel(r: string) {
+    return r === 'Yes' ? 'Recommend for Hire' : r === 'No' ? 'Do Not Recommend' : 'Hold for Review';
+  }
+
+  toggleRoundFeedback(interviewId: string, roundId: string) {
+    const current = this.selectedRoundFeedback();
+    if (current && current.interviewId === interviewId && current.roundId === roundId) {
+      this.selectedRoundFeedback.set(null);
+    } else {
+      this.selectedRoundFeedback.set({ interviewId, roundId });
+    }
+  }
+
+  getRoundFeedbacks(interview: ApiInterview, roundId: string) {
+    return (interview.interviewFeedbacks || []).filter(f => f.roundId === roundId);
+  }
 
   upcomingInterviews = computed(() => {
     const now = new Date();
@@ -243,5 +279,10 @@ export class AdminDashboardComponent implements OnInit {
     if (!round.date) return 'Not scheduled';
     if (!round.startTime) return round.date;
     return `${round.date} at ${new Date(round.startTime).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`;
+  }
+
+  getRoundInterviewer(round: ApiInterviewRound) {
+    if (!round.interviewers || round.interviewers.length === 0) return 'No interviewer';
+    return round.interviewers.map(i => `${i.firstname} ${i.lastname}`).join(', ');
   }
 }
