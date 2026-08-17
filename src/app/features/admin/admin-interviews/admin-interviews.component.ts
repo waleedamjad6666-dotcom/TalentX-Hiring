@@ -35,6 +35,10 @@ export class AdminInterviewsComponent implements OnInit {
     if (filter && this.filterOptions.some(o => o.value === filter)) {
       this.statusFilter.set(filter as StatusFilter);
     }
+    const searchVal = this.route.snapshot.queryParamMap.get('search');
+    if (searchVal) {
+      this.search.set(searchVal);
+    }
   }
 
   completedInterviews = computed(() =>
