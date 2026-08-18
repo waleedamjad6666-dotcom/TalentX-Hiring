@@ -118,6 +118,14 @@ export class AdminService {
     return this.http.post<ApiCreateInterviewResponse>('/api/admin/interviews', data);
   }
 
+  updateInterview(id: string, data: any): Observable<any> {
+    return this.http.put<any>(`/api/admin/interviews/${id}`, data);
+  }
+
+  deleteInterview(id: string): Observable<any> {
+    return this.http.delete<any>(`/api/admin/interviews/${id}`);
+  }
+
   getInterviewRounds(interviewId: string): Observable<ApiRoundsResponse> {
     return this.http.get<ApiRoundsResponse>(`/api/admin/interviews/${interviewId}/rounds`);
   }

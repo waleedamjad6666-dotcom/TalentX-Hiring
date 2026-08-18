@@ -146,6 +146,16 @@
               }
               <span
                 class="text-xs font-bold text-neutral-500 uppercase tracking-wider px-3 py-1.5 rounded-lg bg-[#111111] border border-[#333]">Scheduled</span>
+              <div class="flex items-center gap-1.5">
+                <button (click)="openEditInterview(interview)" title="Edit Interview"
+                  class="p-1.5 rounded-lg bg-[#111111] hover:bg-neutral-800 border border-[#333] text-neutral-400 hover:text-[#FBBF24] transition-colors">
+                  <span class="material-icons text-[16px]">edit</span>
+                </button>
+                <button (click)="openDeleteInterview(interview)" title="Delete Interview"
+                  class="p-1.5 rounded-lg bg-[#111111] hover:bg-neutral-800 border border-[#333] text-neutral-400 hover:text-red-400 transition-colors">
+                  <span class="material-icons text-[16px]">delete_outline</span>
+                </button>
+              </div>
             </div>
           </div>
 
@@ -430,5 +440,23 @@
         </div>
       </div>
     </div>
+  }
+
+  @if (editingInterview()) {
+    <app-interview-modal
+      [interview]="editingInterview()"
+      (closed)="closeEditInterview()"
+      (saved)="onInterviewSaved()">
+    </app-interview-modal>
+  }
+
+  @if (deletingInterview()) {
+    <app-delete-interview-dialog
+      [interviewId]="deletingInterview()!.id"
+      [candidateName]="getCandidateName(deletingInterview()!)"
+      [positionTitle]="getCandidateRole(deletingInterview()!)"
+      (closed)="closeDeleteInterview()"
+      (deleted)="onInterviewDeleted()">
+    </app-delete-interview-dialog>
   }
 </div>

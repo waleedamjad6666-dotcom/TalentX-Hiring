@@ -2,11 +2,14 @@ import { Component, inject, OnInit, OnDestroy, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { AdminService } from '../../../core/services/admin.service';
-import { ApiCandidateDetail } from '../../../core/models';
+import { ApiCandidateDetail, ApiInterview } from '../../../core/models';
 import { getInitials, formatDate } from '../../../shared/utils';
+import { InterviewModalComponent } from '../interview-modal/interview-modal.component';
+import { DeleteInterviewDialogComponent } from '../delete-interview-dialog/delete-interview-dialog.component';
 
 @Component({
   selector: 'app-admin-candidate-details',
+  imports: [InterviewModalComponent, DeleteInterviewDialogComponent],
   templateUrl: './admin-candidate-details.component.html'
 })
 export class AdminCandidateDetailsComponent implements OnInit, OnDestroy {
@@ -18,6 +21,37 @@ export class AdminCandidateDetailsComponent implements OnInit, OnDestroy {
   loading = signal(true);
   error = signal<string | null>(null);
   private paramSub!: Subscription;
+
+  editingInterview = signal<ApiInterview | null>(null);
+  deletingInterview = signal<ApiInterview | null>(null);
+
+  openEditInterview(interview: any) {
+    this.editingInterview.set(interview as ApiInterview);
+  }
+
+  closeEditInterview() {
+    this.editingInterview.set(null);
+  }
+
+  onInterviewSaved() {
+    this.editingInterview.set(null);
+    const c = this.candidate();
+    if (c) this.loadCandidate(c.id);
+  }
+
+  openDeleteInterview(interview: any) {
+    this.deletingInterview.set(interview as ApiInterview);
+  }
+
+  closeDeleteInterview() {
+    this.deletingInterview.set(null);
+  }
+
+  onInterviewDeleted() {
+    this.deletingInterview.set(null);
+    const c = this.candidate();
+    if (c) this.loadCandidate(c.id);
+  }
 
   ngOnInit() {
     this.paramSub = this.route.paramMap.subscribe(params => {
