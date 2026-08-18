@@ -138,6 +138,16 @@
                   @for (interviewer of interview.interviewers; track interviewer.id) {
                     <span class="bg-[#262626] text-neutral-300 text-xs font-medium px-2 py-1 rounded">{{ interviewer.firstname }} {{ interviewer.lastname }}</span>
                   }
+                  <div class="flex items-center gap-1.5 ml-2 border-l border-[#262626] pl-2">
+                    <button (click)="openEditInterview(interview)" title="Edit Scheduled Interview"
+                      class="p-1.5 rounded-lg bg-[#161616] hover:bg-neutral-800 border border-[#333] text-neutral-400 hover:text-[#FBBF24] transition-colors">
+                      <span class="material-icons text-[16px]">edit</span>
+                    </button>
+                    <button (click)="openDeleteInterview(interview)" title="Delete Scheduled Interview"
+                      class="p-1.5 rounded-lg bg-[#161616] hover:bg-neutral-800 border border-[#333] text-neutral-400 hover:text-red-400 transition-colors">
+                      <span class="material-icons text-[16px]">delete_outline</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             }
@@ -169,4 +179,22 @@
       <button type="button" class="px-8 py-4 rounded-xl bg-[#FBBF24] hover:bg-[#FACC15] text-black font-bold transition-all" (click)="goBack()">Back to Candidates</button>
     </div>
   </div>
+}
+
+@if (editingInterview()) {
+  <app-interview-modal
+    [interview]="editingInterview()"
+    (closed)="closeEditInterview()"
+    (saved)="onInterviewSaved()">
+  </app-interview-modal>
+}
+
+@if (deletingInterview()) {
+  <app-delete-interview-dialog
+    [interviewId]="deletingInterview()!.id"
+    [candidateName]="candidate()?.firstname + ' ' + candidate()?.lastname"
+    [positionTitle]="candidate()?.currentPosition || ''"
+    (closed)="closeDeleteInterview()"
+    (deleted)="onInterviewDeleted()">
+  </app-delete-interview-dialog>
 }

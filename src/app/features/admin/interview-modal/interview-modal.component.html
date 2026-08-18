@@ -1,0 +1,191 @@
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 overflow-y-auto" (click)="onBackdropClick($event)">
+  <div class="bg-[#161616] border border-[#333] rounded-2xl w-full max-w-3xl my-8 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]" (click)="$event.stopPropagation()">
+    <!-- Header -->
+    <div class="px-6 py-5 border-b border-[#262626] flex justify-between items-center bg-[#111]">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-[#FBBF24]/10 border border-[#FBBF24]/20 flex items-center justify-center text-[#FBBF24]">
+          <span class="material-icons text-xl">{{ isEditMode() ? 'edit_calendar' : 'calendar_month' }}</span>
+        </div>
+        <div>
+          <h2 class="text-xl font-bold text-white">{{ isEditMode() ? 'Edit Scheduled Interview' : 'Schedule Interview' }}</h2>
+          <p class="text-xs text-neutral-400 mt-0.5">{{ isEditMode() ? 'Update candidate interview details and schedule' : 'Configure session details for the candidate' }}</p>
+        </div>
+      </div>
+      <button (click)="close()" class="text-neutral-400 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-neutral-800">
+        <span class="material-icons">close</span>
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div class="p-6 overflow-y-auto space-y-6 flex-1">
+      @if (errorMsg()) {
+        <div class="bg-red-500/10 border border-red-500/30 text-red-400 p-4 rounded-xl text-sm flex items-center gap-3">
+          <span class="material-icons text-[18px]">error_outline</span>
+          {{ errorMsg() }}
+        </div>
+      }
+
+      <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-6">
+        <!-- Round 1 Section -->
+        <div class="border border-[#FBBF24]/30 rounded-xl p-5 bg-[#FBBF24]/5">
+          <div class="flex items-center gap-3 mb-5">
+            <div class="w-8 h-8 rounded-full bg-[#FBBF24] flex items-center justify-center">
+              <span class="text-black font-bold text-sm">1</span>
+            </div>
+            <div>
+              <h3 class="text-white font-bold">Round 1</h3>
+              <p class="text-neutral-400 text-xs">Required - Main interview round</p>
+            </div>
+            <span class="ml-auto bg-[#FBBF24]/20 text-[#FBBF24] text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">Required</span>
+          </div>
+
+          <div class="space-y-5">
+            <div>
+              <label class="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-2 ml-1">Candidate</label>
+              <select formControlName="candidateId" class="w-full bg-[#111111] border border-[#333] rounded-xl py-3 px-4 text-white outline-none focus:border-[#FBBF24] appearance-none transition-colors">
+                <option value="">Select candidate</option>
+                @for (c of adminService.candidates(); track c.id) {
+                  <option [value]="c.id">{{ c.firstname }} {{ c.lastname }} ({{ c.currentPosition || c.email }})</option>
+                }
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-2 ml-1">Job Position</label>
+              <select formControlName="positionId" class="w-full bg-[#111111] border border-[#333] rounded-xl py-3 px-4 text-white outline-none focus:border-[#FBBF24] appearance-none transition-colors">
+                <option value="">Select position</option>
+                @for (p of adminService.positions(); track p.id) {
+                  <option [value]="p.id">{{ p.title }}{{ p.department ? ' (' + p.department.name + ')' : '' }}</option>
+                }
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-2 ml-1">Interviewer(s)</label>
+              <select formControlName="interviewerIds" multiple size="4" class="w-full bg-[#111111] border border-[#333] rounded-xl py-2.5 px-4 text-white outline-none focus:border-[#FBBF24] transition-colors">
+                @for (i of adminService.interviewers(); track i.id) {
+                  <option [value]="i.id">{{ i.firstname }} {{ i.lastname }}</option>
+                }
+              </select>
+              <p class="text-neutral-500 text-xs mt-1">Hold Ctrl/Cmd to select multiple interviewers.</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div>
+                <label class="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-2 ml-1">Date</label>
+                <input type="date" formControlName="date" [min]="todayDate" class="w-full bg-[#111111] border border-[#333] rounded-xl py-3 px-4 text-white outline-none focus:border-[#FBBF24] transition-colors [color-scheme:dark]">
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-2 ml-1">Time</label>
+                <input type="time" formControlName="time" class="w-full bg-[#111111] border border-[#333] rounded-xl py-3 px-4 text-white outline-none focus:border-[#FBBF24] transition-colors [color-scheme:dark]">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div>
+                <label class="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-2 ml-1">Duration</label>
+                <select formControlName="duration" class="w-full bg-[#111111] border border-[#333] rounded-xl py-3 px-4 text-white outline-none focus:border-[#FBBF24] appearance-none transition-colors">
+                  <option value="30">30 Minutes</option>
+                  <option value="45">45 Minutes</option>
+                  <option value="60">60 Minutes</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-2 ml-1">Interview Type</label>
+                <select formControlName="type" class="w-full bg-[#111111] border border-[#333] rounded-xl py-3 px-4 text-white outline-none focus:border-[#FBBF24] appearance-none transition-colors">
+                  <option>Technical Assessment</option>
+                  <option>Culture Fit</option>
+                  <option>System Design</option>
+                  <option>Behavioral</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Additional Rounds Section -->
+        <div class="space-y-4">
+          @for (round of rounds; track round.id; let i = $index) {
+            <div class="border border-dashed border-[#444] rounded-xl p-5 bg-[#131313]">
+              <div class="flex items-center gap-3 mb-4">
+                <div class="w-7 h-7 rounded-full bg-[#333] flex items-center justify-center">
+                  <span class="text-neutral-300 font-bold text-xs">{{ i + 2 }}</span>
+                </div>
+                <div class="flex-1">
+                  <h3 class="text-white font-semibold text-sm">Round {{ i + 2 }}</h3>
+                  <p class="text-neutral-500 text-[11px]">Additional planned round</p>
+                </div>
+                <button type="button" (click)="removeRound(i)" class="text-neutral-500 hover:text-red-400 transition-colors">
+                  <span class="material-icons text-[18px]">delete_outline</span>
+                </button>
+              </div>
+
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-1.5 ml-1">Interviewer(s)</label>
+                  <select [(ngModel)]="round.interviewerIds" [ngModelOptions]="{standalone: true}" multiple size="3" class="w-full bg-[#111111] border border-[#333] rounded-xl py-2 px-3 text-white text-sm outline-none focus:border-[#FBBF24] transition-colors">
+                    @for (i of adminService.interviewers(); track i.id) {
+                      <option [value]="i.id">{{ i.firstname }} {{ i.lastname }}</option>
+                    }
+                  </select>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-1.5 ml-1">Duration</label>
+                    <select [(ngModel)]="round.duration" [ngModelOptions]="{standalone: true}" class="w-full bg-[#111111] border border-[#333] rounded-xl py-2.5 px-3 text-white text-sm outline-none focus:border-[#FBBF24] appearance-none transition-colors">
+                      <option value="30">30 Minutes</option>
+                      <option value="45">45 Minutes</option>
+                      <option value="60">60 Minutes</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-1.5 ml-1">Interview Type</label>
+                    <select [(ngModel)]="round.type" [ngModelOptions]="{standalone: true}" class="w-full bg-[#111111] border border-[#333] rounded-xl py-2.5 px-3 text-white text-sm outline-none focus:border-[#FBBF24] appearance-none transition-colors">
+                      <option>Technical Assessment</option>
+                      <option>Culture Fit</option>
+                      <option>System Design</option>
+                      <option>Behavioral</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-1.5 ml-1">Date</label>
+                    <input type="date" [(ngModel)]="round.date" [ngModelOptions]="{standalone: true}" [min]="todayDate" class="w-full bg-[#111111] border border-[#333] rounded-xl py-2.5 px-3 text-white text-sm outline-none focus:border-[#FBBF24] transition-colors [color-scheme:dark]">
+                  </div>
+                  <div>
+                    <label class="block text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-1.5 ml-1">Time</label>
+                    <input type="time" [(ngModel)]="round.time" [ngModelOptions]="{standalone: true}" class="w-full bg-[#111111] border border-[#333] rounded-xl py-2.5 px-3 text-white text-sm outline-none focus:border-[#FBBF24] transition-colors [color-scheme:dark]">
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+
+          @if (canAddRound()) {
+            <button type="button" (click)="addRound()" class="w-full border border-dashed border-[#444] hover:border-[#FBBF24]/50 rounded-xl py-3 flex items-center justify-center gap-2 text-neutral-400 hover:text-[#FBBF24] transition-all">
+              <span class="material-icons text-[18px]">add_circle_outline</span>
+              <span class="font-semibold text-xs">Add Another Round</span>
+            </button>
+          }
+        </div>
+      </form>
+    </div>
+
+    <!-- Footer -->
+    <div class="px-6 py-4 border-t border-[#262626] bg-[#111] flex justify-end gap-3">
+      <button (click)="close()" [disabled]="isSubmitting()" class="px-5 py-2.5 rounded-xl border border-[#333] text-white font-bold text-xs hover:bg-[#1a1a1a] transition-colors disabled:opacity-50">
+        Cancel
+      </button>
+      <button (click)="submit()" [disabled]="!isFormValid() || isSubmitting()" class="px-6 py-2.5 rounded-xl bg-[#FBBF24] hover:bg-[#FACC15] text-black font-bold text-xs transition-colors disabled:opacity-50 flex items-center gap-2 shadow-lg shadow-[#FBBF24]/10">
+        @if (isSubmitting()) {
+          <span class="material-icons text-[16px] animate-spin">hourglass_empty</span> Saving...
+        } @else {
+          <span class="material-icons text-[16px]">save</span> {{ isEditMode() ? 'Save Changes' : 'Schedule Interview' }}
+        }
+      </button>
+    </div>
+  </div>
+</div>

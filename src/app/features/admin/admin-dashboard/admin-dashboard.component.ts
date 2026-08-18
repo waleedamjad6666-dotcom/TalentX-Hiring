@@ -4,6 +4,8 @@ import { AdminService } from '../../../core/services/admin.service';
 import { RouterLink } from '@angular/router';
 import { getInitialsFromName } from '../../../shared/utils';
 import { ApiInterview, ApiInterviewRound, FeedbackResponse } from '../../../core/models';
+import { InterviewModalComponent } from '../interview-modal/interview-modal.component';
+import { DeleteInterviewDialogComponent } from '../delete-interview-dialog/delete-interview-dialog.component';
 
 export interface PendingDecision {
   id: string;
@@ -15,7 +17,7 @@ export interface PendingDecision {
 
 @Component({
   selector: 'app-admin-dashboard',
-  imports: [RouterLink, DatePipe],
+  imports: [RouterLink, DatePipe, InterviewModalComponent, DeleteInterviewDialogComponent],
   templateUrl: './admin-dashboard.component.html'
 })
 export class AdminDashboardComponent implements OnInit {
@@ -23,6 +25,35 @@ export class AdminDashboardComponent implements OnInit {
 
   decidingId = signal<string | null>(null);
   decisionMsg = signal('');
+
+  editingInterview = signal<ApiInterview | null>(null);
+  deletingInterview = signal<ApiInterview | null>(null);
+
+  openEditInterview(interview: ApiInterview) {
+    this.editingInterview.set(interview);
+  }
+
+  closeEditInterview() {
+    this.editingInterview.set(null);
+  }
+
+  onInterviewSaved() {
+    this.editingInterview.set(null);
+    this.adminService.fetchInterviews();
+  }
+
+  openDeleteInterview(interview: ApiInterview) {
+    this.deletingInterview.set(interview);
+  }
+
+  closeDeleteInterview() {
+    this.deletingInterview.set(null);
+  }
+
+  onInterviewDeleted() {
+    this.deletingInterview.set(null);
+    this.adminService.fetchInterviews();
+  }
 
   schedulingRoundId = signal<string | null>(null);
   schedulingDate = signal('');
