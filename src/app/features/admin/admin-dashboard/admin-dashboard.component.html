@@ -214,7 +214,7 @@
               <div class="flex flex-wrap items-end gap-2">
                 <div>
                   <label class="block text-[9px] font-bold text-neutral-500 uppercase tracking-widest mb-1">Date</label>
-                  <input type="date" [value]="schedulingDate()" (change)="updateScheduleDate($event)"
+                  <input type="date" [value]="schedulingDate()" (change)="updateScheduleDate($event)" [min]="todayDate"
                     class="bg-[#161616] border border-[#333] rounded-lg px-2.5 py-2 text-sm text-white outline-none focus:border-[#FBBF24] [color-scheme:dark]" />
                 </div>
                 <div>

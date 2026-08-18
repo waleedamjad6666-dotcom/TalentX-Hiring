@@ -75,7 +75,7 @@
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div>
                   <label class="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-2 ml-1">Date</label>
-                  <input type="date" formControlName="date" class="w-full bg-[#111111] border border-[#333] rounded-xl py-3 px-4 text-white outline-none focus:border-[#FBBF24] transition-colors [color-scheme:dark]">
+                  <input type="date" formControlName="date" [min]="todayDate" class="w-full bg-[#111111] border border-[#333] rounded-xl py-3 px-4 text-white outline-none focus:border-[#FBBF24] transition-colors [color-scheme:dark]">
                 </div>
                 <div>
                   <label class="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-2 ml-1">Time (Local)</label>
@@ -157,7 +157,7 @@
                   <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label class="block text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-1.5 ml-1">Date (Optional)</label>
-                      <input type="date" [(ngModel)]="round.date" [ngModelOptions]="{standalone: true}" class="w-full bg-[#111111] border border-[#333] rounded-xl py-2.5 px-3 text-white text-sm outline-none focus:border-[#FBBF24] transition-colors [color-scheme:dark]">
+                      <input type="date" [(ngModel)]="round.date" [ngModelOptions]="{standalone: true}" [min]="todayDate" class="w-full bg-[#111111] border border-[#333] rounded-xl py-2.5 px-3 text-white text-sm outline-none focus:border-[#FBBF24] transition-colors [color-scheme:dark]">
                     </div>
                     <div>
                       <label class="block text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-1.5 ml-1">Time (Optional)</label>
