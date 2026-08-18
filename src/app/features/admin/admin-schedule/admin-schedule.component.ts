@@ -31,6 +31,11 @@ export class AdminScheduleComponent implements OnInit {
   private nextRoundId = 2;
   maxRounds = 5;
 
+  get todayDate(): string {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  }
+
   form = new FormGroup({
     candidateId: new FormControl('', { nonNullable: true }),
     positionId: new FormControl('', { nonNullable: true }),
@@ -73,10 +78,26 @@ export class AdminScheduleComponent implements OnInit {
   schedule() {
     if (!this.isFormValid() || this.submitting()) return;
 
+    // Validate main interview date/time is not in the past
+    const now = new Date();
+    const mainDateTime = new Date(`${this.form.value.date}T${this.form.value.time}`);
+    if (mainDateTime < now) {
+      this.errorMsg = 'Round 1: Date and time cannot be in the past.';
+      return;
+    }
+
     for (const round of this.rounds) {
       if (!this.isRoundValid(round)) {
         this.errorMsg = `Round ${round.id}: each additional round requires at least one interviewer and a duration.`;
         return;
+      }
+      // Validate additional round date/time is not in the past (if provided)
+      if (round.date && round.time) {
+        const roundDateTime = new Date(`${round.date}T${round.time}`);
+        if (roundDateTime < now) {
+          this.errorMsg = `Round ${round.id}: Date and time cannot be in the past.`;
+          return;
+        }
       }
     }
 

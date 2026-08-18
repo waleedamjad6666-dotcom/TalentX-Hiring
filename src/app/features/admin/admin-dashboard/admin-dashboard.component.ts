@@ -32,6 +32,11 @@ export class AdminDashboardComponent implements OnInit {
   selectedRoundFeedback = signal<{ interviewId: string; roundId: string } | null>(null);
   activeModalFeedback = signal<{ interview: ApiInterview; round: ApiInterviewRound } | null>(null);
 
+  get todayDate(): string {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  }
+
   openFeedbackModal(interview: ApiInterview, round: ApiInterviewRound) {
     this.activeModalFeedback.set({ interview, round });
   }
@@ -224,6 +229,13 @@ export class AdminDashboardComponent implements OnInit {
     if (!round) return;
     if (!this.schedulingDate() || !this.schedulingTime()) {
       this.roundMsg.set('Please provide both a date and a time.');
+      return;
+    }
+    // Validate date/time is not in the past
+    const now = new Date();
+    const selectedDateTime = new Date(`${this.schedulingDate()}T${this.schedulingTime()}`);
+    if (selectedDateTime < now) {
+      this.roundMsg.set('Cannot schedule a round in the past. Please select a future date and time.');
       return;
     }
     this.actingRoundId.set(round.id);
