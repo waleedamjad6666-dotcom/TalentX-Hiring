@@ -25,6 +25,7 @@ export class AdminDashboardComponent implements OnInit {
 
   decidingId = signal<string | null>(null);
   decisionMsg = signal('');
+  resumingId = signal<string | null>(null);
 
   editingInterview = signal<ApiInterview | null>(null);
   deletingInterview = signal<ApiInterview | null>(null);
@@ -165,6 +166,26 @@ export class AdminDashboardComponent implements OnInit {
     return list.sort((a, b) => new Date(b.interview.startTime).getTime() - new Date(a.interview.startTime).getTime());
   });
 
+  heldDecisions = computed<PendingDecision[]>(() => {
+    const list: PendingDecision[] = [];
+    for (const interview of this.adminService.interviews()) {
+      if (interview.decision === 'hold') {
+        const heldRound = interview.rounds?.find(r => r.decision === 'hold');
+        const feedbacks = heldRound
+          ? (interview.interviewFeedbacks || []).filter(f => f.roundId === heldRound.id)
+          : interview.interviewFeedbacks || [];
+        list.push({
+          id: `${interview.id}-held`,
+          type: heldRound ? 'round' : 'interview',
+          interview,
+          round: heldRound,
+          feedbacks
+        });
+      }
+    }
+    return list.sort((a, b) => new Date(b.interview.startTime).getTime() - new Date(a.interview.startTime).getTime());
+  });
+
   ngOnInit() {
     this.adminService.fetchInterviews();
     this.adminService.fetchCandidates();
@@ -199,6 +220,25 @@ export class AdminDashboardComponent implements OnInit {
       case 'hold': return 'On Hold';
       default: return 'Advanced to Next Round';
     }
+  }
+
+  resumeDecision(item: PendingDecision) {
+    if (this.resumingId() || this.decidingId()) return;
+    this.resumingId.set(item.id);
+    this.decisionMsg.set('');
+
+    this.adminService.resumeInterview(item.interview.id).subscribe({
+      next: () => {
+        this.resumingId.set(null);
+        this.decisionMsg.set(`${item.interview.candidate.firstname} ${item.interview.candidate.lastname} interview resumed.`);
+        setTimeout(() => this.decisionMsg.set(''), 4000);
+      },
+      error: (err) => {
+        this.resumingId.set(null);
+        this.decisionMsg.set(err.error?.message || 'Failed to resume interview.');
+        setTimeout(() => this.decisionMsg.set(''), 4000);
+      }
+    });
   }
 
   avgRating(feedbacks: FeedbackResponse[] | undefined) {
@@ -327,5 +367,14 @@ export class AdminDashboardComponent implements OnInit {
   getRoundInterviewer(round: ApiInterviewRound) {
     if (!round.interviewers || round.interviewers.length === 0) return 'No interviewer';
     return round.interviewers.map(i => `${i.firstname} ${i.lastname}`).join(', ');
+  }
+
+  canHire(item: PendingDecision): boolean {
+    if (item.type === 'interview') return true;
+    if (!item.round || !item.interview.rounds) return true;
+    const remaining = item.interview.rounds.filter(
+      r => r.roundNumber > item.round!.roundNumber && r.status !== 'cancelled'
+    );
+    return remaining.length === 0;
   }
 }
