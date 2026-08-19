@@ -5,6 +5,19 @@
     <p class="text-neutral-400">Completed interviews with full feedback from every interviewer.</p>
   </div>
 
+  @if (resumeMsg()) {
+    <div [class.bg-green-500/10]="!resumeMsg().includes('Failed')"
+      [class.border-green-500/30]="!resumeMsg().includes('Failed')"
+      [class.text-green-400]="!resumeMsg().includes('Failed')"
+      [class.bg-red-500/10]="resumeMsg().includes('Failed')"
+      [class.border-red-500/30]="resumeMsg().includes('Failed')"
+      [class.text-red-400]="resumeMsg().includes('Failed')"
+      class="border rounded-xl p-4 mb-6 text-sm font-medium flex items-center gap-3">
+      <span class="material-icons text-[18px]">{{ resumeMsg().includes('Failed') ? 'error_outline' : 'check_circle' }}</span>
+      {{ resumeMsg() }}
+    </div>
+  }
+
   <!-- Stats -->
   <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
     <div class="bg-[#161616] border border-[#262626] rounded-xl p-5">
@@ -58,6 +71,13 @@
                 <h4 class="text-lg font-bold text-white">{{ interview.candidate.firstname }} {{ interview.candidate.lastname }}</h4>
                 <span class="text-xs text-neutral-500 font-medium">{{ interview.candidate.candidateCode }}</span>
                 <span [class]="decisionClasses(interview.decision)">{{ decisionLabel(interview.decision) }}</span>
+                @if (interview.decision === 'hold') {
+                  <button (click)="resumeInterview(interview)" [disabled]="resumingId() === interview.id"
+                    class="px-3 py-1 bg-green-500/10 hover:bg-green-500/20 border border-green-500/30 text-green-400 text-[11px] font-bold rounded-lg transition-colors disabled:opacity-50 flex items-center gap-1">
+                    <span class="material-icons text-[14px]">play_arrow</span>
+                    {{ resumingId() === interview.id ? 'Resuming...' : 'Resume Interview' }}
+                  </button>
+                }
               </div>
               <p class="text-sm text-neutral-400 mt-0.5">
                 {{ interview.position.title }} <span class="mx-1 opacity-40">•</span> Round {{ interview.round }}

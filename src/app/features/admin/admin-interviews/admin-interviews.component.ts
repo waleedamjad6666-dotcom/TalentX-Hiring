@@ -18,6 +18,8 @@ export class AdminInterviewsComponent implements OnInit {
 
   search = signal('');
   statusFilter = signal<StatusFilter>('all');
+  resumingId = signal<string | null>(null);
+  resumeMsg = signal('');
 
   filterOptions: { value: StatusFilter; label: string }[] = [
     { value: 'all', label: 'All' },
@@ -143,5 +145,24 @@ export class AdminInterviewsComponent implements OnInit {
 
   recommendationLabel(r: string) {
     return r === 'Yes' ? 'Recommend for Hire' : r === 'No' ? 'Do Not Recommend' : 'Hold for Review';
+  }
+
+  resumeInterview(interview: ApiInterview) {
+    if (this.resumingId()) return;
+    this.resumingId.set(interview.id);
+    this.resumeMsg.set('');
+
+    this.adminService.resumeInterview(interview.id).subscribe({
+      next: () => {
+        this.resumingId.set(null);
+        this.resumeMsg.set(`${interview.candidate.firstname} ${interview.candidate.lastname} interview resumed successfully.`);
+        setTimeout(() => this.resumeMsg.set(''), 4000);
+      },
+      error: (err) => {
+        this.resumingId.set(null);
+        this.resumeMsg.set(err.error?.message || 'Failed to resume interview.');
+        setTimeout(() => this.resumeMsg.set(''), 4000);
+      }
+    });
   }
 }
