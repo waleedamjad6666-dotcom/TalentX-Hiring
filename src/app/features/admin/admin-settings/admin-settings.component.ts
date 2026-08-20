@@ -84,7 +84,7 @@ export class AdminSettingsComponent implements OnInit {
 
   headerIcon() {
     switch (this.activeTab()) {
-      case 'admin': return 'shield_person';
+      case 'admin': return 'shield';
       case 'interviewer': return 'record_voice_over';
       case 'position': return 'work_outline';
     }

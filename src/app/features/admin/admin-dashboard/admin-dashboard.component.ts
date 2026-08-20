@@ -377,4 +377,14 @@ export class AdminDashboardComponent implements OnInit {
     );
     return remaining.length === 0;
   }
+
+  canNextRound(item: PendingDecision): boolean {
+    if (item.type === 'interview') return false;
+    if (!item.interview.rounds) return false;
+    const validRounds = item.interview.rounds.filter(
+      r => r.status !== 'cancelled'
+    );
+    return validRounds.length > 1;
+  }
 }
+
