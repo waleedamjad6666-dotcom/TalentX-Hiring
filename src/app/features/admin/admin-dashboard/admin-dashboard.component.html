@@ -112,17 +112,21 @@
             <div class="flex items-center gap-4">
               <div
                 class="bg-[#111111] border border-[#333] rounded-lg w-14 h-14 flex flex-col items-center justify-center flex-shrink-0 shadow-inner">
-                <span class="text-[10px] font-bold text-neutral-500 uppercase leading-none">{{
-                  getMonth(interview.startTime)
-                  }}</span>
-                <span class="text-xl font-extrabold text-white leading-tight mt-0.5">{{
-                  getDay(interview.startTime)
-                  }}</span>
+                @if (interview.status === 'pending_schedule' && !interview.startTime) {
+                  <span class="material-icons text-neutral-500 text-lg">schedule</span>
+                } @else {
+                  <span class="text-[10px] font-bold text-neutral-500 uppercase leading-none">{{
+                    getMonth(interview.startTime)
+                    }}</span>
+                  <span class="text-xl font-extrabold text-white leading-tight mt-0.5">{{
+                    getDay(interview.startTime)
+                    }}</span>
+                }
               </div>
               <div>
                 <h4 class="font-bold text-white">{{ getCandidateName(interview) }}</h4>
                 <p class="text-sm text-neutral-400 mt-0.5">
-                  {{ getCandidateRole(interview) }}@if (!interview.rounds || interview.rounds.length <= 1) { • {{ getTime(interview.startTime) }} }
+                  {{ getCandidateRole(interview) }}@if (interview.status === 'pending_schedule' && !interview.startTime) { <span class="text-amber-400/80">• Awaiting candidate</span> } @else if (!interview.rounds || interview.rounds.length <= 1) { • {{ getTime(interview.startTime) }} }
                 </p>
               </div>
             </div>
@@ -144,8 +148,13 @@
                     }}</span>
                 </div>
               }
-              <span
-                class="text-xs font-bold text-neutral-500 uppercase tracking-wider px-3 py-1.5 rounded-lg bg-[#111111] border border-[#333]">Scheduled</span>
+              @if (interview.status === 'pending_schedule') {
+                <span
+                  class="text-xs font-bold text-amber-400 uppercase tracking-wider px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/30">Pending Schedule</span>
+              } @else {
+                <span
+                  class="text-xs font-bold text-blue-400 uppercase tracking-wider px-3 py-1.5 rounded-lg bg-blue-500/10 border border-blue-500/30">Scheduled</span>
+              }
               <div class="flex items-center gap-1.5">
                 <button (click)="openEditInterview(interview)" title="Edit Interview"
                   class="p-1.5 rounded-lg bg-[#111111] hover:bg-neutral-800 border border-[#333] text-neutral-400 hover:text-[#FBBF24] transition-colors">
@@ -174,6 +183,11 @@
                     }}</span>
                   <span [class]="roundStatusClasses(round.status)">{{ round.status }}</span>
                   <span class="text-[10px] text-neutral-500">{{ roundDateTime(round) }}</span>
+                  @if (round.status === 'pending' && !round.date) {
+                    <span class="text-[9px] font-bold text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-1.5 py-0.5 rounded-full flex items-center gap-1">
+                      <span class="material-icons text-[10px]">schedule_send</span> Awaiting candidate
+                    </span>
+                  }
                   <span class="text-[10px] text-neutral-400 border-l border-neutral-700 pl-1.5 ml-0.5">Interviewer: {{
                     getRoundInterviewer(round) }}</span>
                 </div>

@@ -72,16 +72,42 @@
                 <p class="text-neutral-500 text-xs mt-1">Hold Ctrl/Cmd to select multiple interviewers.</p>
               </div>
 
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <div>
-                  <label class="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-2 ml-1">Date</label>
-                  <input type="date" formControlName="date" [min]="todayDate" class="w-full bg-[#111111] border border-[#333] rounded-xl py-3 px-4 text-white outline-none focus:border-[#FBBF24] transition-colors [color-scheme:dark]">
+              <!-- Scheduling Mode Toggle -->
+              <div class="border border-[#333] rounded-xl p-4 bg-[#111111]">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <span class="material-icons text-[#4f46e5] text-xl">mail_outline</span>
+                    <div>
+                      <p class="text-white text-sm font-semibold">Let candidate pick interview time</p>
+                      <p class="text-neutral-500 text-xs mt-0.5">Candidate receives a Calendly link to choose their preferred time slot</p>
+                    </div>
+                  </div>
+                  <button type="button" (click)="toggleSchedulingMode()" class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors" [class]="schedulingMode() ? 'bg-[#4f46e5]' : 'bg-[#333]'">
+                    <span class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform" [class]="schedulingMode() ? 'translate-x-6' : 'translate-x-1'"></span>
+                  </button>
                 </div>
-                <div>
-                  <label class="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-2 ml-1">Time (Local)</label>
-                  <input type="time" formControlName="time" class="w-full bg-[#111111] border border-[#333] rounded-xl py-3 px-4 text-white outline-none focus:border-[#FBBF24] transition-colors [color-scheme:dark]">
-                </div>
+                @if (schedulingMode()) {
+                  <div class="mt-3 p-3 rounded-lg bg-[#4f46e5]/10 border border-[#4f46e5]/20">
+                    <p class="text-[#818cf8] text-xs flex items-center gap-2">
+                      <span class="material-icons text-[14px]">info_outline</span>
+                      Candidate will receive an email with a link to select their preferred date and time.
+                    </p>
+                  </div>
+                }
               </div>
+
+              @if (!schedulingMode()) {
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  <div>
+                    <label class="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-2 ml-1">Date</label>
+                    <input type="date" formControlName="date" [min]="todayDate" class="w-full bg-[#111111] border border-[#333] rounded-xl py-3 px-4 text-white outline-none focus:border-[#FBBF24] transition-colors [color-scheme:dark]">
+                  </div>
+                  <div>
+                    <label class="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-2 ml-1">Time (Local)</label>
+                    <input type="time" formControlName="time" class="w-full bg-[#111111] border border-[#333] rounded-xl py-3 px-4 text-white outline-none focus:border-[#FBBF24] transition-colors [color-scheme:dark]">
+                  </div>
+                </div>
+              }
 
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div>
@@ -184,7 +210,7 @@
 
           <div class="flex gap-4 pt-6 mt-4 border-t border-[#262626]">
             <button type="button" (click)="schedule()" [disabled]="!isFormValid() || submitting()" class="flex-1 bg-[#FBBF24] hover:bg-[#FACC15] text-black font-bold py-3.5 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2 shadow-[0_0_15px_rgba(251,191,36,0.15)] hover:shadow-[0_0_20px_rgba(251,191,36,0.3)]">
-              <span class="material-icons text-[20px]">calendar_month</span> {{ submitting() ? 'Scheduling...' : 'Schedule Interview' }}
+              <span class="material-icons text-[20px]">{{ schedulingMode() ? 'mail_outline' : 'calendar_month' }}</span> {{ submitting() ? 'Saving...' : (schedulingMode() ? 'Send Scheduling Link' : 'Schedule Interview') }}
             </button>
             <button type="button" routerLink="/admin/dashboard" class="px-8 bg-[#111111] border border-[#333] hover:bg-[#1a1a1a] text-white font-bold rounded-xl transition-colors">
               Cancel
