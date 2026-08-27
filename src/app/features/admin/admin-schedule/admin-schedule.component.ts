@@ -1,6 +1,6 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { AdminService } from '../../../core/services/admin.service';
-import { ReactiveFormsModule, FormsModule, FormGroup, FormControl } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { DatePipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { ApiCreateInterviewRound } from '../../../core/models';
@@ -24,6 +24,7 @@ export class AdminScheduleComponent implements OnInit {
   router = inject(Router);
 
   submitting = signal(false);
+  schedulingMode = signal(false);
   errorMsg = '';
   successMsg = '';
 
@@ -50,8 +51,29 @@ export class AdminScheduleComponent implements OnInit {
     this.adminService.loadScheduleData();
   }
 
+  toggleSchedulingMode() {
+    const newVal = !this.schedulingMode();
+    this.schedulingMode.set(newVal);
+
+    if (newVal) {
+      this.form.controls.date.clearValidators();
+      this.form.controls.date.updateValueAndValidity();
+      this.form.controls.time.clearValidators();
+      this.form.controls.time.updateValueAndValidity();
+      this.form.patchValue({ date: '', time: '' });
+    } else {
+      this.form.controls.date.setValidators(Validators.required);
+      this.form.controls.date.updateValueAndValidity();
+      this.form.controls.time.setValidators(Validators.required);
+      this.form.controls.time.updateValueAndValidity();
+    }
+  }
+
   isFormValid() {
-    if (!this.form.value.date || !this.form.value.time || !this.form.value.positionId) return false;
+    if (!this.form.value.positionId) return false;
+    if (!this.schedulingMode()) {
+      if (!this.form.value.date || !this.form.value.time) return false;
+    }
     if (!this.form.value.interviewerIds || this.form.value.interviewerIds.length === 0) return false;
     return !!this.form.value.candidateId;
   }
@@ -78,25 +100,25 @@ export class AdminScheduleComponent implements OnInit {
   schedule() {
     if (!this.isFormValid() || this.submitting()) return;
 
-    // Validate main interview date/time is not in the past
-    const now = new Date();
-    const mainDateTime = new Date(`${this.form.value.date}T${this.form.value.time}`);
-    if (mainDateTime < now) {
-      this.errorMsg = 'Round 1: Date and time cannot be in the past.';
-      return;
-    }
-
-    for (const round of this.rounds) {
-      if (!this.isRoundValid(round)) {
-        this.errorMsg = `Round ${round.id}: each additional round requires at least one interviewer and a duration.`;
+    if (!this.schedulingMode()) {
+      const now = new Date();
+      const mainDateTime = new Date(`${this.form.value.date}T${this.form.value.time}`);
+      if (mainDateTime < now) {
+        this.errorMsg = 'Round 1: Date and time cannot be in the past.';
         return;
       }
-      // Validate additional round date/time is not in the past (if provided)
-      if (round.date && round.time) {
-        const roundDateTime = new Date(`${round.date}T${round.time}`);
-        if (roundDateTime < now) {
-          this.errorMsg = `Round ${round.id}: Date and time cannot be in the past.`;
+
+      for (const round of this.rounds) {
+        if (!this.isRoundValid(round)) {
+          this.errorMsg = `Round ${round.id}: each additional round requires at least one interviewer and a duration.`;
           return;
+        }
+        if (round.date && round.time) {
+          const roundDateTime = new Date(`${round.date}T${round.time}`);
+          if (roundDateTime < now) {
+            this.errorMsg = `Round ${round.id}: Date and time cannot be in the past.`;
+            return;
+          }
         }
       }
     }
@@ -105,27 +127,48 @@ export class AdminScheduleComponent implements OnInit {
     this.errorMsg = '';
     this.successMsg = '';
 
-    const rounds: ApiCreateInterviewRound[] = [
-      this.buildRoundPayload(
-        this.form.value.interviewerIds!,
-        this.form.value.type || 'Technical Assessment',
-        Number(this.form.value.duration),
-        this.form.value.date!,
-        this.form.value.time!
-      )
-    ];
+    const rounds: ApiCreateInterviewRound[] = [];
 
-    for (const round of this.rounds) {
-      rounds.push(this.buildRoundPayload(
-        round.interviewerIds,
-        round.type,
-        Number(round.duration),
-        round.date,
-        round.time
-      ));
+    if (this.schedulingMode()) {
+      rounds.push({
+        interviewerIds: this.form.value.interviewerIds!,
+        type: this.form.value.type || 'Technical Assessment',
+        duration: Number(this.form.value.duration)
+      });
+    } else {
+      rounds.push(
+        this.buildRoundPayload(
+          this.form.value.interviewerIds!,
+          this.form.value.type || 'Technical Assessment',
+          Number(this.form.value.duration),
+          this.form.value.date!,
+          this.form.value.time!
+        )
+      );
+
+      for (const round of this.rounds) {
+        rounds.push(this.buildRoundPayload(
+          round.interviewerIds,
+          round.type,
+          Number(round.duration),
+          round.date,
+          round.time
+        ));
+      }
     }
 
-    this.createInterview(this.form.value.candidateId!, rounds);
+    const payload: any = {
+      candidateId: this.form.value.candidateId!,
+      positionId: this.form.value.positionId!,
+      rounds
+    };
+
+    if (this.schedulingMode()) {
+      payload.schedulingMode = true;
+      payload.duration = Number(this.form.value.duration);
+    }
+
+    this.createInterview(this.form.value.candidateId!, payload);
   }
 
   private buildRoundPayload(
@@ -179,12 +222,8 @@ export class AdminScheduleComponent implements OnInit {
     return this.rounds.length < this.maxRounds;
   }
 
-  private createInterview(candidateId: string, rounds: ApiCreateInterviewRound[]) {
-    this.adminService.createInterview({
-      candidateId,
-      positionId: this.form.value.positionId!,
-      rounds
-    }).subscribe({
+  private createInterview(candidateId: string, payload: any) {
+    this.adminService.createInterview(payload).subscribe({
       next: () => {
         this.submitting.set(false);
         this.successMsg = 'Interview scheduled successfully!';

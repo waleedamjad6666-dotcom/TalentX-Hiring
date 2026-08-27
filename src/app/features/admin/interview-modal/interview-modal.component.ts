@@ -27,6 +27,7 @@ export class InterviewModalComponent implements OnInit {
   isSubmitting = signal(false);
   isEditMode = signal(false);
   errorMsg = signal<string | null>(null);
+  schedulingMode = signal(false);
 
   rounds: MockRound[] = [];
   private nextRoundId = 2;
@@ -113,6 +114,24 @@ export class InterviewModalComponent implements OnInit {
     this.closed.emit();
   }
 
+  toggleSchedulingMode() {
+    const newVal = !this.schedulingMode();
+    this.schedulingMode.set(newVal);
+
+    if (newVal) {
+      this.form.controls.date.clearValidators();
+      this.form.controls.date.updateValueAndValidity();
+      this.form.controls.time.clearValidators();
+      this.form.controls.time.updateValueAndValidity();
+      this.form.patchValue({ date: '', time: '' });
+    } else {
+      this.form.controls.date.setValidators(Validators.required);
+      this.form.controls.date.updateValueAndValidity();
+      this.form.controls.time.setValidators(Validators.required);
+      this.form.controls.time.updateValueAndValidity();
+    }
+  }
+
   onBackdropClick(e: MouseEvent) {
     if (e.target === e.currentTarget) this.close();
   }
@@ -138,7 +157,10 @@ export class InterviewModalComponent implements OnInit {
   }
 
   isFormValid() {
-    if (!this.form.value.date || !this.form.value.time || !this.form.value.positionId) return false;
+    if (!this.form.value.positionId) return false;
+    if (!this.schedulingMode()) {
+      if (!this.form.value.date || !this.form.value.time) return false;
+    }
     if (!this.form.value.interviewerIds || this.form.value.interviewerIds.length === 0) return false;
     return !!this.form.value.candidateId;
   }
@@ -178,11 +200,16 @@ export class InterviewModalComponent implements OnInit {
 
     this.isSubmitting.set(true);
 
-    const payload = {
+    const payload: any = {
       candidateId: this.form.value.candidateId!,
       positionId: this.form.value.positionId!,
       rounds: roundsPayload
     };
+
+    if (this.schedulingMode()) {
+      payload.schedulingMode = true;
+      payload.duration = Number(this.form.value.duration);
+    }
 
     if (this.isEditMode() && this.interview) {
       this.adminService.updateInterview(this.interview.id, payload).subscribe({

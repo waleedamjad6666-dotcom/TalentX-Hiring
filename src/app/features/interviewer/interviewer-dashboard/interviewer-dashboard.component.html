@@ -76,14 +76,20 @@
       @for (inv of dashboardUpcomingInterviews(); track inv.id) {
       <div
         class="bg-[#161616] border border-[#262626] rounded-2xl p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-6 hover:border-[#333] transition-colors shadow-lg">
-        <div>
-          <h3 class="font-bold text-xl text-white mb-1">{{ inv.candidate.firstname }} {{ inv.candidate.lastname }}</h3>
-          <p class="text-sm font-medium text-neutral-400 mb-4">{{ inv.position.title }}</p>
-          <div
-            class="flex items-center gap-2 text-xs font-bold text-[#FBBF24] bg-[#FBBF24]/10 w-max px-3 py-1.5 rounded-lg border border-[#FBBF24]/20">
-            <span class="material-icons text-[16px]">event</span> {{ interviewDate(inv) }} at {{ interviewStartTime(inv)
-            | date:'shortTime' }}
-          </div>
+          <div>
+            <h3 class="font-bold text-xl text-white mb-1">{{ inv.candidate.firstname }} {{ inv.candidate.lastname }}</h3>
+            <p class="text-sm font-medium text-neutral-400 mb-4">{{ inv.position.title }}</p>
+            @if (inv.status === 'pending_schedule' || !inv.startTime) {
+              <div class="flex items-center gap-2 text-xs font-bold text-amber-400 bg-amber-500/10 w-max px-3 py-1.5 rounded-lg border border-amber-500/20">
+                <span class="material-icons text-[16px]">schedule</span> Pending Schedule
+              </div>
+            } @else {
+              <div
+                class="flex items-center gap-2 text-xs font-bold text-[#FBBF24] bg-[#FBBF24]/10 w-max px-3 py-1.5 rounded-lg border border-[#FBBF24]/20">
+                <span class="material-icons text-[16px]">event</span> {{ interviewDate(inv) }} at {{ interviewStartTime(inv)
+                | date:'shortTime' }}
+              </div>
+            }
         </div>
         <div class="flex flex-col gap-3">
           <a [routerLink]="['/interviewer/candidate-details', inv.candidateId]"

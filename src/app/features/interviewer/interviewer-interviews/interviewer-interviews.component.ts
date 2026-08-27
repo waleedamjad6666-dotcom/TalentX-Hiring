@@ -65,6 +65,8 @@ export class InterviewerInterviewsComponent implements OnInit {
       case 'in-progress': return 'text-xs font-bold text-amber-400 bg-amber-500/10 border-amber-500/20';
       case 'completed': return 'text-xs font-bold text-green-400 bg-green-500/10 border-green-500/20';
       case 'cancelled': return 'text-xs font-bold text-red-400 bg-red-500/10 border-red-500/20';
+      case 'pending':
+      case 'pending_schedule': return 'text-xs font-bold text-amber-400 bg-amber-500/10 border-amber-500/20';
       default: return 'text-xs font-bold text-neutral-400 bg-neutral-400/10 border-neutral-400/20';
     }
   }
@@ -76,8 +78,15 @@ export class InterviewerInterviewsComponent implements OnInit {
 
   scheduledInterviews = computed(() =>
     this.interviewerService.interviews()
-      .filter(i => i.status === 'scheduled')
-      .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
+      .filter(i => i.status === 'scheduled' || i.status === 'pending_schedule')
+      .sort((a, b) => {
+        const aIsPending = !a.startTime || a.status === 'pending_schedule';
+        const bIsPending = !b.startTime || b.status === 'pending_schedule';
+        if (aIsPending && !bIsPending) return 1;
+        if (!aIsPending && bIsPending) return -1;
+        if (aIsPending && bIsPending) return 0;
+        return new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
+      })
   );
 
   filteredInterviews = computed(() => {

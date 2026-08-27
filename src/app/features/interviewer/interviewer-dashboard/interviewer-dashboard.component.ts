@@ -64,8 +64,15 @@ export class InterviewerDashboardComponent implements OnInit {
 
   upcomingInterviews = computed(() =>
     this.interviewerService.interviews()
-      .filter(i => i.status === 'scheduled')
-      .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
+      .filter(i => i.status === 'scheduled' || i.status === 'pending_schedule')
+      .sort((a, b) => {
+        const aIsPending = !a.startTime || a.status === 'pending_schedule';
+        const bIsPending = !b.startTime || b.status === 'pending_schedule';
+        if (aIsPending && !bIsPending) return 1;
+        if (!aIsPending && bIsPending) return -1;
+        if (aIsPending && bIsPending) return 0;
+        return new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
+      })
   );
 
   dashboardUpcomingInterviews = computed(() => this.upcomingInterviews().slice(0, 2));

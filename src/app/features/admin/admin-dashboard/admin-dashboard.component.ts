@@ -106,8 +106,18 @@ export class AdminDashboardComponent implements OnInit {
     const now = new Date();
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
     return this.adminService.interviews()
-      .filter(i => i.status === 'scheduled' && new Date(i.startTime).getTime() >= todayStart)
-      .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+      .filter(i => {
+        if (i.status === 'pending_schedule') return true;
+        return i.status === 'scheduled' && new Date(i.startTime).getTime() >= todayStart;
+      })
+      .sort((a, b) => {
+        const aIsPending = !a.startTime || a.status === 'pending_schedule';
+        const bIsPending = !b.startTime || b.status === 'pending_schedule';
+        if (aIsPending && !bIsPending) return 1;
+        if (!aIsPending && bIsPending) return -1;
+        if (aIsPending && bIsPending) return 0;
+        return new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
+      });
   });
 
   interviewsTodayCount = computed(() => {
@@ -354,6 +364,8 @@ export class AdminDashboardComponent implements OnInit {
       case 'in-progress': return `${base} bg-amber-500/15 text-amber-400 border border-amber-500/30`;
       case 'completed': return `${base} bg-green-500/15 text-green-400 border border-green-500/30`;
       case 'cancelled': return `${base} bg-red-500/15 text-red-400 border border-red-500/30`;
+      case 'pending':
+      case 'pending_schedule': return `${base} bg-amber-500/15 text-amber-400 border border-amber-500/30`;
       default: return `${base} bg-neutral-500/15 text-neutral-400 border border-neutral-600`;
     }
   }
