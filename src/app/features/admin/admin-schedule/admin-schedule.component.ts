@@ -135,6 +135,19 @@ export class AdminScheduleComponent implements OnInit {
         type: this.form.value.type || 'Technical Assessment',
         duration: Number(this.form.value.duration)
       });
+
+      for (const round of this.rounds) {
+        if (!round.interviewerIds || round.interviewerIds.length === 0) {
+          this.errorMsg = `Round ${round.id}: at least one interviewer is required.`;
+          this.submitting.set(false);
+          return;
+        }
+        rounds.push({
+          interviewerIds: round.interviewerIds,
+          type: round.type || 'Technical Assessment',
+          duration: Number(round.duration)
+        });
+      }
     } else {
       rounds.push(
         this.buildRoundPayload(
