@@ -1,0 +1,447 @@
+<div class="max-w-6xl mx-auto pb-10">
+  <!-- Header -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+    <div>
+      <h1 class="text-3xl font-bold text-white mb-2">Vacancies</h1>
+      <p class="text-neutral-400">Track job vacancies, openings, applicants, and hiring outcomes in real time.</p>
+    </div>
+    <button (click)="openCreate()"
+      class="flex items-center justify-center gap-2 bg-[#FBBF24] hover:bg-[#FACC15] text-black font-bold py-3 px-6 rounded-xl transition-all shadow-[0_0_15px_rgba(251,191,36,0.15)] hover:shadow-[0_0_20px_rgba(251,191,36,0.3)]">
+      <span class="material-icons text-[20px]">add</span> New Vacancy
+    </button>
+  </div>
+
+  @if (successMsg()) {
+    <div class="bg-green-500/10 border border-green-500/30 text-green-400 p-4 rounded-xl mb-6 text-sm font-medium flex items-center gap-3">
+      <span class="material-icons text-[18px]">check_circle</span>
+      <span>{{ successMsg() }}</span>
+    </div>
+  }
+
+  <!-- Overview Stats (click to filter) -->
+  <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+    <button (click)="statusFilterFromStat('open')"
+      class="text-left bg-[#161616] border rounded-xl p-5 transition-all cursor-pointer hover:border-[#FBBF24]/50 hover:bg-[#1a1a1a]"
+      [class.border-[#FBBF24]/60]="isStatActive('open')" [class.border-[#262626]]="!isStatActive('open')">
+      <p class="text-neutral-500 text-xs font-semibold uppercase tracking-wider mb-1">Open Vacancies</p>
+      <h2 class="text-4xl font-bold text-white">{{ openVacancies().length }}</h2>
+      <p class="text-[11px] text-neutral-500 mt-1">{{ totalOpenings() }} open positions</p>
+    </button>
+    <button (click)="statusFilterFromStat('applied')"
+      class="text-left bg-[#161616] border rounded-xl p-5 transition-all cursor-pointer hover:border-[#FBBF24]/50 hover:bg-[#1a1a1a]"
+      [class.border-[#FBBF24]/60]="isStatActive('applied')" [class.border-[#262626]]="!isStatActive('applied')">
+      <p class="text-neutral-500 text-xs font-semibold uppercase tracking-wider mb-1">Total Applied</p>
+      <h2 class="text-4xl font-bold text-[#FBBF24]">{{ totalApplied() }}</h2>
+      <p class="text-[11px] text-neutral-500 mt-1">candidates</p>
+    </button>
+    <button (click)="statusFilterFromStat('interviewing')"
+      class="text-left bg-[#161616] border rounded-xl p-5 transition-all cursor-pointer hover:border-[#FBBF24]/50 hover:bg-[#1a1a1a]"
+      [class.border-[#FBBF24]/60]="isStatActive('interviewing')" [class.border-[#262626]]="!isStatActive('interviewing')">
+      <p class="text-neutral-500 text-xs font-semibold uppercase tracking-wider mb-1">Interviewing</p>
+      <h2 class="text-4xl font-bold text-blue-400">{{ totalInterviewing() }}</h2>
+      <p class="text-[11px] text-neutral-500 mt-1">in progress</p>
+    </button>
+    <button (click)="statusFilterFromStat('hired')"
+      class="text-left bg-[#161616] border rounded-xl p-5 transition-all cursor-pointer hover:border-[#FBBF24]/50 hover:bg-[#1a1a1a]"
+      [class.border-[#FBBF24]/60]="isStatActive('hired')" [class.border-[#262626]]="!isStatActive('hired')">
+      <p class="text-neutral-500 text-xs font-semibold uppercase tracking-wider mb-1">Hired</p>
+      <h2 class="text-4xl font-bold text-green-400">{{ totalHired() }}</h2>
+      <p class="text-[11px] text-neutral-500 mt-1">positions filled</p>
+    </button>
+    <button (click)="statusFilterFromStat('noHire')"
+      class="text-left bg-[#161616] border rounded-xl p-5 transition-all cursor-pointer hover:border-[#FBBF24]/50 hover:bg-[#1a1a1a]"
+      [class.border-[#FBBF24]/60]="isStatActive('noHire')" [class.border-[#262626]]="!isStatActive('noHire')">
+      <p class="text-neutral-500 text-xs font-semibold uppercase tracking-wider mb-1">Closed, No Hire</p>
+      <h2 class="text-4xl font-bold text-red-400">{{ closedWithoutHire().length }}</h2>
+      <p class="text-[11px] text-neutral-500 mt-1">vacancies</p>
+    </button>
+  </div>
+
+  <!-- Filters -->
+  <div class="flex flex-col md:flex-row md:items-center gap-3 mb-8">
+    <div class="relative flex-1 min-w-0">
+      <span class="material-icons absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-500 text-[16px]">search</span>
+      <input type="text" (input)="updateSearch($event)" placeholder="Search by title or department"
+        class="w-full bg-[#111111] border border-[#333] rounded-lg py-2 pl-10 pr-4 text-sm text-white outline-none focus:border-[#FBBF24] transition-colors placeholder:text-neutral-600">
+    </div>
+    <div class="flex gap-2 flex-wrap">
+      @for (opt of filterOptions; track opt.value) {
+        <button (click)="setStatusFilter(opt.value)"
+          [class.bg-[#FBBF24]]="statusFilter() === opt.value"
+          [class.text-black]="statusFilter() === opt.value"
+          [class.bg-[#1a1a1a]]="statusFilter() !== opt.value"
+          [class.border-[#FBBF24]/40]="statusFilter() !== opt.value"
+          [class.text-neutral-300]="statusFilter() !== opt.value"
+          class="px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider border transition-colors whitespace-nowrap">
+          {{ opt.label }}
+        </button>
+      }
+    </div>
+  </div>
+
+  @if (adminService.loadingVacancies()) {
+    <div class="bg-[#161616] border border-[#262626] border-dashed rounded-2xl p-12 text-center">
+      <span class="material-icons text-4xl text-[#FBBF24] animate-spin mb-4 inline-block">progress_activity</span>
+      <p class="text-neutral-500 font-medium">Loading vacancies...</p>
+    </div>
+  } @else {
+    <!-- Vacancy cards -->
+    <div class="space-y-6">
+      @for (v of filteredVacancies(); track v.id) {
+        <div class="bg-[#161616] border border-[#262626] rounded-2xl overflow-hidden shadow-xl transition-all"
+          [class.border-[#FBBF24]/50]="isExpanded(v)">
+          <!-- Header (click to expand) -->
+          <div role="button" (click)="toggleExpand(v)" class="px-6 py-5 border-b border-[#262626] flex flex-col lg:flex-row lg:items-center gap-4 cursor-pointer hover:bg-[#1a1a1a] transition-colors">
+            <div class="flex items-center gap-4 flex-1 min-w-0">
+              <div class="w-14 h-14 rounded-2xl bg-[#FBBF24]/10 text-[#FBBF24] border border-[#FBBF24]/20 flex items-center justify-center font-extrabold text-xl shadow-inner flex-shrink-0">
+                <span class="material-icons text-[24px]">work</span>
+              </div>
+              <div class="min-w-0">
+                <div class="flex items-center gap-3 flex-wrap">
+                  <h3 class="text-lg font-bold text-white truncate">{{ v.title }}</h3>
+                  <span [class]="statusBadge(v.status)">{{ v.status }}</span>
+                </div>
+                <p class="text-sm text-neutral-400 mt-0.5">
+                  {{ v.department?.name || 'N/A' }}
+                  <span class="mx-1 opacity-40">•</span>
+                  {{ v.minimumExperience }}-{{ v.maximumExperience || '∞' }} yrs
+                  <span class="mx-1 opacity-40">•</span>
+                  Opened {{ formatDate(v.createdAt) }}
+                </p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 flex-shrink-0">
+              <span class="flex items-center gap-1.5 text-xs font-bold text-neutral-400 uppercase tracking-wider">
+                {{ isExpanded(v) ? 'Hide Candidates' : 'View Candidates' }}
+                <span class="material-icons text-[20px]">{{ isExpanded(v) ? 'expand_less' : 'expand_more' }}</span>
+              </span>
+              <button (click)="openManage(v); $event.stopPropagation()"
+                class="flex items-center gap-1.5 px-4 py-2 bg-[#1a1a1a] border border-[#333] hover:border-[#FBBF24]/40 text-white text-sm font-bold rounded-lg transition-colors">
+                <span class="material-icons text-[18px]">tune</span> Manage
+              </button>
+            </div>
+          </div>
+
+          <!-- Stats grid -->
+          <div class="px-6 py-5 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+            <div class="text-center">
+              <p class="text-2xl font-extrabold text-white">{{ v.openings || 1 }}</p>
+              <p class="text-[10px] font-bold text-neutral-500 uppercase tracking-wider mt-1">Openings</p>
+            </div>
+            <div class="text-center">
+              <p class="text-2xl font-extrabold text-[#FBBF24]">{{ v.stats?.applied ?? 0 }}</p>
+              <p class="text-[10px] font-bold text-neutral-500 uppercase tracking-wider mt-1">Applied</p>
+            </div>
+            <div class="text-center">
+              <p class="text-2xl font-extrabold text-blue-400">{{ v.stats?.interviewing ?? 0 }}</p>
+              <p class="text-[10px] font-bold text-neutral-500 uppercase tracking-wider mt-1">Interviewing</p>
+            </div>
+            <div class="text-center">
+              <p class="text-2xl font-extrabold text-green-400">{{ v.stats?.hired ?? 0 }}</p>
+              <p class="text-[10px] font-bold text-neutral-500 uppercase tracking-wider mt-1">Hired</p>
+            </div>
+            <div class="text-center">
+              <p class="text-2xl font-extrabold text-neutral-300">{{ v.stats?.onHold ?? 0 }}</p>
+              <p class="text-[10px] font-bold text-neutral-500 uppercase tracking-wider mt-1">On Hold</p>
+            </div>
+            <div class="text-center">
+              <p class="text-2xl font-extrabold text-red-400">{{ v.stats?.rejected ?? 0 }}</p>
+              <p class="text-[10px] font-bold text-neutral-500 uppercase tracking-wider mt-1">Rejected</p>
+            </div>
+          </div>
+
+          <!-- Filled progress + managing info -->
+          <div class="px-6 pb-6">
+            <div class="mb-4">
+              <div class="flex items-center justify-between mb-1.5">
+                <p class="text-[11px] font-bold text-neutral-500 uppercase tracking-wider">Positions Filled</p>
+                <p class="text-[11px] font-bold text-neutral-300">{{ v.stats?.hired ?? 0 }} / {{ v.openings || 1 }} ({{ filledPercent(v) }}%)</p>
+              </div>
+              <div class="w-full bg-[#111111] border border-[#262626] rounded-full h-2.5 overflow-hidden">
+                <div class="h-full bg-green-500 transition-all" [style.width.%]="filledPercent(v)"></div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+              <div class="flex items-center gap-2">
+                <span class="material-icons text-[18px] text-neutral-500">person</span>
+                <div>
+                  <p class="text-[10px] font-bold text-neutral-500 uppercase tracking-wider">Managed By</p>
+                  <p class="text-neutral-300">{{ creatorName(v) }}</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="material-icons text-[18px] text-neutral-500">event</span>
+                <div>
+                  <p class="text-[10px] font-bold text-neutral-500 uppercase tracking-wider">Opened On</p>
+                  <p class="text-neutral-300">{{ formatDate(v.createdAt) }}</p>
+                </div>
+              </div>
+              @if (v.status === 'closed') {
+                <div class="flex items-center gap-2">
+                  <span class="material-icons text-[18px] text-red-400">event_busy</span>
+                  <div>
+                    <p class="text-[10px] font-bold text-neutral-500 uppercase tracking-wider">Closed On</p>
+                    <p class="text-neutral-300">{{ formatDate(v.closedAt) }}</p>
+                  </div>
+                </div>
+              } @else {
+                <div class="flex items-center gap-2">
+                  <span class="material-icons text-[18px] text-green-400">check_circle</span>
+                  <div>
+                    <p class="text-[10px] font-bold text-neutral-500 uppercase tracking-wider">Filled</p>
+                    <p class="text-neutral-300">{{ v.stats?.hired ?? 0 }} position(s)</p>
+                  </div>
+                </div>
+              }
+            </div>
+
+            @if (v.status === 'closed' && v.closeReason) {
+              <div class="mt-4 bg-red-500/5 border border-red-500/20 rounded-xl p-4 flex items-start gap-3">
+                <span class="material-icons text-[18px] text-red-400 mt-0.5">info</span>
+                <div>
+                  <p class="text-[11px] font-bold text-red-400 uppercase tracking-wider mb-0.5">Why this vacancy was closed</p>
+                  <p class="text-sm text-neutral-300">{{ v.closeReason }}</p>
+                </div>
+              </div>
+            }
+            @if (v.status === 'closed' && (v.stats?.hired ?? 0) === 0) {
+              <div class="mt-4 bg-yellow-500/5 border border-yellow-500/20 rounded-xl p-4 flex items-start gap-3">
+                <span class="material-icons text-[18px] text-yellow-400 mt-0.5">warning</span>
+                <div>
+                  <p class="text-[11px] font-bold text-yellow-400 uppercase tracking-wider mb-0.5">Closed Without Hiring</p>
+                  <p class="text-sm text-neutral-300">This vacancy was closed without hiring any candidate.</p>
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- Expandable candidates (real data) -->
+          @if (isExpanded(v)) {
+            <div class="border-t border-[#262626] bg-[#111111]/60 px-6 py-6">
+              <div class="flex items-center justify-between mb-5">
+                <h4 class="text-sm font-bold text-white uppercase tracking-wider">Candidates — {{ v.title }}</h4>
+                <span class="text-xs text-neutral-500 font-medium">{{ interviewsForVacancy(v).length }} interview(s)</span>
+              </div>
+
+              @if (candidatesByDecision(v).length === 0) {
+                <div class="text-center text-neutral-500 py-6">
+                  No candidate interviews have been scheduled for this vacancy yet.
+                </div>
+              } @else {
+                <div class="space-y-6">
+                  @for (group of candidatesByDecision(v); track group.decision) {
+                    <div>
+                      <div class="flex items-center gap-2 mb-3">
+                        <span class="w-2 h-2 rounded-full"
+                          [class.bg-green-400]="group.decision === 'hired'"
+                          [class.bg-blue-400]="group.decision === 'interviewing'"
+                          [class.bg-yellow-400]="group.decision === 'hold'"
+                          [class.bg-red-400]="group.decision === 'rejected'"></span>
+                        <p class="text-[11px] font-bold uppercase tracking-widest text-neutral-400"
+                          [class.text-green-400]="group.decision === 'hired'"
+                          [class.text-blue-400]="group.decision === 'interviewing'"
+                          [class.text-yellow-400]="group.decision === 'hold'"
+                          [class.text-red-400]="group.decision === 'rejected'">
+                          {{ decisionGroupLabel(group.decision) }} ({{ group.interviews.length }})
+                        </p>
+                      </div>
+                      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                        @for (i of group.interviews; track i.id) {
+                          <div class="bg-[#161616] border border-[#333] rounded-xl p-4 flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-[#262626] border border-[#333] flex items-center justify-center text-xs font-bold text-[#FBBF24] flex-shrink-0">
+                              {{ candidateInitials(i) }}
+                            </div>
+                            <div class="min-w-0 flex-1">
+                              <p class="text-sm font-bold text-white truncate">{{ candidateName(i) }}</p>
+                              <p class="text-[11px] text-neutral-500 truncate">{{ i.candidate.candidateCode || '—' }}</p>
+                              <p class="text-[11px] text-neutral-500 mt-0.5">Round {{ i.round }} • {{ formatDate(i.date) }}</p>
+                            </div>
+                            <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border flex-shrink-0"
+                              [class.text-green-400]="group.decision === 'hired'"
+                              [class.text-blue-400]="group.decision === 'interviewing'"
+                              [class.text-yellow-400]="group.decision === 'hold'"
+                              [class.text-red-400]="group.decision === 'rejected'"
+                              [class.border-green-500/30]="group.decision === 'hired'"
+                              [class.border-blue-500/30]="group.decision === 'interviewing'"
+                              [class.border-yellow-500/30]="group.decision === 'hold'"
+                              [class.border-red-500/30]="group.decision === 'rejected'">
+                              {{ decisionGroupLabel(group.decision) }}
+                            </span>
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+
+      @if (filteredVacancies().length === 0) {
+        <div class="bg-[#161616] border border-[#262626] border-dashed rounded-2xl p-12 text-center">
+          <span class="material-icons text-5xl text-neutral-600 mb-3 block">business_center</span>
+          <p class="text-neutral-500 font-medium">No vacancies found.</p>
+          <p class="text-neutral-600 text-sm mt-1">Click "New Vacancy" to create an open position.</p>
+        </div>
+      }
+    </div>
+  }
+</div>
+
+<!-- Create Vacancy Modal -->
+@if (showCreateModal()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" (click)="showCreateModal.set(false)">
+    <div class="bg-[#161616] border border-[#262626] rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto" (click)="$event.stopPropagation()">
+      <div class="px-6 py-5 border-b border-[#262626] flex items-center justify-between">
+        <div>
+          <h2 class="text-xl font-bold text-white">Create New Vacancy</h2>
+          <p class="text-xs text-neutral-500 mt-0.5">Open a new position for hiring.</p>
+        </div>
+        <button (click)="closeCreate()" class="text-neutral-500 hover:text-white transition-colors p-1 rounded-lg">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+
+      <form [formGroup]="createForm" (ngSubmit)="createVacancy()" class="p-6 space-y-5">
+        @if (errorMsg()) {
+          <div class="bg-red-500/10 border border-red-500/30 text-red-400 p-3 rounded-xl text-sm flex items-center gap-2">
+            <span class="material-icons text-[18px]">error_outline</span>{{ errorMsg() }}
+          </div>
+        }
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-1.5">Position Title</label>
+            <input type="text" formControlName="title" placeholder="e.g. DevOps Engineer"
+              class="w-full bg-[#111111] border border-[#333] rounded-xl py-2.5 px-4 text-white outline-none focus:border-[#FBBF24] transition-colors">
+            @if (createForm.get('title')?.invalid && createForm.get('title')?.touched) {
+              <p class="text-red-400 text-xs mt-1">Title is required</p>
+            }
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-1.5">Department</label>
+            <select formControlName="departmentId" class="w-full bg-[#111111] border border-[#333] rounded-xl py-2.5 px-4 text-white outline-none focus:border-[#FBBF24] transition-colors appearance-none">
+              <option value="">Select department...</option>
+              @for (d of adminService.departments(); track d.id) {
+                <option [value]="d.id">{{ d.name }}</option>
+              }
+            </select>
+            @if (createForm.get('departmentId')?.invalid && createForm.get('departmentId')?.touched) {
+              <p class="text-red-400 text-xs mt-1">Department is required</p>
+            }
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-1.5">Required Skills</label>
+          <input type="text" formControlName="requiredSkills" placeholder="e.g. Docker, Kubernetes, AWS"
+            class="w-full bg-[#111111] border border-[#333] rounded-xl py-2.5 px-4 text-white outline-none focus:border-[#FBBF24] transition-colors">
+          <p class="text-neutral-500 text-xs mt-1">Separate skills with commas.</p>
+          @if (createForm.get('requiredSkills')?.invalid && createForm.get('requiredSkills')?.touched) {
+            <p class="text-red-400 text-xs mt-1">At least one skill is required</p>
+          }
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-1.5">Openings</label>
+            <input type="number" min="1" formControlName="openings" placeholder="1"
+              class="w-full bg-[#111111] border border-[#333] rounded-xl py-2.5 px-4 text-white outline-none focus:border-[#FBBF24] transition-colors">
+            @if (createForm.get('openings')?.invalid && createForm.get('openings')?.touched) {
+              <p class="text-red-400 text-xs mt-1">At least 1</p>
+            }
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-1.5">Min Experience (yrs)</label>
+            <input type="number" min="0" formControlName="minimumExperience" placeholder="e.g. 3"
+              class="w-full bg-[#111111] border border-[#333] rounded-xl py-2.5 px-4 text-white outline-none focus:border-[#FBBF24] transition-colors">
+            @if (createForm.get('minimumExperience')?.invalid && createForm.get('minimumExperience')?.touched) {
+              <p class="text-red-400 text-xs mt-1">Enter a valid number</p>
+            }
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-1.5">Max Experience (yrs)</label>
+            <input type="number" min="0" formControlName="maximumExperience" placeholder="Optional"
+              class="w-full bg-[#111111] border border-[#333] rounded-xl py-2.5 px-4 text-white outline-none focus:border-[#FBBF24] transition-colors">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-1.5">Description</label>
+          <textarea formControlName="description" rows="3" placeholder="Describe the role and responsibilities..."
+            class="w-full bg-[#111111] border border-[#333] rounded-xl py-2.5 px-4 text-white outline-none focus:border-[#FBBF24] transition-colors resize-none"></textarea>
+          @if (createForm.get('description')?.invalid && createForm.get('description')?.touched) {
+            <p class="text-red-400 text-xs mt-1">Description is required</p>
+          }
+        </div>
+
+        <div class="flex gap-4 pt-4 border-t border-[#262626]">
+          <button type="submit" [disabled]="createForm.invalid || submitting()"
+            class="flex items-center justify-center gap-2 bg-[#FBBF24] hover:bg-[#FACC15] text-black font-bold py-2.5 px-6 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+            <span class="material-icons text-[20px]">work_add</span> {{ submitting() ? 'Creating...' : 'Create Vacancy' }}
+          </button>
+          <button type="button" (click)="closeCreate()" class="px-6 bg-[#111111] border border-[#333] hover:bg-[#1a1a1a] text-white font-bold rounded-xl transition-colors">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- Manage Vacancy Modal -->
+@if (showManageModal() && manageTarget()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" (click)="closeManage()">
+    <div class="bg-[#161616] border border-[#262626] rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto" (click)="$event.stopPropagation()">
+      <div class="px-6 py-5 border-b border-[#262626] flex items-center justify-between">
+        <div>
+          <h2 class="text-xl font-bold text-white">{{ manageTarget()?.title }}</h2>
+          <p class="text-xs text-neutral-500 mt-0.5">Update status and openings for this vacancy.</p>
+        </div>
+        <button (click)="closeManage()" class="text-neutral-500 hover:text-white transition-colors p-1 rounded-lg">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+
+      <form [formGroup]="manageForm" (ngSubmit)="saveManage()" class="p-6 space-y-5">
+        @if (errorMsg()) {
+          <div class="bg-red-500/10 border border-red-500/30 text-red-400 p-3 rounded-xl text-sm flex items-center gap-2">
+            <span class="material-icons text-[18px]">error_outline</span>{{ errorMsg() }}
+          </div>
+        }
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-1.5">Status</label>
+            <select formControlName="status" class="w-full bg-[#111111] border border-[#333] rounded-xl py-2.5 px-4 text-white outline-none focus:border-[#FBBF24] transition-colors appearance-none">
+              <option value="open">Open</option>
+              <option value="closed">Closed</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-1.5">Openings</label>
+            <input type="number" min="1" formControlName="openings"
+              class="w-full bg-[#111111] border border-[#333] rounded-xl py-2.5 px-4 text-white outline-none focus:border-[#FBBF24] transition-colors">
+          </div>
+        </div>
+
+        @if (manageForm.get('status')?.value === 'closed') {
+          <div>
+            <label class="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-1.5">Reason for Closing</label>
+            <textarea formControlName="closeReason" rows="3" placeholder="e.g. Hiring freeze for the quarter"
+              class="w-full bg-[#111111] border border-[#333] rounded-xl py-2.5 px-4 text-white outline-none focus:border-[#FBBF24] transition-colors resize-none"></textarea>
+          </div>
+        }
+
+        <div class="flex gap-4 pt-4 border-t border-[#262626]">
+          <button type="submit" [disabled]="manageForm.invalid || submitting()"
+            class="flex items-center justify-center gap-2 bg-[#FBBF24] hover:bg-[#FACC15] text-black font-bold py-2.5 px-6 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+            <span class="material-icons text-[20px]">save</span> {{ submitting() ? 'Saving...' : 'Save Changes' }}
+          </button>
+          <button type="button" (click)="closeManage()" class="px-6 bg-[#111111] border border-[#333] hover:bg-[#1a1a1a] text-white font-bold rounded-xl transition-colors">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

@@ -19,6 +19,7 @@ export class LayoutComponent {
         { path: '/admin/dashboard', label: 'Dashboard', icon: 'space_dashboard' },
         { path: '/admin/candidates', label: 'Candidates', icon: 'group' },
         { path: '/admin/interviews', label: 'Feedbacks', icon: 'assignment' },
+        { path: '/admin/vacancies', label: 'Vacancies', icon: 'work' },
         { path: '/admin/settings', label: 'Settings', icon: 'settings' }
       ];
     } else {

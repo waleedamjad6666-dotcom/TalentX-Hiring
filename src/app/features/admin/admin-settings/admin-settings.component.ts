@@ -2,7 +2,7 @@ import { Component, inject, signal, OnInit } from '@angular/core';
 import { AdminService } from '../../../core/services/admin.service';
 import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 
-type SettingsTab = 'admin' | 'interviewer' | 'position';
+type SettingsTab = 'admin' | 'interviewer';
 
 @Component({
   selector: 'app-admin-settings',
@@ -38,16 +38,6 @@ export class AdminSettingsComponent implements OnInit {
     phone: new FormControl('', { nonNullable: true })
   });
 
-  positionForm = new FormGroup({
-    title: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
-    departmentId: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
-    requiredSkills: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
-    minimumExperience: new FormControl<number | null>(null, { validators: [Validators.required, Validators.min(0)] }),
-    maximumExperience: new FormControl<number | null>(null),
-    description: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
-    status: new FormControl('open', { nonNullable: true })
-  });
-
   ngOnInit() {
     this.adminService.loadDepartments();
   }
@@ -70,7 +60,6 @@ export class AdminSettingsComponent implements OnInit {
     switch (this.activeTab()) {
       case 'admin': return 'Create New Admin';
       case 'interviewer': return 'Create New Interviewer';
-      case 'position': return 'Create New Job Position';
     }
   }
 
@@ -78,7 +67,6 @@ export class AdminSettingsComponent implements OnInit {
     switch (this.activeTab()) {
       case 'admin': return 'Grant a team member full administrative access.';
       case 'interviewer': return 'Add an interviewer who can conduct interviews and submit feedback.';
-      case 'position': return 'Define a new open role to assign interviews against.';
     }
   }
 
@@ -86,7 +74,6 @@ export class AdminSettingsComponent implements OnInit {
     switch (this.activeTab()) {
       case 'admin': return 'shield';
       case 'interviewer': return 'record_voice_over';
-      case 'position': return 'work_outline';
     }
   }
 
@@ -102,7 +89,6 @@ export class AdminSettingsComponent implements OnInit {
     switch (tab) {
       case 'admin': return this.adminForm;
       case 'interviewer': return this.interviewerForm;
-      case 'position': return this.positionForm;
     }
   }
 
@@ -112,11 +98,7 @@ export class AdminSettingsComponent implements OnInit {
   }
 
   resetForm(tab: SettingsTab) {
-    const form = this.formFor(tab);
-    form.reset();
-    if (tab === 'position') {
-      form.patchValue({ status: 'open' });
-    }
+    this.formFor(tab).reset();
     this.clearMessages();
   }
 
@@ -153,38 +135,6 @@ export class AdminSettingsComponent implements OnInit {
       error: (err) => {
         this.submitting.set(false);
         this.errorMsg = err.error?.message || `Failed to create ${role}`;
-      }
-    });
-  }
-
-  createPosition() {
-    if (this.positionForm.invalid) return;
-
-    this.submitting.set(true);
-    this.clearMessages();
-
-    const v = this.positionForm.getRawValue();
-    const skills = v.requiredSkills.split(',').map(s => s.trim()).filter(Boolean);
-
-    this.adminService.createPosition({
-      title: v.title,
-      departmentId: v.departmentId,
-      requiredSkills: skills,
-      minimumExperience: Number(v.minimumExperience),
-      maximumExperience: v.maximumExperience !== null ? Number(v.maximumExperience) : undefined,
-      description: v.description,
-      status: v.status
-    }).subscribe({
-      next: (res) => {
-        this.submitting.set(false);
-        this.successMsg = `Position "${res.position.title}" created successfully!`;
-        this.positionForm.reset();
-        this.positionForm.patchValue({ status: 'open' });
-        this.adminService.loadScheduleData();
-      },
-      error: (err) => {
-        this.submitting.set(false);
-        this.errorMsg = err.error?.message || 'Failed to create position';
       }
     });
   }

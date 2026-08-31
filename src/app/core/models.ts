@@ -58,6 +58,28 @@ export interface ApiPosition {
   maximumExperience: number | null;
   description: string;
   status: string;
+  openings: number;
+  closedAt?: string | null;
+  closeReason?: string | null;
+  createdAt?: string;
+}
+
+export interface PositionStats {
+  applied: number;
+  interviewing: number;
+  hired: number;
+  rejected: number;
+  onHold: number;
+  filled: number;
+}
+
+export interface ApiVacancy extends ApiPositionWithDepartment {
+  creator?: ApiUser;
+  stats?: PositionStats;
+}
+
+export interface ApiPositionsWithStatsResponse {
+  positions: ApiVacancy[];
 }
 
 export interface ApiUser {
@@ -347,10 +369,31 @@ export interface ApiCreatePositionRequest {
   maximumExperience?: number;
   description: string;
   status: string;
+  openings?: number;
 }
 
 export interface ApiCreatePositionResponse {
   position: ApiPositionWithDepartment;
+}
+
+export interface ApiUpdatePositionRequest {
+  status?: string;
+  openings?: number;
+  closeReason?: string;
+  title?: string;
+  departmentId?: string;
+  requiredSkills?: string[];
+  minimumExperience?: number;
+  maximumExperience?: number;
+  description?: string;
+}
+
+export interface ApiUpdatePositionResponse {
+  position: ApiPositionWithDepartment;
+}
+
+export interface ApiPositionResponse {
+  position: ApiVacancy;
 }
 
 export interface CurrentUser {

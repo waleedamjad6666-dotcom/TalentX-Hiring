@@ -7,9 +7,11 @@ import {
   ApiInterviewer,
   ApiDepartment,
   ApiPositionWithDepartment,
+  ApiVacancy,
   ApiCandidatesResponse,
   ApiInterviewersResponse,
   ApiPositionsResponse,
+  ApiPositionsWithStatsResponse,
   ApiDepartmentsResponse,
   ApiInterviewsListResponse,
   ApiCreateCandidateRequest,
@@ -24,6 +26,8 @@ import {
   ApiCreateUserResponse,
   ApiCreatePositionRequest,
   ApiCreatePositionResponse,
+  ApiUpdatePositionRequest,
+  ApiUpdatePositionResponse,
   ApiUpdateDecisionRequest,
   ApiUpdateDecisionResponse,
   ApiRoundsResponse,
@@ -42,8 +46,10 @@ export class AdminService {
   positions = signal<ApiPositionWithDepartment[]>([]);
   departments = signal<ApiDepartment[]>([]);
   interviews = signal<ApiInterview[]>([]);
+  vacancies = signal<ApiVacancy[]>([]);
 
   loading = signal<boolean>(false);
+  loadingVacancies = signal<boolean>(false);
   error = signal<string | null>(null);
 
   loadScheduleData() {
@@ -83,6 +89,21 @@ export class AdminService {
     this.http.get<ApiDepartmentsResponse>('/api/admin/departments').subscribe({
       next: (res) => this.departments.set(res.departments),
       error: (err) => this.error.set(err.error?.message || 'Failed to load departments')
+    });
+  }
+
+  loadVacancies() {
+    this.loadingVacancies.set(true);
+    this.error.set(null);
+    this.http.get<ApiPositionsWithStatsResponse>('/api/admin/positions').subscribe({
+      next: (res) => {
+        this.vacancies.set(res.positions);
+        this.loadingVacancies.set(false);
+      },
+      error: (err) => {
+        this.error.set(err.error?.message || 'Failed to load vacancies');
+        this.loadingVacancies.set(false);
+      }
     });
   }
 
@@ -158,6 +179,15 @@ export class AdminService {
 
   createPosition(data: ApiCreatePositionRequest): Observable<ApiCreatePositionResponse> {
     return this.http.post<ApiCreatePositionResponse>('/api/admin/positions', data);
+  }
+
+  updatePosition(id: string, data: ApiUpdatePositionRequest): Observable<ApiUpdatePositionResponse> {
+    return this.http.put<ApiUpdatePositionResponse>(`/api/admin/positions/${id}`, data).pipe(
+      tap(() => {
+        this.loadVacancies();
+        this.loadScheduleData();
+      })
+    );
   }
 
   updateInterviewDecision(interviewId: string, decision: ApiUpdateDecisionRequest['decision']): Observable<ApiUpdateDecisionResponse> {
