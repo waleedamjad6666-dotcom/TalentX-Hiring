@@ -14,6 +14,7 @@ export const routes: Routes = [
       { path: 'dashboard', loadComponent: () => import('./features/admin/admin-dashboard/admin-dashboard.component').then(m => m.AdminDashboardComponent) },
       { path: 'candidates', loadComponent: () => import('./features/admin/admin-candidates/admin-candidates.component').then(m => m.AdminCandidatesComponent) },
       { path: 'interviews', loadComponent: () => import('./features/admin/admin-interviews/admin-interviews.component').then(m => m.AdminInterviewsComponent) },
+      { path: 'vacancies', loadComponent: () => import('./features/admin/admin-vacancies/admin-vacancies.component').then(m => m.AdminVacanciesComponent) },
       { path: 'candidates/:id', loadComponent: () => import('./features/admin/admin-candidate-details/admin-candidate-details.component').then(m => m.AdminCandidateDetailsComponent) },
       { path: 'schedule', loadComponent: () => import('./features/admin/admin-schedule/admin-schedule.component').then(m => m.AdminScheduleComponent) },
       { path: 'settings', loadComponent: () => import('./features/admin/admin-settings/admin-settings.component').then(m => m.AdminSettingsComponent) }
