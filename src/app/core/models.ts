@@ -150,6 +150,8 @@ export interface ApiCandidateResponse {
     currentPosition: string;
     skills: string[];
     notes: string;
+    resumeMimeType?: string | null;
+    resumeUrl?: string;
   };
 }
 

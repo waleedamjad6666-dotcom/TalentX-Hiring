@@ -86,7 +86,7 @@
             } @else {
               <div
                 class="flex items-center gap-2 text-xs font-bold text-[#FBBF24] bg-[#FBBF24]/10 w-max px-3 py-1.5 rounded-lg border border-[#FBBF24]/20">
-                <span class="material-icons text-[16px]">event</span> {{ interviewDate(inv) }} at {{ interviewStartTime(inv)
+                <span class="material-icons text-[16px]">event</span> {{ formatDateLocal(interviewDate(inv)) }} at {{ interviewStartTime(inv)
                 | date:'shortTime' }}
               </div>
             }
@@ -144,7 +144,7 @@
                 </div>
                 <div class="text-xs font-medium text-neutral-500 mt-0.5">{{ inv.position.title }}</div>
               </td>
-              <td class="p-5 text-neutral-300 font-medium">{{ interviewDate(inv) }}</td>
+              <td class="p-5 text-neutral-300 font-medium">{{ formatDateLocal(interviewDate(inv)) }}</td>
               <td class="p-5 text-neutral-300 font-medium">{{ interviewRoundLabel(inv) }}</td>
               <td class="p-5 text-neutral-300 font-medium">{{ interviewType(inv) || 'N/A' }}</td>
               <td class="p-5">

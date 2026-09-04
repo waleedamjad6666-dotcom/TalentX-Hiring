@@ -76,7 +76,7 @@
                     <div class="font-bold text-white text-base">{{ inv.candidate.firstname }} {{ inv.candidate.lastname }}</div>
                   </td>
                   <td class="p-5 text-neutral-300 font-medium">{{ inv.position.title }}</td>
-                  <td class="p-5 text-neutral-300 font-medium">{{ interviewDate(inv) }}</td>
+                  <td class="p-5 text-neutral-300 font-medium">{{ formatDateLocal(interviewDate(inv)) }}</td>
                   <td class="p-5 text-neutral-300 font-medium">{{ interviewRoundLabel(inv) }}</td>
                   <td class="p-5 text-neutral-300 font-medium">{{ interviewType(inv) || 'N/A' }}</td>
                   <td class="p-5">

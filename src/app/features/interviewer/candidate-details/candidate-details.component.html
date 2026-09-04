@@ -104,6 +104,11 @@
            <span class="material-icons text-[18px]">info</span> Review candidate details before the interview
          </div>
          <div class="flex gap-4 w-full sm:w-auto">
+           @if (interviewerService.candidate()?.resumeUrl) {
+             <button type="button" class="flex-1 sm:flex-none px-8 py-4 rounded-xl border border-[#FBBF24]/40 text-[#FBBF24] hover:bg-[#FBBF24]/10 font-extrabold transition-all" (click)="downloadResume()">
+               <span class="material-icons align-middle text-[20px] mr-1">download</span> Download CV
+             </button>
+           }
            <button type="button" class="flex-1 sm:flex-none px-8 py-4 rounded-xl bg-[#FBBF24] hover:bg-[#FACC15] text-black font-extrabold transition-all shadow-[0_0_15px_rgba(251,191,36,0.15)] hover:shadow-[0_0_20px_rgba(251,191,36,0.3)]" (click)="router.navigate(['/interviewer/dashboard'])">Back to Dashboard</button>
          </div>
       </div>

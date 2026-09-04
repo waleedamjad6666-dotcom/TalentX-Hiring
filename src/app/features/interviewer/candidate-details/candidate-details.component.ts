@@ -33,4 +33,23 @@ export class CandidateDetailsComponent implements OnInit, OnDestroy {
   getInitials(firstname: string | undefined, lastname: string | undefined) {
     return getInitials(firstname, lastname);
   }
+
+  downloadResume() {
+    const c = this.interviewerService.candidate();
+    if (!c || !c.resumeUrl) return;
+
+    this.interviewerService.downloadResume(c.id).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${c.firstname}_${c.lastname}_resume.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      },
+      error: () => {}
+    });
+  }
 }

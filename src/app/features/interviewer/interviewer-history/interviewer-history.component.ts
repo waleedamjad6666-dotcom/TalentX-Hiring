@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { InterviewerService } from '../../../core/services/interviewer.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { ApiInterview } from '../../../core/models';
+import { formatDateLocal } from '../../../shared/utils';
 
 @Component({
   selector: 'app-interviewer-history',
@@ -39,6 +40,10 @@ export class InterviewerHistoryComponent implements OnInit {
 
   interviewDate(interview: ApiInterview): string {
     return this.myRound(interview)?.date || interview.date;
+  }
+
+  formatDateLocal(dateStr?: string | null): string {
+    return formatDateLocal(dateStr);
   }
 
   interviewStartTime(interview: ApiInterview): string {

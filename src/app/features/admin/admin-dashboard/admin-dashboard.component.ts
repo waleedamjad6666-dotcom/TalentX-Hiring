@@ -102,21 +102,64 @@ export class AdminDashboardComponent implements OnInit {
     return (interview.interviewFeedbacks || []).filter(f => f.roundId === roundId);
   }
 
+  // An interview stays in "Upcoming Interviews" until its full round cycle is
+  // finished — i.e. until ALL rounds are completed (or the interview itself is
+  // completed/cancelled). It must NOT vanish just because the interview-level
+  // startTime is missing or a single round was scheduled/completed.
+  private firstActiveRound(interview: ApiInterview): ApiInterviewRound | undefined {
+    return (interview.rounds || []).find(
+      (r) => r.status !== 'completed' && r.status !== 'cancelled'
+    );
+  }
+
+  // Resolve the display start time from the first active round, falling back to
+  // the interview-level time (which may be null for round-based interviews).
+  private activeStartTime(interview: ApiInterview): string | null {
+    const r = this.firstActiveRound(interview);
+    return r?.startTime || interview.startTime || null;
+  }
+
+  // An interview is considered "pending/awaiting" when its active round has no time yet.
+  displayIsPending(interview: ApiInterview): boolean {
+    return !this.activeStartTime(interview);
+  }
+
+  displayStartTime(interview: ApiInterview): string {
+    return this.activeStartTime(interview) || '';
+  }
+
+  private isUpcomingInterview(interview: ApiInterview): boolean {
+    if (interview.status === 'completed' || interview.status === 'cancelled') {
+      return false;
+    }
+    if (interview.rounds && interview.rounds.length > 0) {
+      // With rounds, keep it until every round is complete/cancelled.
+      return interview.rounds.some(
+        (r) => r.status !== 'completed' && r.status !== 'cancelled'
+      );
+    }
+    // Legacy direct interviews (no rounds): keep while still scheduled.
+    return (
+      interview.status === 'pending_schedule' ||
+      interview.status === 'scheduled' ||
+      interview.status === 'in-progress'
+    );
+  }
+
   upcomingInterviews = computed(() => {
-    const now = new Date();
-    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
     return this.adminService.interviews()
-      .filter(i => {
-        if (i.status === 'pending_schedule') return true;
-        return i.status === 'scheduled' && new Date(i.startTime).getTime() >= todayStart;
-      })
+      .filter(i => this.isUpcomingInterview(i))
       .sort((a, b) => {
-        const aIsPending = !a.startTime || a.status === 'pending_schedule';
-        const bIsPending = !b.startTime || b.status === 'pending_schedule';
+        const aRound = this.firstActiveRound(a);
+        const bRound = this.firstActiveRound(b);
+        const aTime = (aRound?.startTime || a.startTime) || null;
+        const bTime = (bRound?.startTime || b.startTime) || null;
+        const aIsPending = !aTime;
+        const bIsPending = !bTime;
         if (aIsPending && !bIsPending) return 1;
         if (!aIsPending && bIsPending) return -1;
         if (aIsPending && bIsPending) return 0;
-        return new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
+        return new Date(aTime!).getTime() - new Date(bTime!).getTime();
       });
   });
 
