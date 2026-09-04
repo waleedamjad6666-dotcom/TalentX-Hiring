@@ -20,6 +20,30 @@ export function formatDate(dateStr: string): string {
   });
 }
 
+export function formatDateLocal(dateStr?: string | null): string {
+  if (!dateStr) return '';
+  // Parse YYYY-MM-DD components directly to avoid UTC timezone day-shift
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateStr.trim());
+  if (m) {
+    const date = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+    if (!isNaN(date.getTime())) {
+      return date.toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+    }
+  }
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return dateStr;
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
+}
+
 export function statusClasses(status: string): string {
   const base = 'px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide';
   switch (status) {

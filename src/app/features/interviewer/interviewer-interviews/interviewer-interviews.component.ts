@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { InterviewerService } from '../../../core/services/interviewer.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { ApiInterview, ApiInterviewRound } from '../../../core/models';
+import { formatDateLocal } from '../../../shared/utils';
 
 @Component({
   selector: 'app-interviewer-interviews',
@@ -33,6 +34,10 @@ export class InterviewerInterviewsComponent implements OnInit {
 
   interviewStartTime(interview: ApiInterview): string {
     return this.myRounds(interview)[0]?.startTime || interview.startTime;
+  }
+
+  formatDateLocal(dateStr?: string | null): string {
+    return formatDateLocal(dateStr);
   }
 
   interviewRoundLabel(interview: ApiInterview): string {

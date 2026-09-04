@@ -60,6 +60,12 @@ export class InterviewerService {
     this.candidateError.set(null);
   }
 
+  downloadResume(id: string) {
+    return this.http.get<Blob>(`/api/interviewer/candidate/${id}/resume`, {
+      responseType: 'blob' as 'json'
+    });
+  }
+
   submitFeedback(data: SubmitFeedbackRequest): Observable<SubmitFeedbackResponse> {
     return this.http.post<SubmitFeedbackResponse>('/api/interviewer/feedback', data).pipe(
       tap(() => this.fetchInterviews())
