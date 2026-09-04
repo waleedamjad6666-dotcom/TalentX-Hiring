@@ -1,9 +1,14 @@
 <div class="max-w-6xl mx-auto pb-10">
   <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2 gap-4">
     <h1 class="text-3xl font-bold text-white">Manage Candidates</h1>
-    <button (click)="openCreate()" class="bg-[#FBBF24] hover:bg-[#FACC15] text-black font-semibold py-2.5 px-5 rounded-lg flex items-center gap-2 transition-colors shadow-lg shadow-[#FBBF24]/10">
-      <span class="material-icons text-sm">person_add</span> Create Candidate
-    </button>
+    <div class="flex items-center gap-3">
+      <button (click)="showMatcherModal.set(true)" class="bg-[#1e1e1e] hover:bg-[#282828] text-[#FBBF24] border border-[#FBBF24]/40 font-semibold py-2.5 px-4 rounded-lg flex items-center gap-2 transition-all shadow-lg shadow-[#FBBF24]/5">
+        <span class="material-icons text-sm">auto_awesome</span> AI Resume Screener
+      </button>
+      <button (click)="openCreate()" class="bg-[#FBBF24] hover:bg-[#FACC15] text-black font-semibold py-2.5 px-5 rounded-lg flex items-center gap-2 transition-colors shadow-lg shadow-[#FBBF24]/10">
+        <span class="material-icons text-sm">person_add</span> Create Candidate
+      </button>
+    </div>
   </div>
   <p class="text-neutral-400 mb-8 max-w-xl">Efficiency driven talent acquisition. Review, filter, and progress candidates through the pipeline.</p>
 
@@ -130,3 +135,8 @@
 @if (deletingCandidate()) {
   <app-delete-candidate-dialog [candidateId]="deletingCandidate()!.id" [candidateName]="getFullName(deletingCandidate()!)" (closed)="deletingCandidate.set(null)" (deleted)="onCandidateDeleted()" />
 }
+
+@if (showMatcherModal()) {
+  <app-ai-resume-matcher-modal (closed)="showMatcherModal.set(false)" (screeningCompleted)="refreshCandidates()" />
+}
+

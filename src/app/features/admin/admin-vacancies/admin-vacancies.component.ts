@@ -2,6 +2,7 @@ import { Component, inject, computed, signal, OnInit } from '@angular/core';
 import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { AdminService } from '../../../core/services/admin.service';
 import { ApiVacancy, ApiInterview } from '../../../core/models';
+import { AiResumeMatcherModalComponent } from '../admin-candidates/ai-resume-matcher-modal/ai-resume-matcher-modal.component';
 import { getInitials } from '../../../shared/utils';
 
 type StatusFilter = 'all' | 'open' | 'closed';
@@ -9,7 +10,7 @@ type StatKey = 'all' | 'open' | 'applied' | 'interviewing' | 'hired' | 'noHire';
 
 @Component({
   selector: 'app-admin-vacancies',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, AiResumeMatcherModalComponent],
   templateUrl: './admin-vacancies.component.html'
 })
 export class AdminVacanciesComponent implements OnInit {
@@ -22,6 +23,8 @@ export class AdminVacanciesComponent implements OnInit {
 
   showCreateModal = signal(false);
   showManageModal = signal(false);
+  showMatcherModal = signal(false);
+  matcherPositionId = signal<string | null>(null);
   manageTarget = signal<ApiVacancy | null>(null);
   submitting = signal(false);
   errorMsg = signal('');
@@ -266,6 +269,12 @@ export class AdminVacanciesComponent implements OnInit {
     return Math.min(100, Math.round((hired / openings) * 100));
   }
 
+  openMatcherForPosition(positionId: string, e?: MouseEvent) {
+    if (e) e.stopPropagation();
+    this.matcherPositionId.set(positionId);
+    this.showMatcherModal.set(true);
+  }
+
   formatDate(dateStr?: string | null): string {
     if (!dateStr) return '—';
     return new Date(dateStr).toLocaleDateString('en-US', {
@@ -275,3 +284,4 @@ export class AdminVacanciesComponent implements OnInit {
     });
   }
 }
+
