@@ -4,11 +4,12 @@ import { AdminService } from '../../../core/services/admin.service';
 import { ApiCandidate } from '../../../core/models';
 import { CandidateModalComponent } from './candidate-modal/candidate-modal.component';
 import { DeleteCandidateDialogComponent } from './delete-candidate-dialog/delete-candidate-dialog.component';
+import { AiResumeMatcherModalComponent } from './ai-resume-matcher-modal/ai-resume-matcher-modal.component';
 import { getInitials } from '../../../shared/utils';
 
 @Component({
   selector: 'app-admin-candidates',
-  imports: [CandidateModalComponent, DeleteCandidateDialogComponent],
+  imports: [CandidateModalComponent, DeleteCandidateDialogComponent, AiResumeMatcherModalComponent],
   templateUrl: './admin-candidates.component.html'
 })
 export class AdminCandidatesComponent implements OnInit {
@@ -16,7 +17,9 @@ export class AdminCandidatesComponent implements OnInit {
   private router = inject(Router);
 
   showModal = signal(false);
+  showMatcherModal = signal(false);
   search = signal('');
+
   activeDropdown = signal<string | null>(null);
 
   selectedCandidate = signal<ApiCandidate | null>(null);

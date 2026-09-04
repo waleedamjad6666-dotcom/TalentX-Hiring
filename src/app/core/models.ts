@@ -407,3 +407,55 @@ export interface LoginResponse {
   token: string;
   user: CurrentUser;
 }
+
+export type CandidateTier = 'TIER_1_TOP' | 'TIER_2_STRONG' | 'TIER_3_GOOD' | 'NEGLECTED';
+
+export interface ProcessedResumeCandidateInfo {
+  firstname: string;
+  lastname: string;
+  email: string;
+  phone: string;
+  experience?: string;
+  currentCompany?: string;
+  currentPosition?: string;
+  skills: string[];
+  notes?: string;
+}
+
+export interface ProcessedResumeEvaluation {
+  matchScore: number;
+  summary: string;
+  strengths: string[];
+  gaps: string[];
+  tier: CandidateTier;
+  shortlisted: boolean;
+}
+
+export interface ProcessedResumeResult {
+  filename: string;
+  mimetype: string;
+  candidateInfo: ProcessedResumeCandidateInfo;
+  evaluation: ProcessedResumeEvaluation;
+  candidateId?: string;
+  candidateCode?: string;
+  status: 'CREATED' | 'EXISTING' | 'NEGLECTED' | 'ERROR';
+  errorMessage?: string;
+}
+
+export interface BatchMatchingResponse {
+  position: {
+    id: string;
+    title: string;
+    department?: string;
+  };
+  summary: {
+    totalUploaded: number;
+    totalShortlisted: number;
+    totalNeglected: number;
+    tier1Count: number; // >= 95%
+    tier2Count: number; // 85% - 94%
+    tier3Count: number; // 75% - 84%
+  };
+  results: ProcessedResumeResult[];
+}
+

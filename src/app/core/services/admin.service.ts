@@ -34,7 +34,8 @@ import {
   ApiAddRoundsResponse,
   ApiUpdateRoundScheduleResponse,
   ApiCancelRoundResponse,
-  ApiCreateInterviewRound
+  ApiCreateInterviewRound,
+  BatchMatchingResponse
 } from '../models';
 
 @Injectable({ providedIn: 'root' })
@@ -231,4 +232,14 @@ export class AdminService {
       responseType: 'blob'
     });
   }
+
+  bulkMatchResumes(positionId: string, files: File[]): Observable<BatchMatchingResponse> {
+    const formData = new FormData();
+    formData.append('positionId', positionId);
+    files.forEach(file => {
+      formData.append('resumes', file, file.name);
+    });
+    return this.http.post<BatchMatchingResponse>('/api/admin/candidates/bulk-match', formData);
+  }
 }
+

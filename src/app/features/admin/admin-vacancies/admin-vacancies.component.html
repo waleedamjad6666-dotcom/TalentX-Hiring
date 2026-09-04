@@ -111,14 +111,18 @@
               </div>
             </div>
             <div class="flex items-center gap-2 flex-shrink-0">
-              <span class="flex items-center gap-1.5 text-xs font-bold text-neutral-400 uppercase tracking-wider">
-                {{ isExpanded(v) ? 'Hide Candidates' : 'View Candidates' }}
-                <span class="material-icons text-[20px]">{{ isExpanded(v) ? 'expand_less' : 'expand_more' }}</span>
-              </span>
+              <button (click)="openMatcherForPosition(v.id, $event)"
+                title="Screen Resumes for this Vacancy"
+                class="flex items-center gap-1.5 px-3.5 py-2 bg-[#FBBF24]/10 border border-[#FBBF24]/30 hover:bg-[#FBBF24]/20 text-[#FBBF24] text-sm font-bold rounded-lg transition-colors">
+                <span class="material-icons text-[18px]">auto_awesome</span> Screen Resumes
+              </button>
               <button (click)="openManage(v); $event.stopPropagation()"
                 class="flex items-center gap-1.5 px-4 py-2 bg-[#1a1a1a] border border-[#333] hover:border-[#FBBF24]/40 text-white text-sm font-bold rounded-lg transition-colors">
                 <span class="material-icons text-[18px]">tune</span> Manage
               </button>
+              <span class="flex items-center gap-1 text-xs font-bold text-neutral-400 uppercase tracking-wider ml-1">
+                <span class="material-icons text-[20px]">{{ isExpanded(v) ? 'expand_less' : 'expand_more' }}</span>
+              </span>
             </div>
           </div>
 
@@ -445,3 +449,11 @@
     </div>
   </div>
 }
+
+@if (showMatcherModal()) {
+  <app-ai-resume-matcher-modal
+    [initialPositionId]="matcherPositionId()"
+    (closed)="showMatcherModal.set(false)"
+    (screeningCompleted)="adminService.loadVacancies(); adminService.fetchCandidates()" />
+}
+
