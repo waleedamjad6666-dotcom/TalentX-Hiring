@@ -37,6 +37,18 @@ export interface ApiCandidate {
   currentCompany: string | null;
   currentPosition: string | null;
   skills: string[];
+  status?: 'shortlisted' | 'neglected' | 'manual' | string;
+  aiMatchScore?: number | null;
+  aiTier?: CandidateTier | null;
+  aiSummary?: string | null;
+  aiStrengths?: string[];
+  aiGaps?: string[];
+  aiTargetPositionId?: string | null;
+  aiTargetPosition?: {
+    id: string;
+    title: string;
+  } | null;
+  createdAt?: string;
 }
 
 export interface CreateCandidateRequest {
