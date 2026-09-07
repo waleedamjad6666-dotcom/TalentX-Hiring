@@ -19,24 +19,67 @@ export class AdminCandidatesComponent implements OnInit {
   showModal = signal(false);
   showMatcherModal = signal(false);
   search = signal('');
+  statusFilter = signal<'all' | 'shortlisted' | 'neglected'>('all');
 
   activeDropdown = signal<string | null>(null);
 
   selectedCandidate = signal<ApiCandidate | null>(null);
   deletingCandidate = signal<ApiCandidate | null>(null);
 
+  totalCount = computed(() => this.adminService.candidates().length);
+  
+  shortlistedCount = computed(() =>
+    this.adminService.candidates().filter(c => (c.status || 'shortlisted').toLowerCase() === 'shortlisted').length
+  );
+
+  neglectedCount = computed(() =>
+    this.adminService.candidates().filter(c => (c.status || '').toLowerCase() === 'neglected' || c.aiTier === 'NEGLECTED').length
+  );
+
   filteredCandidates = computed(() => {
-    const s = this.search().toLowerCase();
+    const s = this.search().toLowerCase().trim();
+    const filter = this.statusFilter();
+
     return this.adminService.candidates().filter(c => {
+      // Status filter
+      const candidateStatus = (c.status || 'shortlisted').toLowerCase();
+      const isNeglected = candidateStatus === 'neglected' || c.aiTier === 'NEGLECTED';
+      
+      if (filter === 'neglected' && !isNeglected) {
+        return false;
+      }
+      if (filter === 'shortlisted' && isNeglected) {
+        return false;
+      }
+
+      // Search filter
+      if (!s) return true;
+
       const fullName = `${c.firstname} ${c.lastname}`.toLowerCase();
       const position = (c.currentPosition || '').toLowerCase();
       const email = c.email.toLowerCase();
       const company = (c.currentCompany || '').toLowerCase();
       const experience = (c.experience || '').toLowerCase();
       const skills = c.skills?.join(' ').toLowerCase() || '';
-      return fullName.includes(s) || position.includes(s) || email.includes(s) || company.includes(s) || experience.includes(s) || skills.includes(s);
+      const candidateCode = (c.candidateCode || '').toLowerCase();
+      const aiTarget = (c.aiTargetPosition?.title || '').toLowerCase();
+      const aiSummary = (c.aiSummary || '').toLowerCase();
+
+      return fullName.includes(s) ||
+        position.includes(s) ||
+        email.includes(s) ||
+        company.includes(s) ||
+        experience.includes(s) ||
+        skills.includes(s) ||
+        candidateCode.includes(s) ||
+        aiTarget.includes(s) ||
+        aiSummary.includes(s);
     });
   });
+
+  setStatusFilter(filter: 'all' | 'shortlisted' | 'neglected') {
+    this.statusFilter.set(filter);
+  }
 
   ngOnInit() {
     this.adminService.fetchCandidates();
