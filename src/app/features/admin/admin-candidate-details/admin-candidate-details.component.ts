@@ -89,6 +89,18 @@ export class AdminCandidateDetailsComponent implements OnInit, OnDestroy {
     return formatDate(date);
   }
 
+  getMonth(dateStr: string) {
+    return new Date(dateStr).toLocaleString('default', { month: 'short' });
+  }
+
+  getDay(dateStr: string) {
+    return new Date(dateStr).getDate().toString().padStart(2, '0');
+  }
+
+  getTime(dateStr: string) {
+    return new Date(dateStr).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  }
+
   goBack() {
     this.router.navigate(['/admin/candidates']);
   }

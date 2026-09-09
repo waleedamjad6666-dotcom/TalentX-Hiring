@@ -213,10 +213,10 @@
                   </div>
                   <div class="flex flex-wrap gap-4 text-sm text-neutral-400">
                     <span class="flex items-center gap-1">
-                      <span class="material-icons text-[16px]">calendar_today</span> {{ interview.date }}
+                      <span class="material-icons text-[16px]">calendar_today</span> {{ getMonth(interview.date) }} {{ getDay(interview.date) }}
                     </span>
                     <span class="flex items-center gap-1">
-                      <span class="material-icons text-[16px]">schedule</span> {{ interview.startTime }} - {{ interview.endTime }}
+                      <span class="material-icons text-[16px]">schedule</span> {{ getTime(interview.startTime) }} - {{ getTime(interview.endTime) }}
                     </span>
                   </div>
                 </div>
