@@ -100,7 +100,13 @@ export class AiResumeMatcherModalComponent implements OnInit {
     const currentNames = new Set(current.map(f => f.name));
     const newFiles = validFiles.filter(f => !currentNames.has(f.name));
 
-    this.selectedFiles.set([...current, ...newFiles]);
+    const combined = [...current, ...newFiles];
+    if (combined.length > 10) {
+      this.selectedFiles.set(combined.slice(0, 10));
+      this.errorMessage.set('You can upload a maximum of 10 resumes per batch. Resumes beyond the limit of 10 were not added.');
+    } else {
+      this.selectedFiles.set(combined);
+    }
   }
 
   removeFile(index: number) {
