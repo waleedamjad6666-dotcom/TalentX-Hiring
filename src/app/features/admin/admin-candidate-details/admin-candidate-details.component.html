@@ -112,7 +112,17 @@
                   }
                 </h3>
                 @if (candidate()?.aiTargetPosition?.title) {
-                  <p class="text-xs text-neutral-400 mt-0.5">Matched Against: <strong class="text-neutral-200">{{ candidate()?.aiTargetPosition?.title }}</strong></p>
+                  <p class="text-xs text-neutral-400 mt-0.5 flex items-center gap-1.5 flex-wrap">
+                    <span>Matched Against:</span>
+                    <button type="button"
+                            (click)="navigateToVacancy(candidate()?.aiTargetPosition?.id || candidate()?.aiTargetPositionId)"
+                            class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#111] border border-[#333] hover:border-[#FBBF24]/50 hover:bg-[#FBBF24]/10 text-neutral-200 hover:text-[#FBBF24] font-semibold transition-all group/match"
+                            title="View Vacancy in Vacancies tab">
+                      <span class="material-icons text-[12px] text-[#FBBF24]">work</span>
+                      <span>{{ candidate()?.aiTargetPosition?.title }}</span>
+                      <span class="material-icons text-[12px] text-neutral-500 group-hover/match:text-[#FBBF24] transition-colors">arrow_forward</span>
+                    </button>
+                  </p>
                 }
               </div>
             </div>

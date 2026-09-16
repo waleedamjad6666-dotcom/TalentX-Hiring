@@ -114,6 +114,19 @@ export class AdminCandidatesComponent implements OnInit {
     this.router.navigate(['/admin/candidates', candidate.id]);
   }
 
+  navigateToVacancy(positionId: string | null | undefined, event?: Event) {
+    if (event) {
+      event.stopPropagation();
+    }
+    if (!positionId) {
+      this.router.navigate(['/admin/vacancies']);
+      return;
+    }
+    this.router.navigate(['/admin/vacancies'], {
+      queryParams: { highlight: positionId }
+    });
+  }
+
   toggleDropdown(candidateId: string, event: Event) {
     event.stopPropagation();
     if (this.activeDropdown() === candidateId) {

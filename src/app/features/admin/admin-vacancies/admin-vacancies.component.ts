@@ -1,4 +1,5 @@
-import { Component, inject, computed, signal, OnInit } from '@angular/core';
+import { Component, inject, computed, signal, OnInit, effect } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { AdminService } from '../../../core/services/admin.service';
 import { ApiVacancy, ApiInterview } from '../../../core/models';
@@ -15,11 +16,13 @@ type StatKey = 'all' | 'open' | 'applied' | 'interviewing' | 'hired' | 'noHire';
 })
 export class AdminVacanciesComponent implements OnInit {
   adminService = inject(AdminService);
+  private route = inject(ActivatedRoute);
 
   search = signal('');
   statusFilter = signal<StatusFilter>('all');
   activeStat = signal<StatKey>('all');
   expandedId = signal<string | null>(null);
+  highlightedId = signal<string | null>(null);
 
   showCreateModal = signal(false);
   showManageModal = signal(false);
@@ -29,6 +32,16 @@ export class AdminVacanciesComponent implements OnInit {
   submitting = signal(false);
   errorMsg = signal('');
   successMsg = signal('');
+
+  constructor() {
+    effect(() => {
+      const vacancies = this.vacancies();
+      const targetId = this.highlightedId();
+      if (vacancies.length > 0 && targetId) {
+        setTimeout(() => this.scrollToVacancy(targetId), 100);
+      }
+    });
+  }
 
   filterOptions: { value: StatusFilter; label: string }[] = [
     { value: 'all', label: 'All' },
@@ -57,6 +70,23 @@ export class AdminVacanciesComponent implements OnInit {
     this.adminService.loadVacancies();
     this.adminService.loadDepartments();
     this.adminService.fetchInterviews();
+
+    this.route.queryParams.subscribe(params => {
+      const highlight = params['highlight'];
+      if (highlight) {
+        this.highlightedId.set(highlight);
+        this.statusFilter.set('all');
+        this.activeStat.set('all');
+        this.expandedId.set(highlight);
+      }
+    });
+  }
+
+  private scrollToVacancy(id: string) {
+    const el = document.getElementById(`vacancy-card-${id}`);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
   }
 
   getInterviews() {
