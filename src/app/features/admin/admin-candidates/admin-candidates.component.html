@@ -149,9 +149,12 @@
           </div>
 
           @if (c.aiTargetPosition?.title) {
-            <div class="mb-4 px-3 py-1.5 rounded-lg bg-[#111] border border-[#262626] text-xs text-neutral-400 flex items-center gap-1.5">
-              <span class="material-icons text-[13px] text-[#FBBF24]">work</span>
-              <span class="truncate">Screened for: <strong class="text-neutral-200">{{ c.aiTargetPosition?.title }}</strong></span>
+            <div (click)="navigateToVacancy(c.aiTargetPosition?.id || c.aiTargetPositionId, $event)"
+                 class="mb-4 px-3 py-1.5 rounded-lg bg-[#111] border border-[#262626] hover:border-[#FBBF24]/50 hover:bg-[#FBBF24]/5 text-xs text-neutral-400 hover:text-neutral-200 flex items-center gap-1.5 cursor-pointer transition-all group/pos"
+                 title="View Vacancy in Vacancies tab">
+              <span class="material-icons text-[13px] text-[#FBBF24] group-hover/pos:scale-110 transition-transform">work</span>
+              <span class="truncate">Screened for: <strong class="text-neutral-200 group-hover/pos:text-[#FBBF24] transition-colors underline decoration-[#FBBF24]/30 decoration-1 underline-offset-2">{{ c.aiTargetPosition?.title }}</strong></span>
+              <span class="material-icons text-[12px] text-neutral-500 group-hover/pos:text-[#FBBF24] ml-auto transition-colors">arrow_forward</span>
             </div>
           }
 

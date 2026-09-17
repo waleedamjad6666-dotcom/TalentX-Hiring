@@ -105,6 +105,16 @@ export class AdminCandidateDetailsComponent implements OnInit, OnDestroy {
     this.router.navigate(['/admin/candidates']);
   }
 
+  navigateToVacancy(positionId: string | null | undefined) {
+    if (!positionId) {
+      this.router.navigate(['/admin/vacancies']);
+      return;
+    }
+    this.router.navigate(['/admin/vacancies'], {
+      queryParams: { highlight: positionId }
+    });
+  }
+
   downloadResume() {
     const c = this.candidate();
     if (!c) return;

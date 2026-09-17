@@ -88,8 +88,13 @@
     <!-- Vacancy cards -->
     <div class="space-y-6">
       @for (v of filteredVacancies(); track v.id) {
-        <div class="bg-[#161616] border border-[#262626] rounded-2xl overflow-hidden shadow-xl transition-all"
-          [class.border-[#FBBF24]/50]="isExpanded(v)">
+        <div [id]="'vacancy-card-' + v.id"
+          class="bg-[#161616] border rounded-2xl overflow-hidden shadow-xl transition-all duration-300"
+          [class.border-[#FBBF24]]="highlightedId() === v.id"
+          [class.ring-2]="highlightedId() === v.id"
+          [class.ring-[#FBBF24]/50]="highlightedId() === v.id"
+          [class.border-[#FBBF24]/50]="isExpanded(v) && highlightedId() !== v.id"
+          [class.border-[#262626]]="!isExpanded(v) && highlightedId() !== v.id">
           <!-- Header (click to expand) -->
           <div role="button" (click)="toggleExpand(v)" class="px-6 py-5 border-b border-[#262626] flex flex-col lg:flex-row lg:items-center gap-4 cursor-pointer hover:bg-[#1a1a1a] transition-colors">
             <div class="flex items-center gap-4 flex-1 min-w-0">
