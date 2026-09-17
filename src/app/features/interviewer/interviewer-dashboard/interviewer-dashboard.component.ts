@@ -1,4 +1,4 @@
-import { Component, inject, computed, OnInit } from '@angular/core';
+import { Component, inject, computed, signal, OnInit } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
 import { InterviewerService } from '../../../core/services/interviewer.service';
@@ -62,6 +62,30 @@ export class InterviewerDashboardComponent implements OnInit {
     return status;
   }
 
+  myRecommendation(interview: ApiInterview): string | null {
+    const uid = this.auth.currentUser()?.id;
+    if (!uid) return null;
+
+    // 1. Check if feedback is directly attached to the interview
+    const directFb = (interview.interviewFeedbacks || []).find(f => f.interviewerId === uid);
+    if (directFb?.recommendation) return directFb.recommendation;
+
+    // 2. Check within the interviewer's specific round(s)
+    const myRounds = this.myRounds(interview);
+    for (const round of myRounds) {
+      const roundFb = (round.interviewFeedbacks || []).find(f => f.interviewerId === uid);
+      if (roundFb?.recommendation) return roundFb.recommendation;
+    }
+
+    // 3. Fallback: check any round in interview
+    for (const round of interview.rounds || []) {
+      const roundFb = (round.interviewFeedbacks || []).find(f => f.interviewerId === uid);
+      if (roundFb?.recommendation) return roundFb.recommendation;
+    }
+
+    return null;
+  }
+
   canEvaluate(interview: ApiInterview): boolean {
     const start = this.myRounds(interview)[0]?.startTime || interview.startTime;
     return new Date(start) <= new Date();
@@ -90,8 +114,8 @@ export class InterviewerDashboardComponent implements OnInit {
 
   dashboardPastInterviews = computed(() => this.pastInterviews().slice(0, 3));
 
-  hiredCount = computed(() => this.pastInterviews().filter(i => i.decision === 'hired').length);
-  rejectedCount = computed(() => this.pastInterviews().filter(i => i.decision === 'rejected').length);
+  hiredCount = computed(() => this.pastInterviews().filter(i => this.myRecommendation(i) === 'Yes').length);
+  rejectedCount = computed(() => this.pastInterviews().filter(i => this.myRecommendation(i) === 'No').length);
 
   viewFeedback(interviewId: string) {
     this.router.navigate(['/interviewer/feedback', interviewId]);

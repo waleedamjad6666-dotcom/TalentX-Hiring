@@ -26,8 +26,8 @@ export class InterviewerHistoryComponent implements OnInit, OnDestroy {
 
   filterOptions: { value: HistoryFilter; label: string; icon: string }[] = [
     { value: 'all', label: 'All', icon: 'list_alt' },
-    { value: 'hired', label: 'Hired', icon: 'thumb_up' },
-    { value: 'rejected', label: 'Rejected', icon: 'person_remove' }
+    { value: 'hired', label: 'Recommended', icon: 'thumb_up' },
+    { value: 'rejected', label: 'Not Recommended', icon: 'person_remove' }
   ];
 
   private querySub: Subscription | null = null;
@@ -35,7 +35,7 @@ export class InterviewerHistoryComponent implements OnInit, OnDestroy {
   filterLabel(filter: HistoryFilter): string {
     switch (filter) {
       case 'hired': return 'Recommended for Hire';
-      case 'rejected': return 'Rejected';
+      case 'rejected': return 'Not Recommended';
       default: return 'All Completed';
     }
   }
@@ -43,9 +43,30 @@ export class InterviewerHistoryComponent implements OnInit, OnDestroy {
   filterDescription(filter: HistoryFilter): string {
     switch (filter) {
       case 'hired': return 'Interviews you recommended for hire.';
-      case 'rejected': return 'Interviews you rejected.';
+      case 'rejected': return 'Interviews you did not recommend for hire.';
       default: return 'All completed interviews and evaluations.';
     }
+  }
+
+  myRecommendation(interview: ApiInterview): string | null {
+    const uid = this.authService.currentUser()?.id;
+    if (!uid) return null;
+
+    const directFb = (interview.interviewFeedbacks || []).find(f => f.interviewerId === uid);
+    if (directFb?.recommendation) return directFb.recommendation;
+
+    const myRounds = (interview.rounds || []).filter(r => r.interviewerIds.includes(uid));
+    for (const round of myRounds) {
+      const roundFb = (round.interviewFeedbacks || []).find(f => f.interviewerId === uid);
+      if (roundFb?.recommendation) return roundFb.recommendation;
+    }
+
+    for (const round of interview.rounds || []) {
+      const roundFb = (round.interviewFeedbacks || []).find(f => f.interviewerId === uid);
+      if (roundFb?.recommendation) return roundFb.recommendation;
+    }
+
+    return null;
   }
 
   myRound(interview: ApiInterview) {
@@ -141,8 +162,8 @@ export class InterviewerHistoryComponent implements OnInit, OnDestroy {
       });
   });
 
-  hiredCount = computed(() => this.completedInterviews().filter(i => i.decision === 'hired').length);
-  rejectedCount = computed(() => this.completedInterviews().filter(i => i.decision === 'rejected').length);
+  hiredCount = computed(() => this.completedInterviews().filter(i => this.myRecommendation(i) === 'Yes').length);
+  rejectedCount = computed(() => this.completedInterviews().filter(i => this.myRecommendation(i) === 'No').length);
 
   filterCount(filter: HistoryFilter): number {
     switch (filter) {
@@ -166,7 +187,8 @@ export class InterviewerHistoryComponent implements OnInit, OnDestroy {
       const matchText = !s || candidateName.includes(s) || positionTitle.includes(s) || round.includes(s) || type.includes(s) || status.includes(s);
       const matchFrom = !from || i.date >= from;
       const matchTo = !to || i.date <= to;
-      const matchFilter = f === 'all' || i.decision === f;
+      const rec = this.myRecommendation(i);
+      const matchFilter = f === 'all' || (f === 'hired' && rec === 'Yes') || (f === 'rejected' && rec === 'No');
       return matchText && matchFrom && matchTo && matchFilter;
     });
   });
