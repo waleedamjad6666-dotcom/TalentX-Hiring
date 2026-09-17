@@ -17,41 +17,63 @@
   </div>
   } @else {
   <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
-    <div
-      class="bg-[#161616] border border-[#262626] rounded-xl p-5 flex flex-col justify-between h-36 cursor-default transition-all duration-300 hover:-translate-y-1.5 hover:border-[#333] hover:shadow-lg hover:shadow-black/50">
+    <!-- Total Conducted Card (Navigates to History with filter: 'all') -->
+    <a routerLink="/interviewer/history" [queryParams]="{ filter: 'all' }"
+      class="block bg-[#161616] border border-[#262626] rounded-xl p-5 flex flex-col justify-between h-36 cursor-pointer transition-all duration-300 hover:-translate-y-1.5 hover:border-[#FBBF24]/50 hover:shadow-lg hover:shadow-black/50 group"
+      title="View all completed interviews in history">
       <div class="flex justify-between items-start">
-        <div class="w-8 h-8 rounded bg-neutral-800 flex items-center justify-center text-[#FBBF24]"><span
-            class="material-icons text-[18px]">check_circle</span></div>
+        <div class="w-8 h-8 rounded bg-neutral-800 flex items-center justify-center text-[#FBBF24] group-hover:bg-[#FBBF24]/10 transition-colors">
+          <span class="material-icons text-[18px]">check_circle</span>
+        </div>
+        <span class="material-icons text-neutral-600 text-[18px] group-hover:text-[#FBBF24] group-hover:translate-x-0.5 transition-all">arrow_forward</span>
       </div>
       <div>
         <p class="text-neutral-500 text-xs font-semibold uppercase tracking-wider mb-1">Total Conducted</p>
-        <h2 class="text-4xl font-bold text-white">{{ pastInterviews().length > 9 ? pastInterviews().length : '0' +
-          pastInterviews().length }}</h2>
+        <div class="flex items-baseline justify-between">
+          <h2 class="text-4xl font-bold text-white">{{ pastInterviews().length > 9 ? pastInterviews().length : '0' +
+            pastInterviews().length }}</h2>
+          <span class="text-xs text-neutral-500 group-hover:text-neutral-300 transition-colors">View History →</span>
+        </div>
       </div>
-    </div>
-    <div
-      class="bg-[#161616] border border-[#262626] rounded-xl p-5 flex flex-col justify-between h-36 cursor-default transition-all duration-300 hover:-translate-y-1.5 hover:border-[#333] hover:shadow-lg hover:shadow-black/50">
+    </a>
+
+    <!-- Recommended for Hire Card (Navigates to History with filter: 'hired') -->
+    <a routerLink="/interviewer/history" [queryParams]="{ filter: 'hired' }"
+      class="block bg-[#161616] border border-[#262626] rounded-xl p-5 flex flex-col justify-between h-36 cursor-pointer transition-all duration-300 hover:-translate-y-1.5 hover:border-green-500/50 hover:shadow-lg hover:shadow-black/50 group"
+      title="View interviews recommended for hire in history">
       <div class="flex justify-between items-start">
-        <div class="w-8 h-8 rounded bg-neutral-800 flex items-center justify-center text-green-400"><span
-            class="material-icons text-[18px]">thumb_up</span></div>
+        <div class="w-8 h-8 rounded bg-neutral-800 flex items-center justify-center text-green-400 group-hover:bg-green-500/10 transition-colors">
+          <span class="material-icons text-[18px]">thumb_up</span>
+        </div>
+        <span class="material-icons text-neutral-600 text-[18px] group-hover:text-green-400 group-hover:translate-x-0.5 transition-all">arrow_forward</span>
       </div>
       <div>
         <p class="text-neutral-500 text-xs font-semibold uppercase tracking-wider mb-1">Recommended for Hire</p>
-        <h2 class="text-4xl font-bold text-green-400">{{ hiredCount() > 9 ? hiredCount() : '0' + hiredCount() }}</h2>
+        <div class="flex items-baseline justify-between">
+          <h2 class="text-4xl font-bold text-green-400">{{ hiredCount() > 9 ? hiredCount() : '0' + hiredCount() }}</h2>
+          <span class="text-xs text-neutral-500 group-hover:text-neutral-300 transition-colors">View in History →</span>
+        </div>
       </div>
-    </div>
-    <div
-      class="bg-[#161616] border border-[#262626] rounded-xl p-5 flex flex-col justify-between h-36 cursor-default transition-all duration-300 hover:-translate-y-1.5 hover:border-[#333] hover:shadow-lg hover:shadow-black/50">
+    </a>
+
+    <!-- Rejected Card (Navigates to History with filter: 'rejected') -->
+    <a routerLink="/interviewer/history" [queryParams]="{ filter: 'rejected' }"
+      class="block bg-[#161616] border border-[#262626] rounded-xl p-5 flex flex-col justify-between h-36 cursor-pointer transition-all duration-300 hover:-translate-y-1.5 hover:border-red-500/50 hover:shadow-lg hover:shadow-black/50 group"
+      title="View rejected interviews in history">
       <div class="flex justify-between items-start">
-        <div class="w-8 h-8 rounded bg-neutral-800 flex items-center justify-center text-red-400"><span
-            class="material-icons text-[18px]">person_remove</span></div>
+        <div class="w-8 h-8 rounded bg-neutral-800 flex items-center justify-center text-red-400 group-hover:bg-red-500/10 transition-colors">
+          <span class="material-icons text-[18px]">person_remove</span>
+        </div>
+        <span class="material-icons text-neutral-600 text-[18px] group-hover:text-red-400 group-hover:translate-x-0.5 transition-all">arrow_forward</span>
       </div>
       <div>
         <p class="text-neutral-500 text-xs font-semibold uppercase tracking-wider mb-1">Rejected</p>
-        <h2 class="text-4xl font-bold text-red-400">{{ rejectedCount() > 9 ? rejectedCount() : '0' + rejectedCount() }}
-        </h2>
+        <div class="flex items-baseline justify-between">
+          <h2 class="text-4xl font-bold text-red-400">{{ rejectedCount() > 9 ? rejectedCount() : '0' + rejectedCount() }}</h2>
+          <span class="text-xs text-neutral-500 group-hover:text-neutral-300 transition-colors">View in History →</span>
+        </div>
       </div>
-    </div>
+    </a>
   </div>
 
   <div class="mb-12">
