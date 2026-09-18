@@ -67,7 +67,7 @@
                   {{ interviewType(inv) }}
                 </span>
               }
-              <span class="px-3 py-1.5 rounded-lg border" [class]="roundStatusClasses(roundStatus(inv))">{{ roundStatus(inv) }}</span>
+              <span class="px-3 py-1.5 rounded-lg border uppercase tracking-wider text-xs font-bold" [class]="roundStatusClasses(roundStatus(inv))">{{ formatStatus(roundStatus(inv)) }}</span>
             </div>
           </div>
           <div class="flex flex-col gap-3">

@@ -400,6 +400,10 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
+  formatStatus(status: string): string {
+    return status ? status.replace(/_/g, ' ') : '';
+  }
+
   roundStatusClasses(status: string) {
     const base = 'text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider';
     switch (status) {
