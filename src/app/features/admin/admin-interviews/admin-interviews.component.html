@@ -119,7 +119,7 @@
                 <div class="bg-[#161616] border border-[#333] rounded-xl px-3 py-2 flex items-center gap-2">
                   <span class="w-5 h-5 rounded-full bg-[#262626] text-white text-[9px] font-bold flex items-center justify-center">{{ round.roundNumber }}</span>
                   <span class="text-xs font-bold text-white">{{ round.type || 'Interview' }}</span>
-                  <span [class]="roundStatusClasses(round.status)">{{ round.status }}</span>
+                  <span [class]="roundStatusClasses(round.status)">{{ formatStatus(round.status) }}</span>
                   @if (round.decision && round.decision !== 'pending') {
                     <span [class]="decisionClasses(round.decision)" class="px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase tracking-wider">{{ decisionLabel(round.decision) }}</span>
                   }
@@ -137,7 +137,7 @@
               <div class="flex items-center gap-3 mb-1 pt-2 first:pt-0">
                 <span class="w-6 h-6 rounded-full bg-[#262626] text-white text-[10px] font-bold flex items-center justify-center">{{ group.round.roundNumber }}</span>
                 <p class="text-sm font-bold text-white">{{ group.round.type || 'Interview' }}</p>
-                <span [class]="roundStatusClasses(group.round.status)">{{ group.round.status }}</span>
+                <span [class]="roundStatusClasses(group.round.status)">{{ formatStatus(group.round.status) }}</span>
                 @if (group.round.decision && group.round.decision !== 'pending') {
                   <span [class]="decisionClasses(group.round.decision)" class="px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase tracking-wider">{{ decisionLabel(group.round.decision) }}</span>
                 }

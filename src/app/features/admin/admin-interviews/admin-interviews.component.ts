@@ -99,6 +99,10 @@ export class AdminInterviewsComponent implements OnInit {
     return [{ feedbacks: fb }];
   }
 
+  formatStatus(status: string): string {
+    return status ? status.replace(/_/g, ' ') : '';
+  }
+
   roundStatusClasses(status: string) {
     const base = 'text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider';
     switch (status) {
@@ -106,6 +110,8 @@ export class AdminInterviewsComponent implements OnInit {
       case 'in-progress': return `${base} bg-amber-500/15 text-amber-400 border border-amber-500/30`;
       case 'completed': return `${base} bg-green-500/15 text-green-400 border border-green-500/30`;
       case 'cancelled': return `${base} bg-red-500/15 text-red-400 border border-red-500/30`;
+      case 'pending':
+      case 'pending_schedule': return `${base} bg-amber-500/15 text-amber-400 border border-amber-500/30`;
       default: return `${base} bg-neutral-500/15 text-neutral-400 border border-neutral-600`;
     }
   }

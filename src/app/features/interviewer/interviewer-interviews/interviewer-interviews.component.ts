@@ -64,6 +64,10 @@ export class InterviewerInterviewsComponent implements OnInit {
     return status;
   }
 
+  formatStatus(status: string): string {
+    return status ? status.replace(/_/g, ' ') : '';
+  }
+
   roundStatusClasses(status: string) {
     switch (status) {
       case 'scheduled': return 'text-xs font-bold text-blue-400 bg-blue-500/10 border-blue-500/20';
