@@ -35,7 +35,8 @@ import {
   ApiUpdateRoundScheduleResponse,
   ApiCancelRoundResponse,
   ApiCreateInterviewRound,
-  BatchMatchingResponse
+  BatchMatchingResponse,
+  QuestionnaireTemplate
 } from '../models';
 
 @Injectable({ providedIn: 'root' })
@@ -48,9 +49,11 @@ export class AdminService {
   departments = signal<ApiDepartment[]>([]);
   interviews = signal<ApiInterview[]>([]);
   vacancies = signal<ApiVacancy[]>([]);
+  questionnaireTemplates = signal<QuestionnaireTemplate[]>([]);
 
   loading = signal<boolean>(false);
   loadingVacancies = signal<boolean>(false);
+  loadingTemplates = signal<boolean>(false);
   error = signal<string | null>(null);
 
   loadScheduleData() {
@@ -84,6 +87,8 @@ export class AdminService {
         this.loading.set(false);
       }
     });
+
+    this.loadQuestionnaireTemplates();
   }
 
   loadDepartments() {
@@ -240,6 +245,44 @@ export class AdminService {
       formData.append('resumes', file, file.name);
     });
     return this.http.post<BatchMatchingResponse>('/api/admin/candidates/bulk-match', formData);
+  }
+
+  loadQuestionnaireTemplates() {
+    this.loadingTemplates.set(true);
+    this.http.get<QuestionnaireTemplate[]>('/api/admin/questionnaires/templates').subscribe({
+      next: (templates) => {
+        this.questionnaireTemplates.set(templates);
+        this.loadingTemplates.set(false);
+      },
+      error: (err) => {
+        this.error.set(err.error?.message || 'Failed to load questionnaire templates');
+        this.loadingTemplates.set(false);
+      }
+    });
+  }
+
+  createQuestionnaireTemplate(data: { name: string; questions: string[] }): Observable<QuestionnaireTemplate> {
+    return this.http.post<QuestionnaireTemplate>('/api/admin/questionnaires/templates', data).pipe(
+      tap((template) => {
+        this.questionnaireTemplates.update(prev => [template, ...prev]);
+      })
+    );
+  }
+
+  updateQuestionnaireTemplate(id: string, data: { name?: string; questions?: string[] }): Observable<QuestionnaireTemplate> {
+    return this.http.put<QuestionnaireTemplate>(`/api/admin/questionnaires/templates/${id}`, data).pipe(
+      tap((updatedTemplate) => {
+        this.questionnaireTemplates.update(prev => prev.map(t => t.id === id ? updatedTemplate : t));
+      })
+    );
+  }
+
+  deleteQuestionnaireTemplate(id: string): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(`/api/admin/questionnaires/templates/${id}`).pipe(
+      tap(() => {
+        this.questionnaireTemplates.update(prev => prev.filter(t => t.id !== id));
+      })
+    );
   }
 }
 

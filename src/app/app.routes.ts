@@ -5,6 +5,7 @@ import { roleGuard } from './core/guards/role-guard';
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: 'login', loadComponent: () => import('./features/auth/login/login.component').then(m => m.LoginComponent) },
+  { path: 'candidate/questionnaire/:token', loadComponent: () => import('./features/candidate-questionnaire/candidate-questionnaire.component').then(m => m.CandidateQuestionnaireComponent) },
   {
     path: 'admin',
     loadComponent: () => import('./layout/layout.component').then(m => m.LayoutComponent),

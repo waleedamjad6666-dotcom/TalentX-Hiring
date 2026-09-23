@@ -281,10 +281,25 @@ export interface ApiDeleteCandidateResponse {
   message: string;
 }
 
+export interface CandidateQuestionnaire {
+  id: string;
+  candidateId: string;
+  interviewId?: string | null;
+  templateId: string;
+  template?: QuestionnaireTemplate;
+  token: string;
+  status: 'pending' | 'completed' | 'not_interested' | string;
+  answers?: Record<string, string> | null;
+  calendlyLink?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface ApiCandidateDetail extends ApiCandidate {
   resumeUrl?: string;
   notes?: string;
   interviews?: ApiInterview[];
+  candidateQuestionnaires?: CandidateQuestionnaire[];
 }
 
 export interface ApiCandidateDetailResponse {
@@ -300,6 +315,31 @@ export interface ApiCreateInterviewRound {
   endTime?: string;
 }
 
+export interface QuestionnaireTemplate {
+  id: string;
+  name: string;
+  questions: string[];
+  createdBy?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface PublicQuestionnaireResponse {
+  id: string;
+  candidateName: string;
+  questions: string[];
+}
+
+export interface SubmitQuestionnaireRequest {
+  isInterested: boolean;
+  answers?: Record<string, string>;
+}
+
+export interface SubmitQuestionnaireResponse {
+  message: string;
+  calendlyLink?: string;
+}
+
 export interface ApiCreateInterviewRequest {
   candidateId: string;
   positionId: string;
@@ -310,6 +350,9 @@ export interface ApiCreateInterviewRequest {
   round?: number;
   type?: string;
   rounds?: ApiCreateInterviewRound[];
+  schedulingMode?: boolean;
+  duration?: number;
+  questionnaireTemplateId?: string;
 }
 
 export interface ApiCreateInterviewResponse {
