@@ -133,4 +133,12 @@ export class AdminCandidateDetailsComponent implements OnInit, OnDestroy {
       error: () => {}
     });
   }
+
+  getObjectEntries(obj: any): { key: string; value: string }[] {
+    if (!obj || typeof obj !== 'object') return [];
+    return Object.entries(obj).map(([key, value]) => ({
+      key,
+      value: String(value ?? '')
+    }));
+  }
 }

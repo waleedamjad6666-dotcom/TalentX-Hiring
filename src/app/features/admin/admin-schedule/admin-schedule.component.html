@@ -72,6 +72,29 @@
                 <p class="text-neutral-500 text-xs mt-1">Hold Ctrl/Cmd to select multiple interviewers.</p>
               </div>
 
+              <!-- Pre-Interview Questionnaire Selection -->
+              <div class="border border-[#333] rounded-xl p-4 bg-[#111111]">
+                <div class="flex items-center gap-3 mb-2">
+                  <span class="material-icons text-[#FBBF24] text-xl">quiz</span>
+                  <div>
+                    <label class="block text-xs font-bold text-neutral-300 uppercase tracking-wider">Pre-Interview Questionnaire</label>
+                    <p class="text-neutral-500 text-xs">Attach preliminary screening questions to the initial invitation email</p>
+                  </div>
+                </div>
+                <select formControlName="questionnaireTemplateId" class="w-full bg-[#161616] border border-[#333] rounded-xl py-2.5 px-3 text-white text-sm outline-none focus:border-[#FBBF24] transition-colors mt-2">
+                  <option value="">None (Standard Interview Schedule Invitation)</option>
+                  @for (tmpl of adminService.questionnaireTemplates(); track tmpl.id) {
+                    <option [value]="tmpl.id">{{ tmpl.name }} ({{ tmpl.questions.length }} Questions)</option>
+                  }
+                </select>
+                @if (form.value.questionnaireTemplateId) {
+                  <p class="text-[#FBBF24] text-xs mt-2 flex items-center gap-1.5">
+                    <span class="material-icons text-[14px]">check_circle</span>
+                    Candidate will be prompted to complete these screening questions before scheduling.
+                  </p>
+                }
+              </div>
+
               <!-- Scheduling Mode Toggle -->
               <div class="border border-[#333] rounded-xl p-4 bg-[#111111]">
                 <div class="flex items-center justify-between">

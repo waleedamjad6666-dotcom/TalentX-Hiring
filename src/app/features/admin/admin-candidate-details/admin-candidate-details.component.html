@@ -202,6 +202,73 @@
         }
       </div>
 
+      <!-- Pre-Interview Responses -->
+      @if (candidate()?.candidateQuestionnaires && candidate()!.candidateQuestionnaires!.length > 0) {
+        <div class="bg-[#161616] border border-[#262626] rounded-3xl p-8 shadow-xl space-y-6">
+          <div class="flex items-center justify-between border-b border-[#262626] pb-4">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl bg-[#FBBF24]/10 border border-[#FBBF24]/20 flex items-center justify-center text-[#FBBF24]">
+                <span class="material-icons text-lg">quiz</span>
+              </div>
+              <div>
+                <h3 class="text-base font-bold text-white">Pre-Interview Responses</h3>
+                <p class="text-xs text-neutral-500">Preliminary candidate answers and interest confirmation</p>
+              </div>
+            </div>
+            <span class="bg-[#FBBF24]/10 border border-[#FBBF24]/30 text-[#FBBF24] px-3 py-1 rounded-full text-xs font-bold tracking-wide uppercase">
+              Pre-Interview
+            </span>
+          </div>
+
+          <div class="space-y-6">
+            @for (cq of candidate()?.candidateQuestionnaires; track cq.id) {
+              <div class="bg-[#111111] border border-[#2c2c2c] rounded-2xl p-6 space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#222]">
+                  <div>
+                    <h4 class="text-white font-bold text-sm">{{ cq.template?.name || 'Pre-Interview Questionnaire' }}</h4>
+                    <p class="text-xs text-neutral-500 mt-0.5">Submitted: {{ formatDate(cq.updatedAt || cq.createdAt) }}</p>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider
+                      @if (cq.status === 'completed') { bg-green-500/10 text-green-400 border border-green-500/20 }
+                      @else if (cq.status === 'not_interested') { bg-red-500/10 text-red-400 border border-red-500/20 }
+                      @else { bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 }
+                    ">
+                      @if (cq.status === 'completed') { Interested & Answered }
+                      @else if (cq.status === 'not_interested') { Declined / Not Interested }
+                      @else { Pending Response }
+                    </span>
+                  </div>
+                </div>
+
+                @if (cq.status === 'completed' && cq.answers) {
+                  <div class="space-y-4 pt-1">
+                    @for (qa of getObjectEntries(cq.answers); track qa.key; let i = $index) {
+                      <div class="bg-[#161616] p-4 rounded-xl border border-[#262626] space-y-1.5">
+                        <p class="text-xs font-bold text-neutral-400">
+                          <span class="text-[#FBBF24]">{{ i + 1 }}.</span> {{ qa.key }}
+                        </p>
+                        <p class="text-sm text-white font-medium pl-4 border-l-2 border-[#FBBF24]/40 whitespace-pre-wrap leading-relaxed">
+                          {{ qa.value }}
+                        </p>
+                      </div>
+                    }
+                  </div>
+                } @else if (cq.status === 'not_interested') {
+                  <p class="text-xs text-neutral-400 bg-[#161616] p-4 rounded-xl border border-red-500/20 text-red-300">
+                    Candidate indicated they are not interested in exploring this opportunity.
+                  </p>
+                } @else {
+                  <p class="text-xs text-neutral-400 bg-[#161616] p-4 rounded-xl border border-[#262626]">
+                    Questionnaire invitation sent to candidate. Waiting for candidate submission.
+                  </p>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      }
+
       <!-- Interview History -->
       <div class="bg-[#161616] border border-[#262626] rounded-3xl p-8 shadow-xl">
         <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-5">Interview History</h3>

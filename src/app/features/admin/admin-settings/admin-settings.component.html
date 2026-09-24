@@ -29,12 +29,15 @@
   }
 
   <!-- Tabs -->
-  <div class="flex gap-2 mb-6 bg-[#111111] border border-[#262626] rounded-xl p-1.5 w-fit shadow-inner">
+  <div class="flex flex-wrap gap-2 mb-6 bg-[#111111] border border-[#262626] rounded-xl p-1.5 w-fit shadow-inner">
     <button type="button" (click)="switchTab('admin')" [class]="tabClasses('admin')">
       <span class="material-icons text-[18px]">shield_person</span> Admin
     </button>
     <button type="button" (click)="switchTab('interviewer')" [class]="tabClasses('interviewer')">
       <span class="material-icons text-[18px]">record_voice_over</span> Interviewer
+    </button>
+    <button type="button" (click)="switchTab('questionnaire')" [class]="tabClasses('questionnaire')">
+      <span class="material-icons text-[18px]">quiz</span> Pre-Interview
     </button>
   </div>
 
@@ -185,6 +188,119 @@
             <button type="button" (click)="resetForm('interviewer')" class="px-8 bg-[#111111] border border-[#333] hover:bg-[#1a1a1a] text-white font-bold rounded-xl transition-colors">Clear</button>
           </div>
         </form>
+      }
+
+      <!-- Questionnaire Form & Existing Templates -->
+      @if (activeTab() === 'questionnaire') {
+        <div class="space-y-8">
+          <!-- Information banner -->
+          <div class="bg-[#FBBF24]/5 border border-[#FBBF24]/20 rounded-2xl p-5 flex items-start gap-3">
+            <span class="material-icons text-[#FBBF24] mt-0.5">info</span>
+            <div class="text-xs text-neutral-300 space-y-1">
+              <p class="font-semibold text-white">How Pre-Interview Questionnaires Work</p>
+              <p>When scheduling Round 1, you can attach any of these templates. Candidates receive an invitation email directing them to confirm interest and complete this questionnaire before unlocking their Calendly schedule slot.</p>
+              <p class="text-neutral-400">For Round 2 and onwards, candidates will receive direct calendar invites without pre-screening questions.</p>
+            </div>
+          </div>
+
+          <!-- Create / Edit Template Form -->
+          <form [formGroup]="templateForm" (ngSubmit)="saveTemplate()" class="space-y-6">
+            <div class="flex items-center justify-between pb-2">
+              <span class="text-xs font-bold text-[#FBBF24] uppercase tracking-wider">
+                {{ editingTemplateId() ? 'Editing Questionnaire Template' : 'Create New Questionnaire Template' }}
+              </span>
+              @if (editingTemplateId()) {
+                <button type="button" (click)="cancelEditTemplate()" class="text-xs text-neutral-400 hover:text-white flex items-center gap-1 font-semibold">
+                  <span class="material-icons text-[14px]">close</span> Cancel Edit
+                </button>
+              }
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-2 ml-1">Template Name</label>
+              <div class="relative">
+                <span class="material-icons absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500">title</span>
+                <input type="text" formControlName="name" placeholder="e.g. Standard Engineering Round 0 Questions" class="w-full bg-[#111111] border border-[#333] rounded-xl py-3 px-4 text-white outline-none focus:border-[#FBBF24] transition-colors shadow-inner !pl-12">
+              </div>
+            </div>
+
+            <div class="space-y-3">
+              <div class="flex items-center justify-between">
+                <label class="block text-xs font-bold text-neutral-400 uppercase tracking-widest ml-1">Questionnaire Questions</label>
+                <button type="button" (click)="addQuestion()" class="text-xs text-[#FBBF24] hover:text-[#FACC15] flex items-center gap-1 font-semibold">
+                  <span class="material-icons text-[16px]">add_circle_outline</span> Add Question
+                </button>
+              </div>
+
+              <div class="space-y-3" formArrayName="questions">
+                @for (q of questionsArray.controls; track $index) {
+                  <div class="flex items-center gap-3 bg-[#111111] p-3 rounded-xl border border-[#262626]">
+                    <span class="text-xs font-bold text-neutral-500 w-6 text-center">{{ $index + 1 }}.</span>
+                    <input [formControlName]="$index" placeholder="Enter question..." class="flex-1 bg-transparent border-0 text-sm text-white outline-none focus:ring-0">
+                    <button type="button" (click)="removeQuestion($index)" [disabled]="questionsArray.length <= 1" class="text-neutral-500 hover:text-red-400 disabled:opacity-30 transition-colors p-1">
+                      <span class="material-icons text-[18px]">delete_outline</span>
+                    </button>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <div class="flex gap-4 pt-4 border-t border-[#262626]">
+              <button type="submit" [disabled]="templateForm.invalid || submitting()" class="flex items-center justify-center gap-2 bg-[#FBBF24] hover:bg-[#FACC15] text-black font-bold py-3 px-8 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_15px_rgba(251,191,36,0.15)] hover:shadow-[0_0_20px_rgba(251,191,36,0.3)]">
+                <span class="material-icons text-[20px]">save</span>
+                {{ submitting() ? (editingTemplateId() ? 'Updating Template...' : 'Saving Template...') : (editingTemplateId() ? 'Update Template' : 'Save Template') }}
+              </button>
+              <button type="button" (click)="resetForm('questionnaire')" class="px-8 bg-[#111111] border border-[#333] hover:bg-[#1a1a1a] text-white font-bold rounded-xl transition-colors">
+                {{ editingTemplateId() ? 'Cancel' : 'Reset' }}
+              </button>
+            </div>
+          </form>
+
+          <!-- Existing Templates List -->
+          <div class="pt-8 border-t border-[#262626] space-y-4">
+            <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+              <span class="material-icons text-[#FBBF24] text-[20px]">list_alt</span> Available Question Templates ({{ adminService.questionnaireTemplates().length }})
+            </h3>
+
+            @if (adminService.loadingTemplates()) {
+              <div class="p-6 text-center text-neutral-500 text-sm">Loading templates...</div>
+            } @else if (adminService.questionnaireTemplates().length === 0) {
+              <div class="p-8 text-center bg-[#111111] border border-dashed border-[#333] rounded-2xl">
+                <span class="material-icons text-4xl text-neutral-600 mb-2">quiz</span>
+                <p class="text-neutral-400 text-sm">No questionnaire templates created yet. Create one above to attach to Round 1 schedules.</p>
+              </div>
+            } @else {
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                @for (tmpl of adminService.questionnaireTemplates(); track tmpl.id) {
+                  <div class="bg-[#111111] border rounded-2xl p-5 space-y-3 transition-colors" [class]="editingTemplateId() === tmpl.id ? 'border-[#FBBF24] shadow-[0_0_15px_rgba(251,191,36,0.15)]' : 'border-[#2c2c2c]'">
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-2">
+                        <h4 class="text-white font-bold text-base">{{ tmpl.name }}</h4>
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#FBBF24]/10 text-[#FBBF24] uppercase">{{ tmpl.questions.length }} Qs</span>
+                      </div>
+                      <div class="flex items-center gap-1.5">
+                        <button type="button" (click)="editTemplate(tmpl)" title="Edit Template" class="p-1.5 rounded-lg bg-[#161616] hover:bg-[#FBBF24]/10 border border-[#333] hover:border-[#FBBF24]/30 text-neutral-400 hover:text-[#FBBF24] transition-colors">
+                          <span class="material-icons text-[16px]">edit</span>
+                        </button>
+                        <button type="button" (click)="deleteTemplate(tmpl.id, tmpl.name)" title="Delete Template" class="p-1.5 rounded-lg bg-[#161616] hover:bg-red-500/10 border border-[#333] hover:border-red-500/30 text-neutral-400 hover:text-red-400 transition-colors">
+                          <span class="material-icons text-[16px]">delete_outline</span>
+                        </button>
+                      </div>
+                    </div>
+                    <ul class="space-y-1 text-xs text-neutral-400">
+                      @for (q of tmpl.questions; track $index) {
+                        <li class="flex items-start gap-2">
+                          <span class="text-[#FBBF24] font-bold">•</span>
+                          <span class="flex-1">{{ q }}</span>
+                        </li>
+                      }
+                    </ul>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </div>
       }
     </div>
   </div>

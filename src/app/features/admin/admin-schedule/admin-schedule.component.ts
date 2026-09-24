@@ -44,7 +44,8 @@ export class AdminScheduleComponent implements OnInit {
     date: new FormControl('', { nonNullable: true }),
     time: new FormControl('', { nonNullable: true }),
     duration: new FormControl('45', { nonNullable: true }),
-    type: new FormControl('Technical Assessment', { nonNullable: true })
+    type: new FormControl('Technical Assessment', { nonNullable: true }),
+    questionnaireTemplateId: new FormControl('', { nonNullable: true })
   });
 
   ngOnInit() {
@@ -175,6 +176,10 @@ export class AdminScheduleComponent implements OnInit {
       positionId: this.form.value.positionId!,
       rounds
     };
+
+    if (this.form.value.questionnaireTemplateId) {
+      payload.questionnaireTemplateId = this.form.value.questionnaireTemplateId;
+    }
 
     if (this.schedulingMode()) {
       payload.schedulingMode = true;

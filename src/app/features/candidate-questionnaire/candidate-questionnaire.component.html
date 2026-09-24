@@ -1,0 +1,180 @@
+<div class="min-h-screen bg-[#0d0d0d] text-neutral-100 flex flex-col justify-between selection:bg-[#FBBF24] selection:text-black">
+  <!-- Top Navigation / Branding -->
+  <header class="border-b border-[#222] bg-[#141414]/80 backdrop-blur-md sticky top-0 z-30 px-6 py-4">
+    <div class="max-w-4xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-[#FBBF24] flex items-center justify-center text-black font-extrabold text-lg shadow-[0_0_15px_rgba(251,191,36,0.3)]">
+          TX
+        </div>
+        <div>
+          <span class="font-bold tracking-tight text-white text-base">TalentX</span>
+          <span class="text-[10px] text-neutral-400 block -mt-1 font-medium tracking-wider uppercase">Candidate Portal</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 px-3 py-1 rounded-full bg-[#1c1c1c] border border-[#333] text-xs font-semibold text-neutral-300">
+        <span class="material-icons text-[#FBBF24] text-[16px]">verified</span>
+        <span>Pre-Interview Questionnaire</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="max-w-3xl w-full mx-auto p-4 sm:p-6 md:p-8 flex-1 flex flex-col justify-center">
+    @if (loading()) {
+      <div class="bg-[#161616] border border-[#262626] rounded-3xl p-12 text-center shadow-2xl space-y-4">
+        <div class="w-12 h-12 border-4 border-[#FBBF24] border-t-transparent rounded-full animate-spin mx-auto"></div>
+        <h2 class="text-lg font-bold text-white">Loading Questionnaire...</h2>
+        <p class="text-xs text-neutral-400">Retrieving preliminary interview questions.</p>
+      </div>
+    } @else if (errorMessage() && submissionState() !== 'error') {
+      <div class="bg-[#161616] border border-red-500/30 rounded-3xl p-10 text-center shadow-2xl space-y-4">
+        <div class="w-14 h-14 rounded-2xl bg-red-500/10 text-red-400 flex items-center justify-center mx-auto border border-red-500/20">
+          <span class="material-icons text-3xl">error_outline</span>
+        </div>
+        <h2 class="text-xl font-bold text-white">Access Notice</h2>
+        <p class="text-sm text-neutral-400 max-w-md mx-auto">{{ errorMessage() }}</p>
+      </div>
+    } @else if (submissionState() === 'submitted_interested') {
+      <div class="bg-[#161616] border border-[#2c2c2c] rounded-3xl p-8 sm:p-12 text-center shadow-2xl space-y-6">
+        <div class="w-16 h-16 rounded-2xl bg-green-500/10 text-green-400 flex items-center justify-center mx-auto border border-green-500/20 shadow-[0_0_20px_rgba(74,222,128,0.15)]">
+          <span class="material-icons text-4xl">check_circle</span>
+        </div>
+        <div class="space-y-2">
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-white">Answers Submitted!</h2>
+          <p class="text-neutral-400 text-sm max-w-lg mx-auto">
+            Thank you {{ candidateName() }}. Your preliminary responses have been recorded. You can now proceed to schedule your Round 1 interview slot below.
+          </p>
+        </div>
+
+        @if (calendlyLink()) {
+          <div class="pt-4 border-t border-[#262626]">
+            <a [href]="calendlyLink()" target="_blank" class="inline-flex items-center justify-center gap-3 bg-[#FBBF24] hover:bg-[#FACC15] text-black font-extrabold py-4 px-8 rounded-2xl transition-all shadow-[0_0_20px_rgba(251,191,36,0.3)] hover:scale-[1.02] text-base">
+              <span class="material-icons">calendar_month</span>
+              <span>Pick Your Interview Time Slot</span>
+            </a>
+            <p class="text-xs text-neutral-500 mt-3">You will be redirected to our Calendly booking schedule.</p>
+          </div>
+        } @else {
+          <p class="text-xs text-neutral-400 bg-[#1c1c1c] p-4 rounded-xl">Our recruitment team will review your answers and contact you directly with interview slot details.</p>
+        }
+      </div>
+    } @else if (submissionState() === 'submitted_declined') {
+      <div class="bg-[#161616] border border-[#262626] rounded-3xl p-10 text-center shadow-2xl space-y-4">
+        <div class="w-14 h-14 rounded-2xl bg-neutral-800 text-neutral-400 flex items-center justify-center mx-auto border border-neutral-700">
+          <span class="material-icons text-3xl">done_all</span>
+        </div>
+        <h2 class="text-2xl font-bold text-white">Response Recorded</h2>
+        <p class="text-sm text-neutral-400 max-w-md mx-auto">
+          Thank you for letting us know, {{ candidateName() }}. We have updated your status and will keep your resume on file for future opportunities.
+        </p>
+      </div>
+    } @else {
+      <!-- Questionnaire Form Card -->
+      <div class="bg-[#161616] border border-[#262626] rounded-3xl shadow-2xl overflow-hidden">
+        <!-- Header banner -->
+        <div class="p-6 sm:p-8 bg-gradient-to-br from-[#1c1a14] via-[#161616] to-[#121212] border-b border-[#262626]">
+          <span class="text-xs font-bold text-[#FBBF24] uppercase tracking-widest block mb-2">Preliminary Screening</span>
+          <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">Welcome, {{ candidateName() }}</h1>
+          <p class="text-neutral-400 text-sm mt-2 leading-relaxed">
+            Please confirm your interest in this role and complete the following quick preliminary questions before scheduling your interview slot.
+          </p>
+        </div>
+
+        <div class="p-6 sm:p-8 space-y-8">
+          @if (errorMessage()) {
+            <div class="bg-red-500/10 border border-red-500/30 text-red-400 p-4 rounded-xl text-sm flex items-center gap-3">
+              <span class="material-icons text-[20px]">error</span>
+              <span>{{ errorMessage() }}</span>
+            </div>
+          }
+
+          <!-- Step 1: Interest Confirmation -->
+          <div class="space-y-4">
+            <label class="block text-xs font-bold text-neutral-400 uppercase tracking-widest">
+              1. Are you interested in pursuing this opportunity? <span class="text-red-400">*</span>
+            </label>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <button type="button" (click)="setInterest(true)"
+                class="flex items-center gap-4 p-4 rounded-2xl border transition-all text-left"
+                [class]="isInterested() === true ? 'border-[#FBBF24] bg-[#FBBF24]/10 text-white shadow-[0_0_15px_rgba(251,191,36,0.15)]' : 'border-[#333] bg-[#111111] text-neutral-300 hover:border-neutral-600'">
+                <div class="w-6 h-6 rounded-full border flex items-center justify-center flex-shrink-0"
+                  [class]="isInterested() === true ? 'border-[#FBBF24] bg-[#FBBF24] text-black' : 'border-neutral-500'">
+                  @if (isInterested() === true) {
+                    <span class="material-icons text-[16px] font-bold">check</span>
+                  }
+                </div>
+                <div>
+                  <p class="font-bold text-sm">Yes, I am interested</p>
+                  <p class="text-xs text-neutral-400 mt-0.5">Proceed to answer screening questions & book interview</p>
+                </div>
+              </button>
+
+              <button type="button" (click)="setInterest(false)"
+                class="flex items-center gap-4 p-4 rounded-2xl border transition-all text-left"
+                [class]="isInterested() === false ? 'border-red-500/60 bg-red-500/10 text-white' : 'border-[#333] bg-[#111111] text-neutral-300 hover:border-neutral-600'">
+                <div class="w-6 h-6 rounded-full border flex items-center justify-center flex-shrink-0"
+                  [class]="isInterested() === false ? 'border-red-400 bg-red-500 text-white' : 'border-neutral-500'">
+                  @if (isInterested() === false) {
+                    <span class="material-icons text-[16px] font-bold">close</span>
+                  }
+                </div>
+                <div>
+                  <p class="font-bold text-sm">No, I'd like to decline</p>
+                  <p class="text-xs text-neutral-400 mt-0.5">Withdraw from consideration at this time</p>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          <!-- Step 2: Questions (Only if Interested) -->
+          @if (isInterested() === true) {
+            <div class="space-y-6 pt-6 border-t border-[#262626] animate-fadeIn">
+              <div class="flex items-center justify-between">
+                <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                  <span class="material-icons text-[#FBBF24] text-[18px]">contact_support</span>
+                  2. Screening Questions ({{ questions().length }})
+                </h3>
+                <span class="text-xs text-neutral-400">All fields required</span>
+              </div>
+
+              @for (q of questions(); track q; let i = $index) {
+                <div class="space-y-2">
+                  <label class="block text-sm font-semibold text-neutral-200">
+                    <span class="text-[#FBBF24] font-bold">{{ i + 1 }}.</span> {{ q }} <span class="text-red-400">*</span>
+                  </label>
+                  <textarea rows="3" [ngModel]="answers()[q]" (ngModelChange)="updateAnswer(q, $event)"
+                    placeholder="Type your response here..."
+                    class="w-full bg-[#111111] border border-[#333] rounded-2xl p-4 text-white text-sm outline-none focus:border-[#FBBF24] transition-colors resize-y shadow-inner"></textarea>
+                </div>
+              }
+            </div>
+          }
+
+          <!-- Submit Button -->
+          <div class="pt-6 border-t border-[#262626] flex justify-end">
+            <button type="button" (click)="submit()"
+              [disabled]="isInterested() === null || (isInterested() === true && !isFormComplete()) || submissionState() === 'submitting'"
+              class="flex items-center justify-center gap-2 font-bold py-3.5 px-8 rounded-2xl transition-all shadow-lg text-sm disabled:opacity-40 disabled:cursor-not-allowed"
+              [class]="isInterested() === false ? 'bg-red-500 hover:bg-red-600 text-white' : 'bg-[#FBBF24] hover:bg-[#FACC15] text-black shadow-[0_0_15px_rgba(251,191,36,0.2)]'">
+              @if (submissionState() === 'submitting') {
+                <span class="material-icons text-[18px] animate-spin">progress_activity</span>
+                <span>Submitting...</span>
+              } @else if (isInterested() === false) {
+                <span class="material-icons text-[18px]">check</span>
+                <span>Confirm & Decline</span>
+              } @else {
+                <span class="material-icons text-[18px]">send</span>
+                <span>Submit & Proceed to Schedule</span>
+              }
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+  </main>
+
+  <!-- Footer -->
+  <footer class="text-center py-6 text-neutral-600 text-xs border-t border-[#1a1a1a]">
+    TalentX Recruitment Platform &bull; Secure Candidate Gateway
+  </footer>
+</div>
