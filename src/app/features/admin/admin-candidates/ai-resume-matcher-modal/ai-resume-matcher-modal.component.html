@@ -43,9 +43,11 @@
             <div class="flex items-center justify-between">
               <label class="text-sm font-semibold text-neutral-200 flex items-center gap-2">
                 <span class="material-icons text-neutral-400 text-base">work_outline</span>
-                Target Job Position <span class="text-[#FBBF24]">*</span>
+                Screening Scope <span class="text-[#FBBF24]">*</span>
               </label>
-              <span class="text-xs text-neutral-500">Resumes will be matched against this JD</span>
+              <span class="text-xs text-neutral-500">
+                {{ isAllPositionsMode() ? 'Cross-evaluates against all open job positions' : 'Resumes will be matched against selected JD' }}
+              </span>
             </div>
 
             <select
@@ -53,15 +55,38 @@
               (ngModelChange)="selectedPositionId.set($event)"
               [disabled]="isProcessing()"
               class="w-full bg-[#111] border border-[#333] rounded-xl py-3 px-4 text-white text-sm focus:outline-none focus:border-[#FBBF24] transition-colors">
-              <option value="" disabled>-- Select a Job Position --</option>
-              @for (pos of adminService.positions(); track pos.id) {
-                <option [value]="pos.id">
-                  {{ pos.title }} {{ pos.department ? '(' + pos.department.name + ')' : '' }} • {{ pos.status | uppercase }}
-                </option>
-              }
+              <option value="ALL">🌟 All Open Positions (AI automatically finds & assigns best fitting role)</option>
+              <optgroup label="Or screen against a specific position:">
+                @for (pos of adminService.positions(); track pos.id) {
+                  <option [value]="pos.id">
+                    {{ pos.title }} {{ pos.department ? '(' + pos.department.name + ')' : '' }} • {{ pos.status | uppercase }}
+                  </option>
+                }
+              </optgroup>
             </select>
 
-            <!-- Job Position Requirements Preview Card -->
+            <!-- All Positions Mode Info Card -->
+            @if (isAllPositionsMode()) {
+              <div class="mt-3 p-4 bg-gradient-to-r from-[#1a1710] to-[#141414] border border-[#FBBF24]/30 rounded-xl space-y-2">
+                <div class="flex items-center gap-2 text-xs font-bold text-[#FBBF24]">
+                  <span class="material-icons text-sm">hub</span>
+                  Multi-Position Intelligent Matching
+                </div>
+                <p class="text-xs text-neutral-300 leading-relaxed">
+                  Resumes will be analyzed across all open company vacancies. The AI will determine each candidate's best-fit job position, score their suitability, and save/link their profile under that job vacancy.
+                </p>
+                <div class="flex flex-wrap items-center gap-1.5 pt-1 text-[11px] text-neutral-400">
+                  <span class="text-neutral-500">Available open positions:</span>
+                  @for (pos of adminService.positions(); track pos.id) {
+                    @if (pos.status === 'open') {
+                      <span class="px-2 py-0.5 bg-[#222] text-neutral-300 rounded-md border border-[#333]">{{ pos.title }}</span>
+                    }
+                  }
+                </div>
+              </div>
+            }
+
+            <!-- Single Job Position Requirements Preview Card -->
             @if (getSelectedPosition(); as pos) {
               <div class="mt-3 p-4 bg-[#111]/80 border border-[#282828] rounded-xl space-y-3">
                 <div class="flex flex-wrap items-center gap-2 text-xs text-neutral-400">
@@ -186,7 +211,7 @@
                   <span class="material-icons text-sm">verified</span>
                   AI Screening Complete
                 </div>
-                <h3 class="text-2xl font-bold text-white">{{ res.position.title }}</h3>
+                <h3 class="text-2xl font-bold text-white">{{ res.position?.title || "Open Positions Evaluation" }}</h3>
                 <p class="text-xs text-neutral-400 mt-1">
                   Evaluated {{ res.summary.totalUploaded }} resumes • <span class="text-emerald-400 font-semibold">{{ res.summary.totalShortlisted }} shortlisted</span> (≥75% match threshold)
                 </p>
@@ -333,6 +358,19 @@
                         }
                       </div>
 
+                      <!-- Best-fit Assigned Position Tag -->
+                      @if (candidate.matchedPosition) {
+                        <div class="mt-1.5 flex items-center gap-1.5 flex-wrap">
+                          <span class="px-2.5 py-0.5 rounded-lg text-xs font-semibold bg-[#FBBF24]/10 text-[#FBBF24] border border-[#FBBF24]/20 flex items-center gap-1">
+                            <span class="material-icons text-[13px]">stars</span>
+                            <span>Best Fit: <strong>{{ candidate.matchedPosition.title }}</strong></span>
+                            @if (candidate.matchedPosition.department) {
+                              <span class="text-neutral-400 font-normal">({{ candidate.matchedPosition.department }})</span>
+                            }
+                          </span>
+                        </div>
+                      }
+
                       <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-neutral-400 mt-1">
                         @if (candidate.candidateInfo.currentPosition) {
                           <span>{{ candidate.candidateInfo.currentPosition }}</span>
@@ -375,6 +413,26 @@
                 @if (candidate.evaluation.summary) {
                   <div class="p-3.5 bg-[#141414]/90 border border-[#262626] rounded-xl text-xs text-neutral-300 leading-relaxed">
                     <span class="font-semibold text-neutral-100">AI Evaluation:</span> {{ candidate.evaluation.summary }}
+                  </div>
+                }
+
+                <!-- Cross-Position Evaluation Comparison (if available) -->
+                @if (candidate.otherMatches && candidate.otherMatches.length > 0) {
+                  <div class="p-3 bg-[#111] border border-[#262626] rounded-xl space-y-2">
+                    <div class="text-[11px] font-semibold text-neutral-400 uppercase tracking-wider flex items-center gap-1.5">
+                      <span class="material-icons text-xs text-neutral-500">compare_arrows</span>
+                      Other Open Positions Evaluated:
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                      @for (match of candidate.otherMatches; track match.positionId) {
+                        <div class="px-2.5 py-1 rounded-lg bg-[#181818] border border-[#2c2c2c] text-xs flex items-center gap-2">
+                          <span class="text-neutral-300 font-medium">{{ match.positionTitle }}</span>
+                          <span class="text-[11px] font-bold px-1.5 py-0.2 rounded" [ngClass]="match.matchScore >= 75 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-neutral-800 text-neutral-400'">
+                            {{ match.matchScore }}%
+                          </span>
+                        </div>
+                      }
+                    </div>
                   </div>
                 }
 
