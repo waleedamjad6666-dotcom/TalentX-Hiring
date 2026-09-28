@@ -16,10 +16,11 @@ export class AiResumeMatcherModalComponent implements OnInit {
   private router = inject(Router);
 
   @Input() initialPositionId: string | null = null;
+  @Input() mode: 'single' | 'all_positions' = 'all_positions'; // Default to all_positions for candidate tab
   @Output() closed = new EventEmitter<void>();
   @Output() screeningCompleted = new EventEmitter<void>();
 
-  selectedPositionId = signal<string>('');
+  selectedPositionId = signal<string>('ALL');
   selectedFiles = signal<File[]>([]);
   isDragging = signal<boolean>(false);
   isProcessing = signal<boolean>(false);
@@ -33,12 +34,19 @@ export class AiResumeMatcherModalComponent implements OnInit {
     this.adminService.loadScheduleData();
     if (this.initialPositionId) {
       this.selectedPositionId.set(this.initialPositionId);
+    } else if (this.mode === 'all_positions') {
+      this.selectedPositionId.set('ALL');
     } else if (this.adminService.positions().length > 0) {
       this.selectedPositionId.set(this.adminService.positions()[0].id);
     }
   }
 
+  isAllPositionsMode(): boolean {
+    return this.selectedPositionId() === 'ALL';
+  }
+
   getSelectedPosition(): ApiPositionWithDepartment | undefined {
+    if (this.selectedPositionId() === 'ALL') return undefined;
     return this.adminService.positions().find(p => p.id === this.selectedPositionId());
   }
 
@@ -122,7 +130,7 @@ export class AiResumeMatcherModalComponent implements OnInit {
 
   startScreening() {
     if (!this.selectedPositionId()) {
-      this.errorMessage.set('Please select a target job position.');
+      this.errorMessage.set('Please select a target job position or choose "All Open Positions".');
       return;
     }
 
@@ -134,7 +142,9 @@ export class AiResumeMatcherModalComponent implements OnInit {
     this.isProcessing.set(true);
     this.errorMessage.set(null);
 
-    this.adminService.bulkMatchResumes(this.selectedPositionId(), this.selectedFiles()).subscribe({
+    const targetPosId = this.selectedPositionId() === 'ALL' ? null : this.selectedPositionId();
+
+    this.adminService.bulkMatchResumes(targetPosId, this.selectedFiles()).subscribe({
       next: (response) => {
         this.resultsData.set(response);
         this.isProcessing.set(false);

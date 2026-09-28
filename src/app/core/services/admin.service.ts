@@ -238,9 +238,11 @@ export class AdminService {
     });
   }
 
-  bulkMatchResumes(positionId: string, files: File[]): Observable<BatchMatchingResponse> {
+  bulkMatchResumes(positionId: string | null, files: File[]): Observable<BatchMatchingResponse> {
     const formData = new FormData();
-    formData.append('positionId', positionId);
+    if (positionId && positionId !== 'ALL') {
+      formData.append('positionId', positionId);
+    }
     files.forEach(file => {
       formData.append('resumes', file, file.name);
     });

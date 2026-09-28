@@ -495,12 +495,25 @@ export interface ProcessedResumeResult {
   evaluation: ProcessedResumeEvaluation;
   candidateId?: string;
   candidateCode?: string;
+  matchedPosition?: {
+    id: string;
+    title: string;
+    department?: string;
+  };
+  otherMatches?: Array<{
+    positionId: string;
+    positionTitle: string;
+    matchScore: number;
+    tier: CandidateTier;
+    shortlisted: boolean;
+  }>;
   status: 'CREATED' | 'EXISTING' | 'NEGLECTED' | 'ERROR';
   errorMessage?: string;
 }
 
 export interface BatchMatchingResponse {
-  position: {
+  mode?: 'single' | 'all_positions';
+  position?: {
     id: string;
     title: string;
     department?: string;
