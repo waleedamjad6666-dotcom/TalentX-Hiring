@@ -210,7 +210,7 @@ export class AiResumeMatcherModalComponent implements OnInit {
       case 'TIER_3_GOOD':
         return 'Tier 3 • Good Fit (75-84%)';
       default:
-        return 'Neglected (<75%)';
+        return 'Rejected (<75%)';
     }
   }
 
