@@ -34,6 +34,11 @@
         </p>
       </div>
       <div class="flex flex-col gap-2 items-start sm:items-end">
+         @if (candidate()?.status === 'not_interested') {
+           <span class="bg-red-500/15 border border-red-500/30 text-red-400 px-4 py-1.5 rounded-full text-xs font-bold tracking-wide flex items-center gap-1.5">
+             <span class="material-icons text-[14px]">cancel</span> Declined Interview
+           </span>
+         }
          <span class="bg-[#111111] border border-[#333] text-neutral-400 px-4 py-1.5 rounded-full text-xs font-bold tracking-wide">ID: {{ candidate()?.id }}</span>
          @if (candidate()?.candidateCode) {
            <span class="bg-[#FBBF24]/10 border border-[#FBBF24]/30 text-[#FBBF24] px-4 py-1.5 rounded-full text-xs font-bold tracking-wide">{{ candidate()?.candidateCode }}</span>
@@ -318,7 +323,11 @@
         } @else {
           <div class="text-center py-8">
             <span class="material-icons text-4xl text-neutral-600 mb-2">event_busy</span>
-            <p class="text-neutral-500">No interviews scheduled yet</p>
+            @if (candidate()?.status === 'not_interested') {
+              <p class="text-red-400 font-medium">No active interviews — candidate declined to schedule.</p>
+            } @else {
+              <p class="text-neutral-500">No interviews scheduled yet</p>
+            }
           </div>
         }
       </div>
