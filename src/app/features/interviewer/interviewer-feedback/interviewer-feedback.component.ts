@@ -40,8 +40,7 @@ export class InterviewerFeedbackComponent implements OnInit {
 
   constructor() {
     effect(() => {
-      const start = this.selectedRound()?.startTime || this.interview?.startTime || null;
-      this.interviewNotStarted.set(!!start && new Date(start) > new Date());
+      this.interviewNotStarted.set(false);
 
       const rid = this.selectedRound()?.id;
       const fb = this.allFeedback();

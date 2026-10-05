@@ -80,14 +80,34 @@ export class InterviewerInterviewsComponent implements OnInit {
     }
   }
 
+  myRecommendation(interview: ApiInterview): string | null {
+    const uid = this.authService.currentUser()?.id;
+    if (!uid) return null;
+
+    const directFb = (interview.interviewFeedbacks || []).find(f => f.interviewerId === uid);
+    if (directFb?.recommendation) return directFb.recommendation;
+
+    const myRounds = this.myRounds(interview);
+    for (const round of myRounds) {
+      const roundFb = (round.interviewFeedbacks || []).find(f => f.interviewerId === uid);
+      if (roundFb?.recommendation) return roundFb.recommendation;
+    }
+
+    for (const round of interview.rounds || []) {
+      const roundFb = (round.interviewFeedbacks || []).find(f => f.interviewerId === uid);
+      if (roundFb?.recommendation) return roundFb.recommendation;
+    }
+
+    return null;
+  }
+
   canEvaluate(interview: ApiInterview): boolean {
-    const start = this.myRounds(interview)[0]?.startTime || interview.startTime;
-    return new Date(start) <= new Date();
+    return true;
   }
 
   scheduledInterviews = computed(() =>
     this.interviewerService.interviews()
-      .filter(i => i.status === 'scheduled' || i.status === 'pending_schedule')
+      .filter(i => (i.status === 'scheduled' || i.status === 'pending_schedule') && this.myRecommendation(i) === null)
       .sort((a, b) => {
         const aIsPending = !a.startTime || a.status === 'pending_schedule';
         const bIsPending = !b.startTime || b.status === 'pending_schedule';

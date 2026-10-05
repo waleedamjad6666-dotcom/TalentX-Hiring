@@ -124,7 +124,7 @@ export class InterviewerHistoryComponent implements OnInit, OnDestroy {
     const col = this.sortColumn();
     const dir = this.sortDirection() === 'asc' ? 1 : -1;
     return this.interviewerService.interviews()
-      .filter(i => i.status === 'completed')
+      .filter(i => i.status === 'completed' || this.myRecommendation(i) !== null)
       .sort((a, b) => {
         let valA: any, valB: any;
         switch (col) {
