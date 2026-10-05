@@ -87,13 +87,12 @@ export class InterviewerDashboardComponent implements OnInit {
   }
 
   canEvaluate(interview: ApiInterview): boolean {
-    const start = this.myRounds(interview)[0]?.startTime || interview.startTime;
-    return new Date(start) <= new Date();
+    return true;
   }
 
   upcomingInterviews = computed(() =>
     this.interviewerService.interviews()
-      .filter(i => i.status === 'scheduled' || i.status === 'pending_schedule')
+      .filter(i => (i.status === 'scheduled' || i.status === 'pending_schedule') && this.myRecommendation(i) === null)
       .sort((a, b) => {
         const aIsPending = !a.startTime || a.status === 'pending_schedule';
         const bIsPending = !b.startTime || b.status === 'pending_schedule';
@@ -108,7 +107,7 @@ export class InterviewerDashboardComponent implements OnInit {
 
   pastInterviews = computed(() =>
     this.interviewerService.interviews()
-      .filter(i => i.status === 'completed')
+      .filter(i => i.status === 'completed' || this.myRecommendation(i) !== null)
       .sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime())
   );
 
