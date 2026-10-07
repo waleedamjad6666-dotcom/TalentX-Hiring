@@ -19,7 +19,7 @@ export class AdminCandidatesComponent implements OnInit {
   showModal = signal(false);
   showMatcherModal = signal(false);
   search = signal('');
-  statusFilter = signal<'all' | 'shortlisted' | 'neglected'>('all');
+  statusFilter = signal<'all' | 'shortlisted' | 'neglected' | 'not_interested'>('all');
 
   activeDropdown = signal<string | null>(null);
 
@@ -29,11 +29,19 @@ export class AdminCandidatesComponent implements OnInit {
   totalCount = computed(() => this.adminService.candidates().length);
   
   shortlistedCount = computed(() =>
-    this.adminService.candidates().filter(c => (c.status || 'shortlisted').toLowerCase() === 'shortlisted').length
+    this.adminService.candidates().filter(c => {
+      const status = (c.status || 'shortlisted').toLowerCase();
+      const isNeglected = status === 'neglected' || c.aiTier === 'NEGLECTED';
+      return status !== 'not_interested' && !isNeglected;
+    }).length
   );
 
   neglectedCount = computed(() =>
     this.adminService.candidates().filter(c => (c.status || '').toLowerCase() === 'neglected' || c.aiTier === 'NEGLECTED').length
+  );
+
+  declinedCount = computed(() =>
+    this.adminService.candidates().filter(c => (c.status || '').toLowerCase() === 'not_interested').length
   );
 
   filteredCandidates = computed(() => {
@@ -44,11 +52,15 @@ export class AdminCandidatesComponent implements OnInit {
       // Status filter
       const candidateStatus = (c.status || 'shortlisted').toLowerCase();
       const isNeglected = candidateStatus === 'neglected' || c.aiTier === 'NEGLECTED';
+      const isDeclined = candidateStatus === 'not_interested';
       
+      if (filter === 'not_interested' && !isDeclined) {
+        return false;
+      }
       if (filter === 'neglected' && !isNeglected) {
         return false;
       }
-      if (filter === 'shortlisted' && isNeglected) {
+      if (filter === 'shortlisted' && (isNeglected || isDeclined)) {
         return false;
       }
 
@@ -77,7 +89,7 @@ export class AdminCandidatesComponent implements OnInit {
     });
   });
 
-  setStatusFilter(filter: 'all' | 'shortlisted' | 'neglected') {
+  setStatusFilter(filter: 'all' | 'shortlisted' | 'neglected' | 'not_interested') {
     this.statusFilter.set(filter);
   }
 

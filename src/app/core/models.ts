@@ -37,7 +37,7 @@ export interface ApiCandidate {
   currentCompany: string | null;
   currentPosition: string | null;
   skills: string[];
-  status?: 'shortlisted' | 'neglected' | 'manual' | string;
+  status?: 'shortlisted' | 'neglected' | 'manual' | 'not_interested' | string;
   aiMatchScore?: number | null;
   aiTier?: CandidateTier | null;
   aiSummary?: string | null;
